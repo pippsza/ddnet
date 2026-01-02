@@ -1,0 +1,84 @@
+{
+  "navigation": {
+    "title": "DDNet Bingo",
+    "login": "Login",
+    "adminPanel": "Admin Panel"
+  },
+  "hero": {
+    "badge": "New Game Mode",
+    "title": "DDNet Bingo",
+    "subtitle": "Compete in DDraceNetwork map completion",
+    "description": "Complete lines, diagonals, or full house faster than your opponents. Each cell is a challenge!",
+    "learnMore": "Learn About Bingo",
+    "startPlaying": "Start Playing"
+  },
+  "preview": {
+    "caption": "Example 5×5 game board"
+  },
+  "howItWorks": {
+    "title": "How Does Bingo Work?",
+    "subtitle": "Simple rules, endless possibilities",
+    "steps": {
+      "chooseMode": {
+        "title": "Choose Mode",
+        "description": "Solo gameplay or compete with other players in real-time"
+      },
+      "completeMaps": {
+        "title": "Complete Maps",
+        "description": "Each cell on the board is a DDNet map. Complete it to mark the cell"
+      },
+      "getCombination": {
+        "title": "Get Combination",
+        "description": "Complete a line, diagonal, or full house faster than your opponents!"
+      }
+    }
+  },
+  "modes": {
+    "solo": {
+      "title": "Solo Mode",
+      "description": "Set personal records",
+      "features": {
+        "ownPace": "Complete maps at your own pace",
+        "trackStats": "Track your statistics",
+        "improveAchievements": "Improve personal achievements"
+      }
+    },
+    "competitive": {
+      "title": "Competitive Mode",
+      "description": "Win in real-time",
+      "features": {
+        "competeWithPlayers": "Compete with other players",
+        "onlineProgress": "Online progress synchronization",
+        "ratingSystem": "Rating system"
+      }
+    }
+  },
+  "additionalFeatures": {
+    "title": "Additional Features",
+    "subtitle": "More than just a game",
+    "onlineFriends": {
+      "title": "Online Friends",
+      "description": "Add friends and track their activity in real-time. Join their games and organize collaborative runs"
+    },
+    "accountSystem": {
+      "title": "Account System",
+      "description": "Create a profile, track statistics, and personalize your gaming experience. All achievements always with you"
+    },
+    "eventServers": {
+      "title": "Event Servers (Coming Soon)",
+      "description": "In the future, there will be an option to deploy servers for special events and tournaments"
+    }
+  },
+  "cta": {
+    "badge": "Join Now",
+    "title": "Ready to Take the Challenge?",
+    "description": "Become part of the DDNet Bingo community and prove your skills",
+    "createAccount": "Create Account"
+  },
+  "footer": {
+    "about": "About",
+    "rules": "Rules",
+    "support": "Support",
+    "copyright": "© 2026 DDraceNetwork Bingo Platform"
+  }
+}

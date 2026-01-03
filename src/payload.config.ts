@@ -7,12 +7,12 @@ import sharp from 'sharp'
 import { cloudinaryStorage } from 'payload-storage-cloudinary'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import { authjsPlugin } from 'payload-authjs'
-import { usersAuthConfig } from './auth.users.config'
 import { Bingo } from './collections/bingo'
 import { Articles } from './collections/Articles'
 import { ForumPosts } from './collections/ForumPosts'
 import { Support } from './collections/Support'
+import { Servers } from './collections/Servers'
+import { VerificationRequests } from './collections/VerificationRequests'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,7 +24,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Bingo, Articles, ForumPosts, Support],
+  collections: [Users, Media, Bingo, Articles, ForumPosts, Support, Servers, VerificationRequests],
   globals: [],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -45,11 +45,6 @@ export default buildConfig({
       collections: {
         media: true,
       },
-    }),
-    authjsPlugin({
-      userCollectionSlug: 'users',
-      authjsConfig: usersAuthConfig,
-      enableLocalStrategy: true,
     }),
   ],
 })

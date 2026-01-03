@@ -23,6 +23,7 @@ import { LocaleSwitcher } from '@/components/locale-switcher'
 import { getUserLocale } from '@/services/locale'
 import './globals.css'
 import { ThemeToggleButton } from '@/components/theme/theme-toggle'
+import Link from 'next/link'
 
 export async function generateMetadata() {
   const t = await getTranslations('home')
@@ -63,7 +64,7 @@ export default async function HomePage() {
               </>
             ) : (
               <Button asChild variant="outline">
-                <a href={payloadConfig.routes.admin}>{t('navigation.login')}</a>
+                <Link href={'/login'}>{t('navigation.login')}</Link>
               </Button>
             )}
           </div>

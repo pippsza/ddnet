@@ -1,3 +1,4 @@
+'use client'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 
 export default function Example() {
@@ -9,6 +10,13 @@ export default function Example() {
       <ResizableHandle />
       <ResizablePanel className="bg-blue-900" defaultSize="50%">
         <div className="p-4">Правая панель</div>
+        <button
+          onClick={() => {
+            fetch('/api/users/logout', { method: 'POST' })
+          }}
+        >
+          Logout
+        </button>
       </ResizablePanel>
     </ResizablePanelGroup>
   )

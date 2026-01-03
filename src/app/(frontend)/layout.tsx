@@ -4,9 +4,10 @@ import { Toaster } from '@/components/ui/sonner'
 
 import { NextIntlClientProvider } from 'next-intl'
 
-import { PayloadSessionProvider } from 'payload-authjs/client'
 import Script from 'next/script'
 import { ThemeProvider } from '@/components/theme/theme-provider'
+import { AuthProvider } from '@/components/auth/AuthProvider'
+
 export const metadata: Metadata = {
   title: 'Testing platform',
   description: 'Testing platform description',
@@ -29,10 +30,10 @@ export default function RootLayout({
             />
           )}
           <NextIntlClientProvider>
-            <PayloadSessionProvider userCollectionSlug="users">
+            <AuthProvider>
               <Toaster />
               {children}
-            </PayloadSessionProvider>
+            </AuthProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

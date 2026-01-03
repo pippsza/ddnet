@@ -73,6 +73,8 @@ export interface Config {
     articles: Article;
     'forum-posts': ForumPost;
     support: Support;
+    servers: Server;
+    'verification-requests': VerificationRequest;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +88,8 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'forum-posts': ForumPostsSelect<false> | ForumPostsSelect<true>;
     support: SupportSelect<false> | SupportSelect<true>;
+    servers: ServersSelect<false> | ServersSelect<true>;
+    'verification-requests': VerificationRequestsSelect<false> | VerificationRequestsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -108,20 +112,18 @@ export interface Config {
 }
 export interface UserAuthOperations {
   forgotPassword: {
-    email: string;
-    password: string;
+    username: string;
   };
   login: {
-    email: string;
     password: string;
+    username: string;
   };
   registerFirstUser: {
-    email: string;
     password: string;
+    username: string;
   };
   unlock: {
-    email: string;
-    password: string;
+    username: string;
   };
 }
 /**
@@ -130,12 +132,6 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
-  emailVerified?: string | null;
-  /**
-   * Your public display name.
-   */
-  name?: string | null;
-  image?: string | null;
   roles: 'admin' | 'player' | 'moderator';
   isSystemVerified?: boolean | null;
   avatar?: (string | null) | Media;
@@ -383,17 +379,16 @@ export interface User {
       | ('novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race')
       | null;
   };
-  accounts?:
-    | {
-        provider: string;
-        providerAccountId: string;
-        type: 'oidc' | 'oauth' | 'email' | 'webauthn';
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  email?: string | null;
+  /**
+   * Your username for login (cannot be changed)
+   */
+  username: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -740,6 +735,72 @@ export interface Support {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "servers".
+ */
+export interface Server {
+  id: string;
+  /**
+   * Human-readable name for the server
+   */
+  name: string;
+  /**
+   * Server IP address (e.g., 127.0.0.1)
+   */
+  ip: string;
+  /**
+   * Server port (default: 8303)
+   */
+  port: number;
+  /**
+   * Whether this server should be included in bot searches
+   */
+  isActive?: boolean | null;
+  /**
+   * Server region (e.g., EU, NA, AS)
+   */
+  region?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-requests".
+ */
+export interface VerificationRequest {
+  id: string;
+  /**
+   * The in-game nickname to verify
+   */
+  nickname: string;
+  /**
+   * 6-digit verification code
+   */
+  token: string;
+  /**
+   * Current verification status
+   */
+  status: 'pending' | 'active' | 'success' | 'expired' | 'failed';
+  /**
+   * IP:Port where the bot found the player
+   */
+  currentServer?: string | null;
+  /**
+   * Docker container ID running the bot
+   */
+  containerId?: string | null;
+  /**
+   * User who initiated the verification
+   */
+  user: string | User;
+  /**
+   * When this verification request expires
+   */
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -785,6 +846,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'support';
         value: string | Support;
+      } | null)
+    | ({
+        relationTo: 'servers';
+        value: string | Server;
+      } | null)
+    | ({
+        relationTo: 'verification-requests';
+        value: string | VerificationRequest;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -833,10 +902,6 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  id?: T;
-  emailVerified?: T;
-  name?: T;
-  image?: T;
   roles?: T;
   isSystemVerified?: T;
   avatar?: T;
@@ -1140,17 +1205,13 @@ export interface UsersSelect<T extends boolean = true> {
         winRate?: T;
         favoriteCategory?: T;
       };
-  accounts?:
-    | T
-    | {
-        provider?: T;
-        providerAccountId?: T;
-        type?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
@@ -1330,6 +1391,34 @@ export interface SupportSelect<T extends boolean = true> {
       };
   resolvedAt?: T;
   resolutionNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "servers_select".
+ */
+export interface ServersSelect<T extends boolean = true> {
+  name?: T;
+  ip?: T;
+  port?: T;
+  isActive?: T;
+  region?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-requests_select".
+ */
+export interface VerificationRequestsSelect<T extends boolean = true> {
+  nickname?: T;
+  token?: T;
+  status?: T;
+  currentServer?: T;
+  containerId?: T;
+  user?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

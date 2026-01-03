@@ -1,7 +1,7 @@
 {
-  "name": "ddnet",
+  "name": "@ddnet/web",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "DDNet Bingo - Web Application",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -17,7 +17,10 @@
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
-    "tailwind:init": "tailwindcss init -p"
+    "tailwind:init": "tailwindcss init -p",
+    "bot:build": "pnpm --filter @ddnet/bot build",
+    "bot:dev": "pnpm --filter @ddnet/bot dev",
+    "bot:docker:build": "pnpm --filter @ddnet/bot docker:build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -58,17 +61,16 @@
     "cmdk": "^1.1.1",
     "cross-env": "^7.0.3",
     "date-fns": "^4.1.0",
+    "dockerode": "^4.0.9",
     "dotenv": "16.4.7",
     "embla-carousel-react": "^8.6.0",
     "graphql": "^16.12.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",
     "next": "15.4.10",
-    "next-auth": "5.0.0-beta.28",
     "next-intl": "4.1.0",
     "next-themes": "^0.4.6",
     "payload": "3.69.0",
-    "payload-authjs": "0.9.1",
     "payload-storage-cloudinary": "1.1.3",
     "qs-esm": "^7.0.2",
     "react": "19.2.1",
@@ -87,6 +89,7 @@
   "devDependencies": {
     "@playwright/test": "1.56.1",
     "@testing-library/react": "16.3.0",
+    "@types/dockerode": "^3.3.47",
     "@types/node": "^22.19.3",
     "@types/react": "19.2.1",
     "@types/react-dom": "19.2.1",

@@ -1,4 +1,4 @@
-import type { CollectionConfig, PayloadRequest } from 'payload'
+import type { CollectionConfig, PayloadRequest, CollectionBeforeChangeHook } from 'payload'
 import { DDNET_CATEGORIES, DDNET_SUBCATEGORIES, BINGO_MODES } from '@/lib/ddnet-constants'
 
 const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise<boolean> => {
@@ -12,10 +12,47 @@ const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise
   return false // Deny access for all other roles
 }
 
+/**
+ * Hard Reset Hook for nickname protection
+ * - If user with same username exists and isSystemVerified: false -> delete unverified user (allows re-registration)
+ * - If user with same username exists and isSystemVerified: true -> throw error
+ */
+const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
+  if (operation !== 'create' || !data.username) return data
+
+  const payload = req.payload
+
+  // Check if user with same username exists
+  const existingUsers = await payload.find({
+    collection: 'users',
+    where: { username: { equals: data.username } },
+    limit: 1,
+  })
+
+  if (existingUsers.docs.length === 0) return data
+
+  const existingUser = existingUsers.docs[0]
+
+  // If verified, throw error - nickname is protected
+  if (existingUser.isSystemVerified) {
+    throw new Error(
+      'This nickname is already protected. Please choose a different name or contact support.',
+    )
+  }
+
+  // Hard Reset: Delete the unverified user to allow new registration with same nickname
+  await payload.delete({
+    collection: 'users',
+    id: existingUser.id,
+  })
+
+  return data
+}
+
 export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
-    useAsTitle: 'email',
+    useAsTitle: 'username',
   },
   access: {
     admin: adminAccessControl,
@@ -37,16 +74,53 @@ export const Users: CollectionConfig = {
       return req.user.roles === 'admin'
     },
   },
-  auth: true,
+  auth: {
+    useAPIKey: true,
+    // Use nickname (name field) as login instead of email
+    loginWithUsername: {
+      requireEmail: false,
+      allowEmailLogin: false,
+      requireUsername: true,
+    },
+  },
+  hooks: {
+    beforeChange: [hardResetHook],
+  },
+
   fields: [
+    // Override default email field to make it optional (Payload adds it automatically for auth collections)
+    // {
+    //   name: 'email',
+    //   type: 'email',
+    //   required: false,
+    //   admin: {
+    //     hidden: true, // Hide from admin UI since we use username
+    //   },
+    // },
     {
-      name: 'name',
+      name: 'username',
       type: 'text',
-      label: 'Display Name',
+      unique: true,
+      required: true,
+      label: 'Username (Login)',
       admin: {
-        description: 'Your public display name.',
+        description: 'Your username for login (cannot be changed)',
+        readOnly: true,
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, operation }) => {
+            // Set username = name on creation
+            if (operation === 'create') {
+              return value
+            }
+            // Prevent username changes after creation
+            return value
+          },
+        ],
       },
     },
+
     {
       name: 'roles',
       type: 'select',

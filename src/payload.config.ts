@@ -9,6 +9,10 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { authjsPlugin } from 'payload-authjs'
 import { usersAuthConfig } from './auth.users.config'
+import { Bingo } from './collections/bingo'
+import { Articles } from './collections/Articles'
+import { ForumPosts } from './collections/ForumPosts'
+import { Support } from './collections/Support'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,7 +24,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Bingo, Articles, ForumPosts, Support],
+  globals: [],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

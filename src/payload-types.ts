@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    bingo: Bingo;
+    articles: Article;
+    'forum-posts': ForumPost;
+    support: Support;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +82,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    bingo: BingoSelect<false> | BingoSelect<true>;
+    articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    'forum-posts': ForumPostsSelect<false> | ForumPostsSelect<true>;
+    support: SupportSelect<false> | SupportSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -123,10 +131,258 @@ export interface UserAuthOperations {
 export interface User {
   id: string;
   emailVerified?: string | null;
+  /**
+   * Your public display name.
+   */
   name?: string | null;
   image?: string | null;
   roles: 'admin' | 'player' | 'moderator';
-  friend?: {};
+  isSystemVerified?: boolean | null;
+  avatar?: (string | null) | Media;
+  friend?:
+    | {
+        user: string | User;
+        id?: string | null;
+      }[]
+    | null;
+  ingameStats?: {
+    points?: number | null;
+    skin?: {
+      name?: string | null;
+      color_body?: number | null;
+      color_feet?: number | null;
+    };
+  };
+  bingo?: {
+    novice?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    moderate?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    brutal?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    insane?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    dummy?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    ddmax?: {
+      easy?: {
+        solo?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+        team?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+      };
+      next?: {
+        solo?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+        team?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+      };
+      pro?: {
+        solo?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+        team?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+      };
+      nut?: {
+        solo?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+        team?: {
+          gamesPlayed?: number | null;
+          gamesWon?: number | null;
+          gamesLost?: number | null;
+          totalMapsCompleted?: number | null;
+          averageGameDuration?: number | null;
+          fastestWin?: number | null;
+        };
+      };
+    };
+    oldschool?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+      team?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    solo_maps?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    race?: {
+      solo?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalMapsCompleted?: number | null;
+        averageGameDuration?: number | null;
+        fastestWin?: number | null;
+      };
+    };
+    /**
+     * Games with status "waiting", "ready" or "in_progress"
+     */
+    activeGame?: (string | null) | Bingo;
+    /**
+     * History of all played games
+     */
+    completedGames?: (string | Bingo)[] | null;
+    /**
+     * Calculated automatically
+     */
+    totalGamesPlayed?: number | null;
+    /**
+     * Calculated automatically
+     */
+    totalGamesWon?: number | null;
+    /**
+     * Calculated automatically (totalWins / totalPlayed * 100)
+     */
+    winRate?: number | null;
+    /**
+     * Automatically determined by most played category
+     */
+    favoriteCategory?:
+      | ('novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race')
+      | null;
+  };
   accounts?:
     | {
         provider: string;
@@ -190,6 +446,296 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bingo".
+ */
+export interface Bingo {
+  id: string;
+  title: string;
+  mode: 'solo' | 'team';
+  category: 'novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race';
+  /**
+   * Available for DDmaX and Oldschool categories
+   */
+  subcategory?: ('ddmax_easy' | 'ddmax_next' | 'ddmax_pro' | 'ddmax_nut') | null;
+  gridSize: '3x3' | '5x5' | '7x7';
+  winCondition: 'line' | 'cross' | 'full_house';
+  maps: {
+    mapName: string;
+    position: number;
+    id?: string | null;
+  }[];
+  teams: {
+    teamName: string;
+    color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
+    /**
+     * Solo mode: 1 player per team, Team mode: up to 2 players per team
+     */
+    players: {
+      user: string | User;
+      isReady?: boolean | null;
+      id?: string | null;
+    }[];
+    /**
+     * Array of cell positions (0-48) that this team has completed
+     */
+    completedCells?:
+      | {
+          cellPosition: number;
+          id?: string | null;
+        }[]
+      | null;
+    teamStatus: 'not_ready' | 'ready' | 'playing' | 'winner' | 'loser';
+    id?: string | null;
+  }[];
+  gameStatus: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  /**
+   * Index of winning team (0 or 1)
+   */
+  winnerTeam?: number | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  /**
+   * Calculated automatically
+   */
+  duration?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articles".
+ */
+export interface Article {
+  id: string;
+  title: string;
+  /**
+   * URL-friendly version of the title
+   */
+  slug: string;
+  /**
+   * Short description for preview and SEO
+   */
+  excerpt?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  coverImage?: (string | null) | Media;
+  /**
+   * Article author
+   */
+  author: string | User;
+  category?: ('news' | 'tutorial' | 'guide' | 'update' | 'event' | 'announcement') | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Show this article in featured section
+   */
+  featured?: boolean | null;
+  views?: number | null;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forum-posts".
+ */
+export interface ForumPost {
+  id: string;
+  title: string;
+  /**
+   * URL-friendly version of the title
+   */
+  slug: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Post author
+   */
+  author: string | User;
+  category: 'general' | 'help' | 'suggestions' | 'bugs' | 'maps' | 'clans' | 'offtopic';
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Locked posts cannot be edited or have new replies
+   */
+  status: 'published' | 'hidden' | 'locked';
+  /**
+   * Only admins/moderators can pin posts
+   */
+  isPinned?: boolean | null;
+  views?: number | null;
+  likes?: number | null;
+  replies?:
+    | {
+        author: string | User;
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        createdAt: string;
+        likes?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support".
+ */
+export interface Support {
+  id: string;
+  /**
+   * Brief description of the issue
+   */
+  subject: string;
+  category:
+    | 'name_change'
+    | 'bug_report'
+    | 'nickname_conflict'
+    | 'account_issues'
+    | 'game_statistics'
+    | 'verification_request'
+    | 'other';
+  /**
+   * Priority level of the ticket
+   */
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'waiting_for_user' | 'resolved' | 'closed' | 'rejected';
+  /**
+   * Detailed description of the issue
+   */
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * User who created this ticket
+   */
+  createdBy: string | User;
+  /**
+   * Communication thread between user and support
+   */
+  responses?:
+    | {
+        message: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        author: string | User;
+        /**
+         * Response from admin or moderator
+         */
+        isStaffResponse?: boolean | null;
+        timestamp: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Files attached to this ticket (screenshots, logs, etc.)
+   */
+  attachments?:
+    | {
+        file: string | Media;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Additional information for specific ticket types
+   */
+  metadata?: {
+    /**
+     * For name change requests
+     */
+    requestedName?: string | null;
+    /**
+     * For nickname conflict tickets
+     */
+    conflictingUser?: (string | null) | User;
+  };
+  /**
+   * Timestamp when ticket was resolved
+   */
+  resolvedAt?: string | null;
+  /**
+   * Internal notes about how the ticket was resolved
+   */
+  resolutionNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -219,6 +765,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'bingo';
+        value: string | Bingo;
+      } | null)
+    | ({
+        relationTo: 'articles';
+        value: string | Article;
+      } | null)
+    | ({
+        relationTo: 'forum-posts';
+        value: string | ForumPost;
+      } | null)
+    | ({
+        relationTo: 'support';
+        value: string | Support;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -272,7 +834,308 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   image?: T;
   roles?: T;
-  friend?: T | {};
+  isSystemVerified?: T;
+  avatar?: T;
+  friend?:
+    | T
+    | {
+        user?: T;
+        id?: T;
+      };
+  ingameStats?:
+    | T
+    | {
+        points?: T;
+        skin?:
+          | T
+          | {
+              name?: T;
+              color_body?: T;
+              color_feet?: T;
+            };
+      };
+  bingo?:
+    | T
+    | {
+        novice?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        moderate?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        brutal?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        insane?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        dummy?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        ddmax?:
+          | T
+          | {
+              easy?:
+                | T
+                | {
+                    solo?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                    team?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                  };
+              next?:
+                | T
+                | {
+                    solo?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                    team?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                  };
+              pro?:
+                | T
+                | {
+                    solo?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                    team?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                  };
+              nut?:
+                | T
+                | {
+                    solo?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                    team?:
+                      | T
+                      | {
+                          gamesPlayed?: T;
+                          gamesWon?: T;
+                          gamesLost?: T;
+                          totalMapsCompleted?: T;
+                          averageGameDuration?: T;
+                          fastestWin?: T;
+                        };
+                  };
+            };
+        oldschool?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+              team?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        solo_maps?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        race?:
+          | T
+          | {
+              solo?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalMapsCompleted?: T;
+                    averageGameDuration?: T;
+                    fastestWin?: T;
+                  };
+            };
+        activeGame?: T;
+        completedGames?: T;
+        totalGamesPlayed?: T;
+        totalGamesWon?: T;
+        winRate?: T;
+        favoriteCategory?: T;
+      };
   accounts?:
     | T
     | {
@@ -322,6 +1185,148 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bingo_select".
+ */
+export interface BingoSelect<T extends boolean = true> {
+  title?: T;
+  mode?: T;
+  category?: T;
+  subcategory?: T;
+  gridSize?: T;
+  winCondition?: T;
+  maps?:
+    | T
+    | {
+        mapName?: T;
+        position?: T;
+        id?: T;
+      };
+  teams?:
+    | T
+    | {
+        teamName?: T;
+        color?: T;
+        players?:
+          | T
+          | {
+              user?: T;
+              isReady?: T;
+              id?: T;
+            };
+        completedCells?:
+          | T
+          | {
+              cellPosition?: T;
+              id?: T;
+            };
+        teamStatus?: T;
+        id?: T;
+      };
+  gameStatus?: T;
+  winnerTeam?: T;
+  startedAt?: T;
+  completedAt?: T;
+  duration?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articles_select".
+ */
+export interface ArticlesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  content?: T;
+  coverImage?: T;
+  author?: T;
+  category?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  featured?: T;
+  views?: T;
+  likes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forum-posts_select".
+ */
+export interface ForumPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  author?: T;
+  category?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  status?: T;
+  isPinned?: T;
+  views?: T;
+  likes?: T;
+  replies?:
+    | T
+    | {
+        author?: T;
+        content?: T;
+        createdAt?: T;
+        likes?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support_select".
+ */
+export interface SupportSelect<T extends boolean = true> {
+  subject?: T;
+  category?: T;
+  priority?: T;
+  status?: T;
+  description?: T;
+  createdBy?: T;
+  responses?:
+    | T
+    | {
+        message?: T;
+        author?: T;
+        isStaffResponse?: T;
+        timestamp?: T;
+        id?: T;
+      };
+  attachments?:
+    | T
+    | {
+        file?: T;
+        description?: T;
+        id?: T;
+      };
+  metadata?:
+    | T
+    | {
+        requestedName?: T;
+        conflictingUser?: T;
+      };
+  resolvedAt?: T;
+  resolutionNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

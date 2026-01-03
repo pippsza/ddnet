@@ -24,8 +24,8 @@ export const DDNET_SUBCATEGORIES = [
 ]
 
 export const BINGO_MODES = [
-  { label: 'Solo Mode (Solo & Race maps)', value: 'solo' },
-  { label: 'Team Mode (Team maps)', value: 'team' },
+  { label: 'Solo Mode (1 team, no opponents, separate points)', value: 'solo' },
+  { label: 'Team Mode (2 teams compete, 1-2 players per team)', value: 'team' },
 ]
 
 export const BINGO_WIN_CONDITIONS = [

@@ -110,9 +110,27 @@ export const Bingo: CollectionConfig = {
       name: 'teams',
       type: 'array',
       required: true,
-      minRows: 2,
-      maxRows: 2,
       label: 'Teams',
+      admin: {
+        description: 'Solo mode: 1 team (1-2 players), Team mode: 2 teams (1-2 players each)',
+      },
+      validate: (value, { data }) => {
+        if (!value || !Array.isArray(value)) {
+          return 'Teams array is required'
+        }
+
+        // Solo mode: must have exactly 1 team
+        if ((data as any)?.mode === 'solo' && value.length !== 1) {
+          return 'Solo mode must have exactly 1 team'
+        }
+
+        // Team mode: must have exactly 2 teams
+        if ((data as any)?.mode === 'team' && value.length !== 2) {
+          return 'Team mode must have exactly 2 teams'
+        }
+
+        return true
+      },
       fields: [
         {
           name: 'teamName',
@@ -136,7 +154,7 @@ export const Bingo: CollectionConfig = {
           maxRows: 2,
           label: 'Players',
           admin: {
-            description: 'Solo mode: 1 player per team, Team mode: up to 2 players per team',
+            description: 'Each team must have 1-2 players. Only players in team receive tokens.',
           },
           fields: [
             {
@@ -159,7 +177,7 @@ export const Bingo: CollectionConfig = {
           type: 'array',
           label: 'Completed Cells',
           admin: {
-            description: 'Array of cell positions (0-48) that this team has completed',
+            description: 'Array of cell positions that this team has completed',
           },
           fields: [
             {
@@ -169,6 +187,11 @@ export const Bingo: CollectionConfig = {
               min: 0,
               max: 48,
               label: 'Cell Position',
+            },
+            {
+              name: 'completedAt',
+              type: 'date',
+              label: 'Completed At',
             },
           ],
         },
@@ -195,7 +218,8 @@ export const Bingo: CollectionConfig = {
       type: 'number',
       label: 'Winner Team Index',
       admin: {
-        description: 'Index of winning team (0 or 1)',
+        condition: (data) => data.mode === 'team',
+        description: 'Index of winning team (0 or 1) - only for team mode with 2 teams',
       },
       min: 0,
       max: 1,

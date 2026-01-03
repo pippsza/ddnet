@@ -464,11 +464,14 @@ export interface Bingo {
     position: number;
     id?: string | null;
   }[];
+  /**
+   * Solo mode: 1 team (1-2 players), Team mode: 2 teams (1-2 players each)
+   */
   teams: {
     teamName: string;
     color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
     /**
-     * Solo mode: 1 player per team, Team mode: up to 2 players per team
+     * Each team must have 1-2 players. Only players in team receive tokens.
      */
     players: {
       user: string | User;
@@ -476,11 +479,12 @@ export interface Bingo {
       id?: string | null;
     }[];
     /**
-     * Array of cell positions (0-48) that this team has completed
+     * Array of cell positions that this team has completed
      */
     completedCells?:
       | {
           cellPosition: number;
+          completedAt?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -489,7 +493,7 @@ export interface Bingo {
   }[];
   gameStatus: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
   /**
-   * Index of winning team (0 or 1)
+   * Index of winning team (0 or 1) - only for team mode with 2 teams
    */
   winnerTeam?: number | null;
   startedAt?: string | null;
@@ -1220,6 +1224,7 @@ export interface BingoSelect<T extends boolean = true> {
           | T
           | {
               cellPosition?: T;
+              completedAt?: T;
               id?: T;
             };
         teamStatus?: T;

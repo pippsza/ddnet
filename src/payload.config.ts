@@ -8,6 +8,10 @@ import { cloudinaryStorage } from 'payload-storage-cloudinary'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Bingo } from './collections/bingo'
+import { Races } from './collections/Races'
+import { Bots } from './collections/Bots'
+import { Notifications } from './collections/Notifications'
+import { FriendRequests } from './collections/FriendRequests'
 import { Articles } from './collections/Articles'
 import { ForumPosts } from './collections/ForumPosts'
 import { Support } from './collections/Support'
@@ -24,7 +28,20 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Bingo, Articles, ForumPosts, Support, Servers, VerificationRequests],
+  collections: [
+    Users,
+    Media,
+    Bingo,
+    Races,
+    Bots,
+    Notifications,
+    FriendRequests,
+    Articles,
+    ForumPosts,
+    Support,
+    Servers,
+    VerificationRequests,
+  ],
   globals: [],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

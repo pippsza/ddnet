@@ -11,6 +11,19 @@ import {
 } from '@/lib/ddnet-constants'
 
 /**
+ * Generate random invite code for private games
+ */
+function generateInviteCode(): string {
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Exclude similar: I,1,O,0
+  const length = 8
+  let code = ''
+  for (let i = 0; i < length; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length))
+  }
+  return code
+}
+
+/**
  * Bingo Game Collection
  * Represents individual bingo games with their configuration and results
  */
@@ -81,6 +94,79 @@ export const Bingo: CollectionConfig = {
       options: BINGO_WIN_CONDITIONS,
       defaultValue: 'line',
       label: 'Win Condition',
+    },
+    {
+      name: 'isPublic',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Public Game',
+      admin: {
+        description: 'Public games are visible in lobby, private games require invite code',
+      },
+    },
+    {
+      name: 'difficultyRange',
+      type: 'group',
+      label: 'Map Difficulty Range (stars)',
+      fields: [
+        {
+          name: 'min',
+          type: 'number',
+          min: 0,
+          max: 5,
+          defaultValue: 0,
+          label: 'Minimum Difficulty',
+        },
+        {
+          name: 'max',
+          type: 'number',
+          min: 0,
+          max: 5,
+          defaultValue: 5,
+          label: 'Maximum Difficulty',
+        },
+      ],
+    },
+    {
+      name: 'createdBy',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      label: 'Game Creator',
+      admin: {
+        readOnly: true,
+      },
+      hooks: {
+        beforeChange: [
+          ({ req, operation, value }) => {
+            if (operation === 'create' && req.user) {
+              return req.user.id
+            }
+            return value
+          },
+        ],
+      },
+    },
+    {
+      name: 'inviteCode',
+      type: 'text',
+      unique: true,
+      label: 'Invite Code',
+      admin: {
+        description: 'Auto-generated code for private games. Share this link: /bingo/join/{code}',
+        readOnly: true,
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, operation, data }) => {
+            // Generate invite code for private games
+            if (operation === 'create' && data && !data.isPublic && !value) {
+              return generateInviteCode()
+            }
+            return value
+          },
+        ],
+      },
     },
     {
       name: 'maps',

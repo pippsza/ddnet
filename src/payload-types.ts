@@ -70,6 +70,10 @@ export interface Config {
     users: User;
     media: Media;
     bingo: Bingo;
+    races: Race;
+    bots: Bot;
+    notifications: Notification;
+    'friend-requests': FriendRequest;
     articles: Article;
     'forum-posts': ForumPost;
     support: Support;
@@ -85,6 +89,10 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     bingo: BingoSelect<false> | BingoSelect<true>;
+    races: RacesSelect<false> | RacesSelect<true>;
+    bots: BotsSelect<false> | BotsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'friend-requests': FriendRequestsSelect<false> | FriendRequestsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'forum-posts': ForumPostsSelect<false> | ForumPostsSelect<true>;
     support: SupportSelect<false> | SupportSelect<true>;
@@ -454,6 +462,19 @@ export interface Bingo {
   subcategory?: ('ddmax_easy' | 'ddmax_next' | 'ddmax_pro' | 'ddmax_nut') | null;
   gridSize: '3x3' | '5x5' | '7x7';
   winCondition: 'line' | 'cross' | 'full_house';
+  /**
+   * Public games are visible in lobby, private games require invite code
+   */
+  isPublic?: boolean | null;
+  difficultyRange?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  createdBy: string | User;
+  /**
+   * Auto-generated code for private games. Share this link: /bingo/join/{code}
+   */
+  inviteCode?: string | null;
   maps: {
     mapName: string;
     position: number;
@@ -497,6 +518,224 @@ export interface Bingo {
    * Calculated automatically
    */
   duration?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Race game sessions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "races".
+ */
+export interface Race {
+  id: string;
+  title: string;
+  mode: 'solo' | 'multiplayer';
+  /**
+   * If enabled, this race will be visible in the public lobby
+   */
+  isPublic?: boolean | null;
+  /**
+   * Code for joining private games
+   */
+  inviteCode?: string | null;
+  category: 'novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race';
+  totalRounds: number;
+  currentRound?: number | null;
+  currentMap?: string | null;
+  server: {
+    ip: string;
+    port: number;
+    name?: string | null;
+  };
+  players: {
+    user: string | User;
+    ingameNick: string;
+    roundsWon?: number | null;
+    isReady?: boolean | null;
+    id?: string | null;
+  }[];
+  rounds?:
+    | {
+        roundNumber: number;
+        mapName: string;
+        winner?: (string | null) | User;
+        finishTime?: number | null;
+        completedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  winner?: (string | null) | User;
+  status: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  /**
+   * ID of the bot monitoring this race
+   */
+  botId?: string | null;
+  createdBy: string | User;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage running bot instances
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bots".
+ */
+export interface Bot {
+  id: string;
+  /**
+   * Human-readable name for this bot instance
+   */
+  name: string;
+  /**
+   * Docker container ID for this bot
+   */
+  containerId: string;
+  /**
+   * The mode this bot is running in
+   */
+  mode: 'verification' | 'race' | 'chat' | 'monitor';
+  /**
+   * Current status of the bot
+   */
+  status: 'starting' | 'running' | 'stopping' | 'stopped' | 'error';
+  /**
+   * The server this bot is connected to
+   */
+  connectedServer?: {
+    ip?: string | null;
+    port?: number | null;
+    name?: string | null;
+  };
+  /**
+   * The game this bot is associated with (if any)
+   */
+  linkedGame?:
+    | ({
+        relationTo: 'bingo';
+        value: string | Bingo;
+      } | null)
+    | ({
+        relationTo: 'races';
+        value: string | Race;
+      } | null);
+  /**
+   * The user who initiated this bot (if any)
+   */
+  linkedUser?: (string | null) | User;
+  /**
+   * Recent log entries from the bot
+   */
+  logs?:
+    | {
+        timestamp: string;
+        level?: ('info' | 'warn' | 'error') | null;
+        message: string;
+        id?: string | null;
+      }[]
+    | null;
+  startedAt?: string | null;
+  stoppedAt?: string | null;
+  /**
+   * Additional data specific to the bot mode
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * In-app notifications for users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  /**
+   * The user who will receive this notification
+   */
+  recipient: string | User;
+  /**
+   * Type of notification
+   */
+  type:
+    | 'game_invite'
+    | 'friend_request'
+    | 'friend_accepted'
+    | 'game_started'
+    | 'game_ended'
+    | 'round_won'
+    | 'achievement'
+    | 'system';
+  title: string;
+  message: string;
+  isRead?: boolean | null;
+  /**
+   * URL to navigate to when clicking the notification
+   */
+  actionUrl?: string | null;
+  /**
+   * The game this notification is about (if any)
+   */
+  relatedGame?:
+    | ({
+        relationTo: 'bingo';
+        value: string | Bingo;
+      } | null)
+    | ({
+        relationTo: 'races';
+        value: string | Race;
+      } | null);
+  /**
+   * The user who triggered this notification (if any)
+   */
+  relatedUser?: (string | null) | User;
+  /**
+   * Extra data for custom notification handling
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Friend request management
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "friend-requests".
+ */
+export interface FriendRequest {
+  id: string;
+  /**
+   * User who sent the friend request
+   */
+  sender: string | User;
+  /**
+   * User who received the friend request
+   */
+  recipient: string | User;
+  status: 'pending' | 'accepted' | 'rejected';
+  /**
+   * Optional message from sender
+   */
+  message?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -834,6 +1073,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bingo';
         value: string | Bingo;
+      } | null)
+    | ({
+        relationTo: 'races';
+        value: string | Race;
+      } | null)
+    | ({
+        relationTo: 'bots';
+        value: string | Bot;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
+      } | null)
+    | ({
+        relationTo: 'friend-requests';
+        value: string | FriendRequest;
       } | null)
     | ({
         relationTo: 'articles';
@@ -1262,6 +1517,15 @@ export interface BingoSelect<T extends boolean = true> {
   subcategory?: T;
   gridSize?: T;
   winCondition?: T;
+  isPublic?: T;
+  difficultyRange?:
+    | T
+    | {
+        min?: T;
+        max?: T;
+      };
+  createdBy?: T;
+  inviteCode?: T;
   maps?:
     | T
     | {
@@ -1296,6 +1560,115 @@ export interface BingoSelect<T extends boolean = true> {
   startedAt?: T;
   completedAt?: T;
   duration?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "races_select".
+ */
+export interface RacesSelect<T extends boolean = true> {
+  title?: T;
+  mode?: T;
+  isPublic?: T;
+  inviteCode?: T;
+  category?: T;
+  totalRounds?: T;
+  currentRound?: T;
+  currentMap?: T;
+  server?:
+    | T
+    | {
+        ip?: T;
+        port?: T;
+        name?: T;
+      };
+  players?:
+    | T
+    | {
+        user?: T;
+        ingameNick?: T;
+        roundsWon?: T;
+        isReady?: T;
+        id?: T;
+      };
+  rounds?:
+    | T
+    | {
+        roundNumber?: T;
+        mapName?: T;
+        winner?: T;
+        finishTime?: T;
+        completedAt?: T;
+        id?: T;
+      };
+  winner?: T;
+  status?: T;
+  botId?: T;
+  createdBy?: T;
+  startedAt?: T;
+  completedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bots_select".
+ */
+export interface BotsSelect<T extends boolean = true> {
+  name?: T;
+  containerId?: T;
+  mode?: T;
+  status?: T;
+  connectedServer?:
+    | T
+    | {
+        ip?: T;
+        port?: T;
+        name?: T;
+      };
+  linkedGame?: T;
+  linkedUser?: T;
+  logs?:
+    | T
+    | {
+        timestamp?: T;
+        level?: T;
+        message?: T;
+        id?: T;
+      };
+  startedAt?: T;
+  stoppedAt?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  recipient?: T;
+  type?: T;
+  title?: T;
+  message?: T;
+  isRead?: T;
+  actionUrl?: T;
+  relatedGame?: T;
+  relatedUser?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "friend-requests_select".
+ */
+export interface FriendRequestsSelect<T extends boolean = true> {
+  sender?: T;
+  recipient?: T;
+  status?: T;
+  message?: T;
   updatedAt?: T;
   createdAt?: T;
 }

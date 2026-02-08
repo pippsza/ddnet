@@ -23,6 +23,8 @@ export interface BotCallback {
 export interface BotDriverInterface {
   startVerification(nickname: string, token: string, requestId: string): Promise<string>
   stopVerification(containerId: string): Promise<void>
+  startRaceBot?(raceId: string, serverIp: string, serverPort: number, players: string[]): Promise<string>
+  stopBot?(containerId: string): Promise<void>
 }
 
 export interface ServerInfo {

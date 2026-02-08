@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { Bingo, User } from '@/payload-types'
 
-export async function POST(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
     const payload = await getPayload({ config })
 
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { gameId } = params
+    const { gameId } = await params
 
     // Get game
     const game = await payload.findByID({

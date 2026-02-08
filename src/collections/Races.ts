@@ -33,16 +33,6 @@ export const Races: CollectionConfig = {
       label: 'Race Title',
     },
     {
-      name: 'mode',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Solo', value: 'solo' },
-        { label: 'Multiplayer (2-4 players)', value: 'multiplayer' },
-      ],
-      defaultValue: 'multiplayer',
-    },
-    {
       name: 'isPublic',
       type: 'checkbox',
       defaultValue: false,

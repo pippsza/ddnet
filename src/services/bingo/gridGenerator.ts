@@ -1,5 +1,3 @@
-import { Map as DDNetMap } from 'ddnet'
-
 interface MapInfo {
   mapName: string
   position: number
@@ -19,6 +17,41 @@ const GRID_SIZES = {
   '3x3': 9,
   '5x5': 25,
   '7x7': 49,
+}
+
+// Map our internal category names to DDNet API type values
+const CATEGORY_TO_DDNET_TYPE: Record<string, string> = {
+  novice: 'Novice',
+  moderate: 'Moderate',
+  brutal: 'Brutal',
+  insane: 'Insane',
+  dummy: 'Dummy',
+  ddmax: 'DDmaX',
+  ddmax_easy: 'DDmaX.Easy',
+  ddmax_next: 'DDmaX.Next',
+  ddmax_pro: 'DDmaX.Pro',
+  ddmax_nut: 'DDmaX.Nut',
+  oldschool: 'Oldschool',
+  solo_maps: 'Solo',
+  race: 'Race',
+}
+
+// In-memory cache for DDNet maps (TTL 1 hour)
+let mapsCache: { data: DDNetMapRaw[]; expires: number } | null = null
+const MAPS_CACHE_TTL = 60 * 60 * 1000 // 1 hour
+
+interface DDNetMapRaw {
+  name: string
+  type: string
+  points: number
+  difficulty: number
+  mapper?: string
+}
+
+interface DDNetMapData {
+  name: string
+  difficulty: number
+  points: number
 }
 
 /**
@@ -56,92 +89,78 @@ export async function generateBingoGrid(options: GridGeneratorOptions): Promise<
   }))
 }
 
-interface DDNetMapData {
-  name: string
-  difficulty: number
-  points: number
+/**
+ * Fetch all maps from DDNet API with caching
+ */
+async function fetchAllMaps(): Promise<DDNetMapRaw[]> {
+  if (mapsCache && mapsCache.expires > Date.now()) {
+    return mapsCache.data
+  }
+
+  const response = await fetch('https://ddnet.org/releases/maps.json', {
+    headers: { 'User-Agent': 'DDNet-Bingo/1.0' },
+    next: { revalidate: 3600 },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch DDNet maps: ${response.statusText}`)
+  }
+
+  const maps: DDNetMapRaw[] = await response.json()
+
+  mapsCache = { data: maps, expires: Date.now() + MAPS_CACHE_TTL }
+  return maps
 }
 
 /**
- * Fetch maps by category from DDNet
- * Note: ddnet package doesn't have direct category listing, so we use DDNet API
+ * Fetch maps by category from DDNet API
  */
 async function fetchMapsByCategory(
   category: string,
   subcategory?: string,
 ): Promise<DDNetMapData[]> {
-  try {
-    // DDNet releases endpoint returns all maps
-    // We need to fetch and filter by category
-    const endpoint = `https://ddnet.org/releases/`
-    const response = await fetch(endpoint, {
-      headers: {
-        'User-Agent': 'DDNet-Bingo-Bot/1.0',
-      },
-    })
+  const allMaps = await fetchAllMaps()
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch maps: ${response.statusText}`)
-    }
+  // Determine the DDNet type to filter by
+  const ddnetType = subcategory
+    ? CATEGORY_TO_DDNET_TYPE[subcategory] || CATEGORY_TO_DDNET_TYPE[category]
+    : CATEGORY_TO_DDNET_TYPE[category]
 
-    const html = await response.text()
-
-    // Parse HTML to extract maps (simplified - in production use proper parser)
-    // The DDNet releases page has a structured format we can parse
-    // For now, we'll use a simplified approach
-
-    // Alternative: Use ddnet package Map class to get map data
-    // But Map.new() requires specific map name, so we need to know names first
-
-    // TODO: Implement proper parsing or create a cached map database
-    // For now, return sample data for testing
-
-    console.warn(
-      `fetchMapsByCategory: Using sample data for ${category}. Implement proper DDNet API integration.`,
-    )
-
-    return generateSampleMaps(category, subcategory)
-  } catch (error) {
-    console.error('Error fetching maps from DDNet:', error)
-    throw new Error(`Failed to fetch maps: ${error}`)
+  if (!ddnetType) {
+    throw new Error(`Unknown category: ${category}`)
   }
+
+  return allMaps
+    .filter((m) => m.type === ddnetType)
+    .map((m) => ({
+      name: m.name,
+      difficulty: m.difficulty || 0,
+      points: m.points || 0,
+    }))
 }
 
 /**
- * Generate sample maps for testing (replace with real DDNet API integration)
+ * Get all maps from DDNet API (public, for use in other services)
  */
-function generateSampleMaps(category: string, subcategory?: string): DDNetMapData[] {
-  const sampleMaps: Record<string, DDNetMapData[]> = {
-    novice: [
-      { name: 'Sunny Side Up', difficulty: 1, points: 1 },
-      { name: 'Tangerine', difficulty: 1, points: 1 },
-      { name: 'Tsunami', difficulty: 1, points: 1 },
-      { name: 'Tutorial', difficulty: 1, points: 1 },
-      { name: 'Camouflage', difficulty: 1, points: 1 },
-      { name: 'Goo!', difficulty: 1, points: 1 },
-      { name: 'Kobra', difficulty: 2, points: 2 },
-      { name: 'Kobra 2', difficulty: 2, points: 2 },
-      { name: 'Kobra 3', difficulty: 2, points: 2 },
-      { name: 'Kobra 4', difficulty: 3, points: 3 },
-      // Add more sample maps as needed
-    ],
-    moderate: [
-      { name: 'Aequilibrium', difficulty: 2, points: 7 },
-      { name: 'Baerchen', difficulty: 3, points: 9 },
-      { name: 'Castle', difficulty: 3, points: 9 },
-      { name: 'Cup of Tee', difficulty: 2, points: 7 },
-      { name: 'Dizzy', difficulty: 3, points: 9 },
-      // Add more
-    ],
-    brutal: [
-      { name: 'Aim 10.0', difficulty: 4, points: 27 },
-      { name: 'Aughlia', difficulty: 4, points: 27 },
-      { name: 'Death Valley', difficulty: 5, points: 33 },
-      // Add more
-    ],
-  }
+export async function getAllDDNetMaps(): Promise<DDNetMapRaw[]> {
+  return fetchAllMaps()
+}
 
-  return sampleMaps[category] || []
+/**
+ * Get maps by category (public, for use in other services)
+ */
+export async function getMapsByCategory(
+  category: string,
+  subcategory?: string,
+): Promise<DDNetMapData[]> {
+  return fetchMapsByCategory(category, subcategory)
+}
+
+/**
+ * Clear maps cache (useful for forcing refresh)
+ */
+export function clearMapsCache(): void {
+  mapsCache = null
 }
 
 /**

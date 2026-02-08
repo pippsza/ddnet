@@ -2,6 +2,7 @@ import type { BotMode } from './base.js'
 import { VerificationMode } from './verification.js'
 import { ChatbotMode } from './chatbot.js'
 import { MonitorMode } from './monitor.js'
+import { RaceMode } from './race.js'
 
 /**
  * Registry of all available bot modes
@@ -10,6 +11,7 @@ export const modes: Record<string, () => BotMode> = {
   verification: () => new VerificationMode(),
   chatbot: () => new ChatbotMode(),
   monitor: () => new MonitorMode(),
+  race: () => new RaceMode(),
 }
 
 /**
@@ -38,3 +40,4 @@ export { BotMode, BaseBotMode } from './base.js'
 export { VerificationMode } from './verification.js'
 export { ChatbotMode } from './chatbot.js'
 export { MonitorMode } from './monitor.js'
+export { RaceMode } from './race.js'

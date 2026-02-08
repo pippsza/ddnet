@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/form'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
-import { sdk } from '@/services/payloadSDK'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 const loginSchema = z.object({
@@ -33,6 +32,7 @@ export function LoginForm() {
   const router = useRouter()
   const { refresh } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,22 +41,30 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
+    setError(null)
     try {
-      await sdk.login({
-        collection: 'users',
-        data: {
+      const res = await fetch('/api/users/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           username: data.nickname,
           password: data.password,
-        },
+        }),
       })
 
-      // Refresh auth state to update user context
-      await refresh()
+      const result = await res.json()
 
+      if (!res.ok) {
+        throw new Error(result.errors?.[0]?.message || result.message || t('invalidCredentials'))
+      }
+
+      await refresh()
       router.push('/app')
       router.refresh()
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t('loginError')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('loginError')
+      setError(message || t('invalidCredentials'))
       toast.error(message || t('invalidCredentials'))
     } finally {
       setIsLoading(false)
@@ -66,7 +74,13 @@ export function LoginForm() {
   return (
     <div className="space-y-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit(onSubmit)(e)
+          }}
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="nickname"
@@ -93,6 +107,9 @@ export function LoginForm() {
               </FormItem>
             )}
           />
+          {error && (
+            <p className="text-sm text-destructive text-center">{error}</p>
+          )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('signIn')}

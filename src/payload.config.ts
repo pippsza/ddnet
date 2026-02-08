@@ -17,6 +17,8 @@ import { ForumPosts } from './collections/ForumPosts'
 import { Support } from './collections/Support'
 import { Servers } from './collections/Servers'
 import { VerificationRequests } from './collections/VerificationRequests'
+import { ChatSessions } from './collections/ChatSessions'
+import { PushSubscriptions } from './collections/PushSubscriptions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,6 +43,8 @@ export default buildConfig({
     Support,
     Servers,
     VerificationRequests,
+    ChatSessions,
+    PushSubscriptions,
   ],
   globals: [],
   editor: lexicalEditor(),

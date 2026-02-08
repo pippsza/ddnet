@@ -1,4 +1,9 @@
-import type { CollectionConfig, PayloadRequest, CollectionBeforeChangeHook } from 'payload'
+import type {
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionBeforeChangeHook,
+  PayloadRequest,
+} from 'payload'
 import { DDNET_CATEGORIES, DDNET_SUBCATEGORIES, BINGO_MODES } from '@/lib/ddnet-constants'
 
 const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise<boolean> => {
@@ -49,6 +54,46 @@ const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation 
   return data
 }
 
+/**
+ * After user creation, fetch DDNet stats and populate ingameStats
+ */
+const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
+  if (operation !== 'create' || !doc.username) return doc
+
+  // Run async — don't block the registration response
+  const payload = req.payload
+  const userId = doc.id
+  const username = doc.username
+
+  setImmediate(async () => {
+    try {
+      const { getPlayerData } = await import('@/lib/ddnet-helpers')
+      const playerData = await getPlayerData(username, true)
+
+      if (!playerData) return
+
+      await payload.update({
+        collection: 'users',
+        id: userId,
+        overrideAccess: true,
+        data: {
+          ingameStats: {
+            points: playerData.points,
+            rank: playerData.rank ?? undefined,
+            lastSyncedAt: new Date().toISOString(),
+          },
+        },
+      })
+
+      console.log(`[Users] Synced DDNet stats for new user ${username}`)
+    } catch (error) {
+      console.error(`[Users] Failed to sync DDNet stats for ${username}:`, error)
+    }
+  })
+
+  return doc
+}
+
 export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
@@ -85,6 +130,7 @@ export const Users: CollectionConfig = {
   },
   hooks: {
     beforeChange: [hardResetHook],
+    afterChange: [syncDDNetOnCreate],
   },
 
   fields: [
@@ -165,6 +211,17 @@ export const Users: CollectionConfig = {
           required: true,
           label: 'Friend',
         },
+        {
+          name: 'addedAt',
+          type: 'date',
+          required: true,
+          defaultValue: () => new Date().toISOString(),
+        },
+        {
+          name: 'nickname',
+          type: 'text',
+          label: 'Custom Nickname',
+        },
       ],
       access: {
         // Users can update their own friend list
@@ -181,6 +238,7 @@ export const Users: CollectionConfig = {
       },
       fields: [
         { name: 'points', type: 'number', defaultValue: 0 },
+        { name: 'rank', type: 'number', admin: { description: 'Global completionist rank from DDNet' } },
         {
           name: 'skin',
           type: 'group',
@@ -189,6 +247,14 @@ export const Users: CollectionConfig = {
             { name: 'color_body', type: 'number' },
             { name: 'color_feet', type: 'number' },
           ],
+        },
+        {
+          name: 'lastSyncedAt',
+          type: 'date',
+          admin: {
+            readOnly: true,
+            description: 'Last time DDNet stats were synced',
+          },
         },
       ],
     },

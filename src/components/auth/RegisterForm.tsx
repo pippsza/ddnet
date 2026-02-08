@@ -20,7 +20,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { Loader2, Info } from 'lucide-react'
-import { sdk } from '@/services/payloadSDK'
 
 const registerSchema = z
   .object({
@@ -39,6 +38,7 @@ export function RegisterForm() {
   const t = useTranslations('auth')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -47,19 +47,29 @@ export function RegisterForm() {
 
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true)
+    setError(null)
     try {
-      await sdk.create({
-        collection: 'users',
-        data: {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           username: data.name,
           password: data.password,
-        },
+        }),
       })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.errors?.[0]?.message || result.message || t('registrationError'))
+      }
 
       toast.success(t('registrationSuccess'))
       router.push('/login')
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t('registrationError')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('registrationError')
+      setError(message)
       toast.error(message)
     } finally {
       setIsLoading(false)
@@ -74,7 +84,13 @@ export function RegisterForm() {
       </Alert>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit(onSubmit)(e)
+          }}
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -116,6 +132,9 @@ export function RegisterForm() {
               </FormItem>
             )}
           />
+          {error && (
+            <p className="text-sm text-destructive text-center">{error}</p>
+          )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('createAccount')}

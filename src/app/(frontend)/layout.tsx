@@ -20,6 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3b82f6" />
+      </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {process.env.NODE_ENV === 'development' && (
@@ -29,6 +33,7 @@ export default function RootLayout({
               crossOrigin="anonymous"
             />
           )}
+
           <NextIntlClientProvider>
             <AuthProvider>
               <Toaster />

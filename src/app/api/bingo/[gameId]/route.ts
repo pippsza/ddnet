@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Bingo, User } from '@/payload-types'
+import type { User } from '@/payload-types'
 
-export async function GET(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
     const payload = await getPayload({ config })
 
-    const { gameId } = params
+    const { gameId } = await params
 
     // Get game with populated relationships
     const game = await payload.findByID({
@@ -50,11 +50,19 @@ export async function GET(req: NextRequest, { params }: { params: { gameId: stri
       color: team.color,
       status: team.teamStatus,
       players: team.players.map((p) => {
-        const playerUser = typeof p.user === 'object' ? p.user : null
+        const playerUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: playerUser?.id || '',
           username: playerUser?.username || '',
           avatar: playerUser?.avatar,
+          points: playerUser?.ingameStats?.points || 0,
+          skin: playerUser?.ingameStats?.skin
+            ? {
+                name: playerUser.ingameStats.skin.name || 'default',
+                colorBody: playerUser.ingameStats.skin.color_body || 0,
+                colorFeet: playerUser.ingameStats.skin.color_feet || 0,
+              }
+            : null,
           isReady: p.isReady || false,
         }
       }),

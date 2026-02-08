@@ -7,7 +7,7 @@ interface JoinByCodeRequest {
   teamIndex?: number // 0 or 1 for team mode
 }
 
-export async function POST(req: NextRequest, { params }: { params: { inviteCode: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ inviteCode: string }> }) {
   try {
     const payload = await getPayload({ config })
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { inviteCode:
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { inviteCode } = params
+    const { inviteCode } = await params
     const body: JoinByCodeRequest = await req.json().catch(() => ({}))
 
     // Find game by invite code

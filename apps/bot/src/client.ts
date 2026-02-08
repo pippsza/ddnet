@@ -24,12 +24,18 @@ export class TeeworldsClient {
   private connected = false
   private players: Map<number, PlayerInfo> = new Map()
   private options: ClientOptions
+  private serverIp = ''
+  private serverPort = 0
+  private onDisconnectHandler: ((reason: string) => void) | null = null
 
   constructor(options: ClientOptions) {
     this.options = options
   }
 
   async connect(ip: string, port: number): Promise<void> {
+    this.serverIp = ip
+    this.serverPort = port
+
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.disconnect()
@@ -55,6 +61,9 @@ export class TeeworldsClient {
         this.connected = false
         this.players.clear()
         console.log(`[Client] Disconnected: ${reason}`)
+        if (this.onDisconnectHandler) {
+          this.onDisconnectHandler(reason)
+        }
       })
 
       // Update player list from snapshots
@@ -64,6 +73,38 @@ export class TeeworldsClient {
 
       this.client.connect()
     })
+  }
+
+  /**
+   * Reconnect to the same server
+   */
+  async reconnect(): Promise<void> {
+    if (!this.serverIp || !this.serverPort) {
+      throw new Error('No previous connection to reconnect to')
+    }
+
+    // Clean up old client
+    if (this.client) {
+      try {
+        this.client.Disconnect()
+      } catch {
+        // Ignore errors on old client
+      }
+      this.client = null
+    }
+
+    this.connected = false
+    this.players.clear()
+
+    console.log(`[Client] Reconnecting to ${this.serverIp}:${this.serverPort}...`)
+    return this.connect(this.serverIp, this.serverPort)
+  }
+
+  /**
+   * Set a handler for disconnect events (used for auto-reconnect)
+   */
+  onDisconnect(handler: (reason: string) => void): void {
+    this.onDisconnectHandler = handler
   }
 
   private updatePlayersFromSnapshot(): void {
@@ -88,6 +129,7 @@ export class TeeworldsClient {
   }
 
   disconnect(): void {
+    this.onDisconnectHandler = null // Prevent reconnect on intentional disconnect
     if (this.client && this.connected) {
       this.client.Disconnect()
       this.connected = false

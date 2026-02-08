@@ -1,47 +1,22 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import Script from 'next/script'
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface TeeAvatarProps {
-  /** URL to the skin image */
   skinUrl?: string
-  /** Body color in Teeworlds code format */
   bodyColor?: number
-  /** Feet color in Teeworlds code format */
   feetColor?: number
-  /** Size preset */
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-  /** Enable cursor tracking for eyes */
   lookAtCursor?: boolean
-  /** Custom fallback skin URL */
   fallbackSkin?: string
-  /** Additional CSS classes */
   className?: string
-  /** Use custom colors (if false, uses skin default colors) */
   useCustomColors?: boolean
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-const SIZES = {
-  xs: 24,
-  sm: 32,
-  md: 48,
-  lg: 64,
-  xl: 96,
-  '2xl': 128,
-} as const
-
-const DEFAULT_SKIN = 'https://ddnet.org/skins/skin/default.png'
-
-// TeeAssembler global type
 interface TeeOptions {
   container: HTMLElement
   imageLink: string
@@ -68,6 +43,46 @@ declare global {
 }
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const SIZES = {
+  xs: 24,
+  sm: 32,
+  md: 48,
+  lg: 64,
+  xl: 96,
+  '2xl': 128,
+} as const
+
+const TEE_BASE_SIZE = 96 // TeeAssembler renders at 96em with font-size: 1px
+
+const DEFAULT_SKIN = 'https://ddnet.org/skins/skin/default.png'
+
+// ============================================================================
+// Shared script loader — loads the script exactly once for all instances
+// ============================================================================
+
+let loadPromise: Promise<void> | null = null
+
+function ensureTeeAssemblerLoaded(): Promise<void> {
+  if (window.TeeAssembler) return Promise.resolve()
+
+  if (loadPromise) return loadPromise
+
+  loadPromise = new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = '/js/teeassembler.min.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Failed to load TeeAssembler'))
+    document.head.appendChild(script)
+  })
+
+  return loadPromise
+}
+
+// ============================================================================
 // Component
 // ============================================================================
 
@@ -83,11 +98,27 @@ export function TeeAvatar({
 }: TeeAvatarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const teeRef = useRef<TeeInstance | null>(null)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
+  const [ready, setReady] = useState(false)
   const [error, setError] = useState(false)
 
   const pixelSize = SIZES[size]
+  const fontSize = pixelSize / TEE_BASE_SIZE // scale via font-size
   const currentSkinUrl = error ? fallbackSkin : (skinUrl || fallbackSkin)
+
+  // Load script once, then mark ready
+  useEffect(() => {
+    let cancelled = false
+    ensureTeeAssemblerLoaded()
+      .then(() => {
+        if (!cancelled) setReady(true)
+      })
+      .catch(() => {
+        console.error('[TeeAvatar] Failed to load TeeAssembler script')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const initTee = useCallback(() => {
     if (!containerRef.current || !window.TeeAssembler) return
@@ -102,6 +133,9 @@ export function TeeAvatar({
       teeRef.current = null
     }
 
+    // Clear container children from previous render
+    containerRef.current.replaceChildren()
+
     try {
       const options: TeeOptions = {
         container: containerRef.current,
@@ -109,7 +143,6 @@ export function TeeAvatar({
         colorFormat: 'code',
       }
 
-      // Only add colors if using custom colors
       if (useCustomColors && (bodyColor !== 0 || feetColor !== 0)) {
         options.bodyColor = bodyColor
         options.feetColor = feetColor
@@ -123,15 +156,13 @@ export function TeeAvatar({
       }
     } catch (e) {
       console.error('[TeeAvatar] Failed to initialize:', e)
-      if (!error) {
-        setError(true)
-      }
+      if (!error) setError(true)
     }
   }, [currentSkinUrl, bodyColor, feetColor, lookAtCursor, useCustomColors, error])
 
-  // Initialize when script loads or dependencies change
+  // Initialize when script is ready or dependencies change
   useEffect(() => {
-    if (scriptLoaded) {
+    if (ready) {
       initTee()
     }
 
@@ -145,34 +176,15 @@ export function TeeAvatar({
         teeRef.current = null
       }
     }
-  }, [scriptLoaded, initTee])
-
-  // Check if script is already loaded
-  useEffect(() => {
-    if (window.TeeAssembler) {
-      setScriptLoaded(true)
-    }
-  }, [])
+  }, [ready, initTee])
 
   return (
-    <>
-      <Script
-        src="/js/teeassembler.min.js"
-        onLoad={() => setScriptLoaded(true)}
-        strategy="lazyOnload"
-      />
-      <div
-        ref={containerRef}
-        className={`tee-avatar inline-flex items-center justify-center ${className}`}
-        style={{
-          width: pixelSize,
-          height: pixelSize,
-          minWidth: pixelSize,
-          minHeight: pixelSize,
-        }}
-        aria-label="Tee character avatar"
-      />
-    </>
+    <div
+      ref={containerRef}
+      className={`teeassembler-tee ${className}`}
+      style={{ fontSize: `${fontSize}px` }}
+      aria-label="Tee character avatar"
+    />
   )
 }
 
@@ -181,13 +193,9 @@ export function TeeAvatar({
 // ============================================================================
 
 interface TeeAvatarWithFallbackProps extends TeeAvatarProps {
-  /** Show a placeholder while loading */
   showPlaceholder?: boolean
 }
 
-/**
- * TeeAvatar with built-in loading placeholder
- */
 export function TeeAvatarWithFallback({
   showPlaceholder = true,
   ...props
@@ -202,7 +210,7 @@ export function TeeAvatarWithFallback({
     const size = SIZES[props.size || 'md']
     return (
       <div
-        className={`tee-avatar-placeholder rounded-full bg-muted animate-pulse ${props.className || ''}`}
+        className={`rounded-full bg-muted animate-pulse ${props.className || ''}`}
         style={{
           width: size,
           height: size,
@@ -220,12 +228,6 @@ export function TeeAvatarWithFallback({
 // Utility Functions
 // ============================================================================
 
-/**
- * Convert HSL to Teeworlds color code
- * @param h - Hue (0-360)
- * @param s - Saturation (0-100)
- * @param l - Lightness (0-100)
- */
 export function hslToTwCode(h: number, s: number, l: number): number {
   const twH = Math.floor((h / 360) * 255)
   const twS = Math.floor((s / 100) * 255)
@@ -233,10 +235,6 @@ export function hslToTwCode(h: number, s: number, l: number): number {
   return (twH << 16) | (twS << 8) | twL
 }
 
-/**
- * Convert Teeworlds color code to HSL
- * @param code - Teeworlds color code
- */
 export function twCodeToHsl(code: number): { h: number; s: number; l: number } {
   const twH = (code >> 16) & 0xff
   const twS = (code >> 8) & 0xff
@@ -248,13 +246,8 @@ export function twCodeToHsl(code: number): { h: number; s: number; l: number } {
   }
 }
 
-/**
- * Get skin URL from DDNet skins database
- * @param skinName - Name of the skin
- */
 export function getDDNetSkinUrl(skinName: string): string {
   return `https://ddnet.org/skins/skin/${encodeURIComponent(skinName)}.png`
 }
 
-// Default export
 export default TeeAvatar

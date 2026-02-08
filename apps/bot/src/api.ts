@@ -10,13 +10,17 @@ export class BackendApi {
     this.secret = secret
   }
 
+  // =========================================================================
+  // Verification callbacks
+  // =========================================================================
+
   async reportFound(
     requestId: string,
     nickname: string,
     serverIp: string,
     serverPort: number,
   ): Promise<void> {
-    await this.sendCallback({
+    await this.post('/api/verification/bot-callback', {
       requestId,
       nickname,
       serverIp,
@@ -26,7 +30,7 @@ export class BackendApi {
   }
 
   async reportNotFound(requestId: string, nickname: string): Promise<void> {
-    await this.sendCallback({
+    await this.post('/api/verification/bot-callback', {
       requestId,
       nickname,
       serverIp: '',
@@ -35,15 +39,41 @@ export class BackendApi {
     })
   }
 
-  private async sendCallback(data: {
-    requestId: string
-    nickname: string
-    serverIp: string
-    serverPort: number
-    found: boolean
-  }): Promise<void> {
+  // =========================================================================
+  // Race callbacks
+  // =========================================================================
+
+  async reportRaceFinish(
+    raceId: string,
+    playerName: string,
+    finishTime: number,
+  ): Promise<void> {
+    await this.post('/api/race/finish', {
+      raceId,
+      playerName,
+      finishTime,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  async reportMapChange(raceId: string, mapName: string): Promise<void> {
+    await this.post('/api/race/map-change', {
+      raceId,
+      mapName,
+    })
+  }
+
+  async getRaceStatus(raceId: string): Promise<unknown> {
+    return this.get(`/api/race/${raceId}`)
+  }
+
+  // =========================================================================
+  // HTTP helpers
+  // =========================================================================
+
+  private async post(path: string, data: unknown): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/verification/bot-callback`, {
+      const response = await fetch(`${this.baseUrl}${path}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,12 +83,32 @@ export class BackendApi {
       })
 
       if (!response.ok) {
-        console.error(`[API] Callback failed: ${response.status} ${response.statusText}`)
+        console.error(`[API] POST ${path} failed: ${response.status} ${response.statusText}`)
       } else {
-        console.log(`[API] Callback sent successfully`)
+        console.log(`[API] POST ${path} success`)
       }
     } catch (error) {
-      console.error(`[API] Callback error:`, error)
+      console.error(`[API] POST ${path} error:`, error)
+    }
+  }
+
+  private async get(path: string): Promise<unknown> {
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        headers: {
+          'X-Bot-Secret': this.secret,
+        },
+      })
+
+      if (!response.ok) {
+        console.error(`[API] GET ${path} failed: ${response.status} ${response.statusText}`)
+        return null
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error(`[API] GET ${path} error:`, error)
+      return null
     }
   }
 }

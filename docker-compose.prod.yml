@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    image: ${DOCKERHUB_USERNAME}/ddnet-web:latest
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URI=mongodb://mongo:27017/ddnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    command: --storageEngine=wiredTiger
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

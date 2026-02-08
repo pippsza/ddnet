@@ -126,5 +126,23 @@ export const Notifications: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [
+      async ({ doc, operation }) => {
+        // Send push notification on creation
+        if (operation === 'create' && doc.recipient) {
+          try {
+            const { sendPushToUser } = await import('@/lib/push-notifications')
+            const recipientId = typeof doc.recipient === 'string' ? doc.recipient : doc.recipient.id
+            await sendPushToUser(recipientId, {
+              title: doc.title,
+              body: doc.message,
+              url: doc.actionUrl || '/app',
+            })
+          } catch {
+            // Push notification is optional, don't fail the operation
+          }
+        }
+      },
+    ],
   },
 }

@@ -79,6 +79,8 @@ export interface Config {
     support: Support;
     servers: Server;
     'verification-requests': VerificationRequest;
+    'chat-sessions': ChatSession;
+    'push-subscriptions': PushSubscription;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +100,8 @@ export interface Config {
     support: SupportSelect<false> | SupportSelect<true>;
     servers: ServersSelect<false> | ServersSelect<true>;
     'verification-requests': VerificationRequestsSelect<false> | VerificationRequestsSelect<true>;
+    'chat-sessions': ChatSessionsSelect<false> | ChatSessionsSelect<true>;
+    'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -146,16 +150,26 @@ export interface User {
   friend?:
     | {
         user: string | User;
+        addedAt: string;
+        nickname?: string | null;
         id?: string | null;
       }[]
     | null;
   ingameStats?: {
     points?: number | null;
+    /**
+     * Global completionist rank from DDNet
+     */
+    rank?: number | null;
     skin?: {
       name?: string | null;
       color_body?: number | null;
       color_feet?: number | null;
     };
+    /**
+     * Last time DDNet stats were synced
+     */
+    lastSyncedAt?: string | null;
   };
   bingo?: {
     novice?: {
@@ -530,7 +544,6 @@ export interface Bingo {
 export interface Race {
   id: string;
   title: string;
-  mode: 'solo' | 'multiplayer';
   /**
    * If enabled, this race will be visible in the public lobby
    */
@@ -1039,6 +1052,44 @@ export interface VerificationRequest {
   createdAt: string;
 }
 /**
+ * In-game chat sessions between users via bot relay
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-sessions".
+ */
+export interface ChatSession {
+  id: string;
+  initiator: string | User;
+  target: string | User;
+  targetNickname: string;
+  status?: ('connecting' | 'active' | 'disconnected' | 'error') | null;
+  server?: {
+    ip?: string | null;
+    port?: number | null;
+    name?: string | null;
+  };
+  botContainerId?: string | null;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * PWA push notification subscriptions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions".
+ */
+export interface PushSubscription {
+  id: string;
+  user: string | User;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1109,6 +1160,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'verification-requests';
         value: string | VerificationRequest;
+      } | null)
+    | ({
+        relationTo: 'chat-sessions';
+        value: string | ChatSession;
+      } | null)
+    | ({
+        relationTo: 'push-subscriptions';
+        value: string | PushSubscription;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1164,12 +1223,15 @@ export interface UsersSelect<T extends boolean = true> {
     | T
     | {
         user?: T;
+        addedAt?: T;
+        nickname?: T;
         id?: T;
       };
   ingameStats?:
     | T
     | {
         points?: T;
+        rank?: T;
         skin?:
           | T
           | {
@@ -1177,6 +1239,7 @@ export interface UsersSelect<T extends boolean = true> {
               color_body?: T;
               color_feet?: T;
             };
+        lastSyncedAt?: T;
       };
   bingo?:
     | T
@@ -1569,7 +1632,6 @@ export interface BingoSelect<T extends boolean = true> {
  */
 export interface RacesSelect<T extends boolean = true> {
   title?: T;
-  mode?: T;
   isPublic?: T;
   inviteCode?: T;
   category?: T;
@@ -1792,6 +1854,40 @@ export interface VerificationRequestsSelect<T extends boolean = true> {
   containerId?: T;
   user?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-sessions_select".
+ */
+export interface ChatSessionsSelect<T extends boolean = true> {
+  initiator?: T;
+  target?: T;
+  targetNickname?: T;
+  status?: T;
+  server?:
+    | T
+    | {
+        ip?: T;
+        port?: T;
+        name?: T;
+      };
+  botContainerId?: T;
+  startedAt?: T;
+  endedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions_select".
+ */
+export interface PushSubscriptionsSelect<T extends boolean = true> {
+  user?: T;
+  endpoint?: T;
+  p256dh?: T;
+  auth?: T;
   updatedAt?: T;
   createdAt?: T;
 }

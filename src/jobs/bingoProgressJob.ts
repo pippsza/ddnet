@@ -1,10 +1,37 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { Player } from 'ddnet'
 import { checkWinner } from '@/services/bingo/winChecker'
-import type { Bingo, User } from '@/payload-types'
+import type { Bingo } from '@/payload-types'
 
 const POLL_INTERVAL = parseInt(process.env.BINGO_POLL_INTERVAL_MS || '5000')
+
+interface DDNetFinish {
+  timestamp: number
+  map: string
+  time: number
+  country: string
+  type?: string
+}
+
+/**
+ * Fetch player finishes directly from DDNet API (bypass ddnet library ZodError)
+ * Returns all last_finishes, not just 10 from .finishes.recent
+ */
+async function fetchPlayerFinishes(playerName: string): Promise<DDNetFinish[]> {
+  try {
+    const url = `https://ddnet.org/players/?json2=${encodeURIComponent(playerName)}`
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return []
+
+    const data = await res.json()
+    if (!data || !data.player) return []
+
+    return (data.last_finishes || []) as DDNetFinish[]
+  } catch (error) {
+    console.error(`[Bingo] Failed to fetch DDNet data for ${playerName}:`, error)
+    return []
+  }
+}
 
 /**
  * Check a single bingo game progress
@@ -14,7 +41,6 @@ export async function checkBingoProgress(gameId: string) {
   const payload = await getPayload({ config })
 
   try {
-    // Get game data with populated relationships
     const game = await payload.findByID({
       collection: 'bingo',
       id: gameId,
@@ -26,20 +52,18 @@ export async function checkBingoProgress(gameId: string) {
     }
 
     const startTime = new Date(game.startedAt || '')
-    const mapNames = game.maps.map((m) => m.mapName)
+    const startTimestamp = startTime.getTime()
 
-    // Create map position lookup
+    // Create map position lookup (case-insensitive)
     const mapPositions = new Map<string, number>()
     game.maps.forEach((m) => mapPositions.set(m.mapName.toLowerCase(), m.position))
 
     let updated = false
 
-    // Check each team
     for (let teamIndex = 0; teamIndex < game.teams.length; teamIndex++) {
       const team = game.teams[teamIndex]
       const completedPositions = new Set((team.completedCells || []).map((c) => c.cellPosition))
 
-      // Check each player in team
       for (const playerObj of team.players) {
         const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
         if (!playerUser) continue
@@ -47,31 +71,21 @@ export async function checkBingoProgress(gameId: string) {
         const playerName = playerUser.username
 
         try {
-          // Fetch player data from DDNet
-          const ddnetPlayer = await Player.new(playerName)
+          // Fetch directly from DDNet API to avoid ZodError and get ALL finishes
+          const finishes = await fetchPlayerFinishes(playerName)
 
-          if (!ddnetPlayer || !ddnetPlayer.finishes) {
-            continue
-          }
+          for (const finish of finishes) {
+            // DDNet API returns timestamp as Unix seconds
+            const finishTimestamp = finish.timestamp * 1000
 
-          // Check recent finishes (after game start)
-          // ddnetPlayer.finishes is an object with 'recent' array
-          const allFinishes = ddnetPlayer.finishes.recent || []
-
-          for (const finish of allFinishes) {
-            const finishTime = new Date(finish.timestamp)
-
-            // Only count finishes AFTER game started
-            if (finishTime < startTime) {
+            if (finishTimestamp < startTimestamp) {
               continue
             }
 
-            // Check if this map is in the grid
-            const mapNameLower = finish.mapName.toLowerCase()
+            const mapNameLower = finish.map.toLowerCase()
             const position = mapPositions.get(mapNameLower)
 
             if (position !== undefined && !completedPositions.has(position)) {
-              // New cell completed!
               completedPositions.add(position)
 
               if (!team.completedCells) {
@@ -80,24 +94,25 @@ export async function checkBingoProgress(gameId: string) {
 
               team.completedCells.push({
                 cellPosition: position,
-                completedAt: new Date(finish.timestamp).toISOString(),
+                completedAt: new Date(finishTimestamp).toISOString(),
               })
               updated = true
 
               console.log(
-                `[Bingo] ${playerName} completed cell ${position} (${finish.mapName}) in game ${gameId}`,
+                `[Bingo] ${playerName} completed cell ${position} (${finish.map}) in game ${gameId}`,
               )
             }
           }
+
+          // Rate limit between players
+          await new Promise((r) => setTimeout(r, 200))
         } catch (error) {
           console.error(`[Bingo] Error checking player ${playerName}:`, error)
         }
       }
     }
 
-    // If updated, save and check for winner
     if (updated) {
-      // Check for winner
       const teamCells = game.teams.map((team, index) => ({
         teamIndex: index,
         completedCells: (team.completedCells || []).map((c) => c.cellPosition),
@@ -106,11 +121,9 @@ export async function checkBingoProgress(gameId: string) {
       const winResult = checkWinner(game.gridSize, game.winCondition, teamCells)
 
       if (winResult.hasWinner) {
-        // Update winner and game status
         const winningTeam = game.teams[winResult.winningTeamIndex!]
         winningTeam.teamStatus = 'winner'
 
-        // Set losing team status for team mode
         if (game.mode === 'team') {
           const losingTeamIndex = winResult.winningTeamIndex === 0 ? 1 : 0
           game.teams[losingTeamIndex].teamStatus = 'loser'
@@ -128,19 +141,14 @@ export async function checkBingoProgress(gameId: string) {
         })
 
         console.log(`[Bingo] Game ${gameId} completed! Winner: Team ${winResult.winningTeamIndex}`)
-
-        // Update player statistics
-        await updatePlayerStats(gameId, game)
+        await updatePlayerStats(game)
 
         return { continue: false, reason: 'Game completed' }
       } else {
-        // Save progress
         await payload.update({
           collection: 'bingo',
           id: gameId,
-          data: {
-            teams: game.teams,
-          },
+          data: { teams: game.teams },
         })
       }
     }
@@ -152,13 +160,8 @@ export async function checkBingoProgress(gameId: string) {
   }
 }
 
-/**
- * Update player statistics after game completion
- */
-async function updatePlayerStats(gameId: string, game: Bingo) {
+async function updatePlayerStats(game: Bingo) {
   const payload = await getPayload({ config })
-
-  const categoryKey = game.mode === 'solo' ? 'solo' : 'team'
 
   for (let teamIndex = 0; teamIndex < game.teams.length; teamIndex++) {
     const team = game.teams[teamIndex]
@@ -167,37 +170,24 @@ async function updatePlayerStats(gameId: string, game: Bingo) {
     for (const playerObj of team.players) {
       try {
         const userId = typeof playerObj.user === 'string' ? playerObj.user : playerObj.user.id
-        const user = await payload.findByID({
-          collection: 'users',
-          id: userId,
-        })
+        const user = await payload.findByID({ collection: 'users', id: userId })
 
         if (!user || !user.bingo) continue
-
-        // Get category-specific stats path
-        const categoryPath = game.category.replace(/_/g, '')
-        const modePath = game.mode === 'solo' ? 'solo' : 'team'
-
-        // Access nested stats safely
-        const categoryStats = (user.bingo as any)?.[categoryPath]?.[modePath] || {}
 
         await payload.update({
           collection: 'users',
           id: userId,
+          overrideAccess: true,
           data: {
-            [`bingo.${categoryPath}.${modePath}.gamesPlayed`]: (categoryStats.gamesPlayed || 0) + 1,
-            [`bingo.${categoryPath}.${modePath}.gamesWon`]: won
-              ? (categoryStats.gamesWon || 0) + 1
-              : categoryStats.gamesWon || 0,
-            [`bingo.${categoryPath}.${modePath}.gamesLost`]: !won
-              ? (categoryStats.gamesLost || 0) + 1
-              : categoryStats.gamesLost || 0,
-            [`bingo.${categoryPath}.${modePath}.totalMapsCompleted`]:
-              (categoryStats.totalMapsCompleted || 0) + (team.completedCells?.length || 0),
+            bingo: {
+              ...user.bingo,
+              totalGamesPlayed: (user.bingo.totalGamesPlayed || 0) + 1,
+              totalGamesWon: won
+                ? (user.bingo.totalGamesWon || 0) + 1
+                : user.bingo.totalGamesWon || 0,
+            },
           },
         })
-
-        console.log(`[Bingo] Updated stats for user ${userId}`)
       } catch (error) {
         console.error(`[Bingo] Error updating stats for player:`, error)
       }
@@ -205,28 +195,20 @@ async function updatePlayerStats(gameId: string, game: Bingo) {
   }
 }
 
-/**
- * Main job runner - checks all active games
- * Should be called periodically (e.g., every 5 seconds)
- */
 export async function runBingoProgressJob() {
   const payload = await getPayload({ config })
 
   try {
-    // Find all games in progress
     const { docs: activeGames } = await payload.find({
       collection: 'bingo',
-      where: {
-        gameStatus: {
-          equals: 'in_progress',
-        },
-      },
+      where: { gameStatus: { equals: 'in_progress' } },
       limit: 100,
     })
 
+    if (activeGames.length === 0) return
+
     console.log(`[Bingo Job] Checking ${activeGames.length} active games`)
 
-    // Check each game
     for (const game of activeGames) {
       await checkBingoProgress(game.id)
     }
@@ -235,16 +217,8 @@ export async function runBingoProgressJob() {
   }
 }
 
-/**
- * Start polling job (for development/standalone mode)
- */
 export function startBingoProgressJob() {
   console.log(`[Bingo Job] Starting with interval ${POLL_INTERVAL}ms`)
-
-  setInterval(() => {
-    runBingoProgressJob()
-  }, POLL_INTERVAL)
-
-  // Run immediately
+  setInterval(() => { runBingoProgressJob() }, POLL_INTERVAL)
   runBingoProgressJob()
 }

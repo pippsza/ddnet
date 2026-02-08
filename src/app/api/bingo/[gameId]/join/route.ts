@@ -7,7 +7,7 @@ interface JoinGameRequest {
   teamIndex?: number // 0 or 1 for team mode
 }
 
-export async function POST(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
     const payload = await getPayload({ config })
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { gameId } = params
+    const { gameId } = await params
     const body: JoinGameRequest = await req.json()
 
     // Get game

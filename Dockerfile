@@ -69,12 +69,13 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Install ddnet + sqlite3 native bindings (not auto-traced by standalone due to dynamic import)
+# Install sqlite3 native bindings in isolation (avoids peer dep conflicts with project)
 RUN apk add --no-cache --virtual .build-deps python3 make g++ \
-    && npm install ddnet --no-save \
+    && mkdir /tmp/sqlite3-build && cd /tmp/sqlite3-build \
+    && npm init -y && npm install sqlite3@5.1.7 \
+    && cp -r node_modules/* /app/node_modules/ \
+    && rm -rf /tmp/sqlite3-build \
     && apk del .build-deps
-
-RUN chown -R nextjs:nodejs node_modules/ddnet node_modules/sqlite3 2>/dev/null || true
 
 USER nextjs
 

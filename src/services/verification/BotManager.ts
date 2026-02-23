@@ -72,7 +72,7 @@ export class BotManager implements BotDriverInterface {
     const docker = this.docker as import('dockerode')
 
     const container = await docker.createContainer({
-      Image: 'bingo-bot:latest',
+      Image: process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest',
       Env: [
         `TARGET_NICK=${nickname}`,
         `REQUEST_ID=${requestId}`,
@@ -130,7 +130,7 @@ export class BotManager implements BotDriverInterface {
     const docker = this.docker as import('dockerode')
 
     const container = await docker.createContainer({
-      Image: 'bingo-bot:latest',
+      Image: process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest',
       Env: [
         'BOT_MODE=race',
         `RACE_ID=${raceId}`,

@@ -1,27 +1,13 @@
-version: '3.8'
-
 services:
   web:
-    image: ${DOCKERHUB_USERNAME}/ddnet-web:latest
+    image: pippsza/ddnet-web:latest
     ports:
-      - '3000:3000'
-    depends_on:
-      - mongo
+      - "4200:3000"
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-      - DATABASE_URI=mongodb://mongo:27017/ddnet
+      - BOT_DOCKER_IMAGE=pippsza/ddnet-bot:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
-
-  mongo:
-    image: mongo:7
-    volumes:
-      - mongo_data:/data/db
-    command: --storageEngine=wiredTiger
-    restart: unless-stopped
-
-volumes:
-  mongo_data:

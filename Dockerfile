@@ -18,6 +18,9 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Force rebuild sqlite3 native bindings for Alpine
+RUN npx --yes node-gyp rebuild --directory=node_modules/.pnpm/sqlite3@5.1.7/node_modules/sqlite3 || true
+
 
 # Rebuild the source code only when needed
 FROM base AS builder

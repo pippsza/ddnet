@@ -1,9 +1,18 @@
 /**
  * DDNet API Helpers
  * Wrapper functions around ddnet.js library for common operations
+ *
+ * Uses lazy imports to avoid loading sqlite3 native bindings at build time.
  */
 
-import { Player, findPlayer as ddnetFindPlayer } from 'ddnet'
+// Lazy-loaded ddnet module (sqlite3 native dep breaks Next.js build if imported at top level)
+let _ddnetModule: typeof import('ddnet') | null = null
+async function getDdnet() {
+  if (!_ddnetModule) {
+    _ddnetModule = await import('ddnet')
+  }
+  return _ddnetModule
+}
 
 // ============================================================================
 // Types
@@ -72,7 +81,8 @@ export async function findPlayersOnline(nicknames: string[]): Promise<PlayerOnli
   const results = await Promise.allSettled(
     nicknames.map(async (name) => {
       try {
-        const found = await ddnetFindPlayer(name, 'name')
+        const { findPlayer } = await getDdnet()
+        const found = await findPlayer(name, 'name')
 
         if (!found || found.length === 0) {
           return {
@@ -144,7 +154,8 @@ export async function findPlayerOnline(nickname: string): Promise<PlayerOnlineSt
  */
 export async function getOnlinePlayerDetails(nickname: string) {
   try {
-    const found = await ddnetFindPlayer(nickname, 'name')
+    const { findPlayer } = await getDdnet()
+    const found = await findPlayer(nickname, 'name')
     if (!found || found.length === 0) {
       return null
     }
@@ -171,6 +182,7 @@ export async function getPlayerData(name: string, bypassCache = false): Promise<
   }
 
   try {
+    const { Player } = await getDdnet()
     const player = await Player.new(name, bypassCache)
 
     const data: PlayerData = {
@@ -213,6 +225,7 @@ export async function searchPlayers(
   query: string
 ): Promise<{ name: string; points: number }[] | null> {
   try {
+    const { Player } = await getDdnet()
     const results = await Player.search(query)
     if (!results) return null
 
@@ -239,6 +252,7 @@ export async function hasFinishedMapAfter(
   afterTimestamp: Date
 ): Promise<boolean> {
   try {
+    const { Player } = await getDdnet()
     const player = await Player.new(playerName, true) // bypass cache for fresh data
     const afterTime = afterTimestamp.getTime()
 
@@ -263,6 +277,7 @@ export async function hasFinishedMapAfter(
  */
 export async function getPlayerFinishedMaps(playerName: string): Promise<string[]> {
   try {
+    const { Player } = await getDdnet()
     const player = await Player.new(playerName)
     const finishedMaps = await player.getAllFinishedMapNames()
     return finishedMaps.map((m) => m.name)
@@ -280,6 +295,7 @@ export async function checkMapsFinishedAfter(
   afterTimestamp: Date
 ): Promise<string[]> {
   try {
+    const { Player } = await getDdnet()
     const player = await Player.new(playerName, true)
     const afterTime = afterTimestamp.getTime()
 
@@ -370,6 +386,7 @@ export function clearPlayerCache(): void {
 /**
  * Set the DDNet library cache TTL
  */
-export function setDDNetCacheTTL(ttlMs: number): void {
+export async function setDDNetCacheTTL(ttlMs: number): Promise<void> {
+  const { Player } = await getDdnet()
   Player.setTTL(ttlMs)
 }

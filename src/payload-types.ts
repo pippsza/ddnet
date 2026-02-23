@@ -115,9 +115,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'verification-settings': VerificationSetting;
+    'custom-categories': CustomCategory;
   };
   globalsSelect: {
     'verification-settings': VerificationSettingsSelect<false> | VerificationSettingsSelect<true>;
+    'custom-categories': CustomCategoriesSelect<false> | CustomCategoriesSelect<true>;
   };
   locale: null;
   user: User & {
@@ -154,8 +156,9 @@ export interface User {
    * Case-sensitive DDNet nickname for verification and display
    */
   ingameNick: string;
-  roles: 'admin' | 'player' | 'moderator';
+  roles: 'admin' | 'player' | 'moderator' | 'tester';
   isSystemVerified?: boolean | null;
+  lastSeenAt?: string | null;
   avatar?: (string | null) | Media;
   friend?:
     | {
@@ -181,6 +184,33 @@ export interface User {
      */
     lastSyncedAt?: string | null;
   };
+  /**
+   * Current game (bingo or race) with status "waiting", "ready" or "in_progress"
+   */
+  activeGame?:
+    | ({
+        relationTo: 'bingo';
+        value: string | Bingo;
+      } | null)
+    | ({
+        relationTo: 'races';
+        value: string | Race;
+      } | null);
+  /**
+   * History of all played games (bingo and races)
+   */
+  completedGames?:
+    | (
+        | {
+            relationTo: 'bingo';
+            value: string | Bingo;
+          }
+        | {
+            relationTo: 'races';
+            value: string | Race;
+          }
+      )[]
+    | null;
   bingo?: {
     novice?: {
       solo?: {
@@ -385,14 +415,6 @@ export interface User {
       };
     };
     /**
-     * Games with status "waiting", "ready" or "in_progress"
-     */
-    activeGame?: (string | null) | Bingo;
-    /**
-     * History of all played games
-     */
-    completedGames?: (string | Bingo)[] | null;
-    /**
      * Calculated automatically
      */
     totalGamesPlayed?: number | null;
@@ -407,9 +429,159 @@ export interface User {
     /**
      * Automatically determined by most played category
      */
-    favoriteCategory?:
-      | ('novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race')
-      | null;
+    favoriteCategory?: string | null;
+  };
+  raceStats?: {
+    novice?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    moderate?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    brutal?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    insane?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    dummy?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    ddmax?: {
+      easy?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalRoundsWon?: number | null;
+        /**
+         * Best round finish time in seconds
+         */
+        bestFinishTime?: number | null;
+        averageFinishTime?: number | null;
+      };
+      next?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalRoundsWon?: number | null;
+        /**
+         * Best round finish time in seconds
+         */
+        bestFinishTime?: number | null;
+        averageFinishTime?: number | null;
+      };
+      pro?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalRoundsWon?: number | null;
+        /**
+         * Best round finish time in seconds
+         */
+        bestFinishTime?: number | null;
+        averageFinishTime?: number | null;
+      };
+      nut?: {
+        gamesPlayed?: number | null;
+        gamesWon?: number | null;
+        gamesLost?: number | null;
+        totalRoundsWon?: number | null;
+        /**
+         * Best round finish time in seconds
+         */
+        bestFinishTime?: number | null;
+        averageFinishTime?: number | null;
+      };
+    };
+    oldschool?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    solo_maps?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    race?: {
+      gamesPlayed?: number | null;
+      gamesWon?: number | null;
+      gamesLost?: number | null;
+      totalRoundsWon?: number | null;
+      /**
+       * Best round finish time in seconds
+       */
+      bestFinishTime?: number | null;
+      averageFinishTime?: number | null;
+    };
+    /**
+     * Calculated automatically
+     */
+    totalRacesPlayed?: number | null;
+    /**
+     * Calculated automatically
+     */
+    totalRacesWon?: number | null;
+    /**
+     * Calculated automatically
+     */
+    winRate?: number | null;
+    /**
+     * Automatically determined by most played category
+     */
+    favoriteCategory?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -463,7 +635,7 @@ export interface Bingo {
   id: string;
   title: string;
   mode: 'solo' | 'team';
-  category: 'novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race';
+  category: string;
   /**
    * Available for DDmaX and Oldschool categories
    */
@@ -546,7 +718,7 @@ export interface Race {
    * Code for joining private games
    */
   inviteCode?: string | null;
-  category: 'novice' | 'moderate' | 'brutal' | 'insane' | 'dummy' | 'ddmax' | 'oldschool' | 'solo_maps' | 'race';
+  category: string;
   totalRounds: number;
   currentRound?: number | null;
   currentMap?: string | null;
@@ -913,9 +1085,13 @@ export interface Support {
     [k: string]: unknown;
   };
   /**
-   * User who created this ticket
+   * User who created this ticket (empty for anonymous)
    */
-  createdBy: string | User;
+  createdBy?: (string | null) | User;
+  /**
+   * Email for anonymous ticket submissions
+   */
+  contactEmail?: string | null;
   /**
    * Communication thread between user and support
    */
@@ -1208,6 +1384,7 @@ export interface UsersSelect<T extends boolean = true> {
   ingameNick?: T;
   roles?: T;
   isSystemVerified?: T;
+  lastSeenAt?: T;
   avatar?: T;
   friend?:
     | T
@@ -1231,6 +1408,8 @@ export interface UsersSelect<T extends boolean = true> {
             };
         lastSyncedAt?: T;
       };
+  activeGame?: T;
+  completedGames?: T;
   bingo?:
     | T
     | {
@@ -1506,10 +1685,140 @@ export interface UsersSelect<T extends boolean = true> {
                     fastestWin?: T;
                   };
             };
-        activeGame?: T;
-        completedGames?: T;
         totalGamesPlayed?: T;
         totalGamesWon?: T;
+        winRate?: T;
+        favoriteCategory?: T;
+      };
+  raceStats?:
+    | T
+    | {
+        novice?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        moderate?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        brutal?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        insane?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        dummy?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        ddmax?:
+          | T
+          | {
+              easy?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalRoundsWon?: T;
+                    bestFinishTime?: T;
+                    averageFinishTime?: T;
+                  };
+              next?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalRoundsWon?: T;
+                    bestFinishTime?: T;
+                    averageFinishTime?: T;
+                  };
+              pro?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalRoundsWon?: T;
+                    bestFinishTime?: T;
+                    averageFinishTime?: T;
+                  };
+              nut?:
+                | T
+                | {
+                    gamesPlayed?: T;
+                    gamesWon?: T;
+                    gamesLost?: T;
+                    totalRoundsWon?: T;
+                    bestFinishTime?: T;
+                    averageFinishTime?: T;
+                  };
+            };
+        oldschool?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        solo_maps?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        race?:
+          | T
+          | {
+              gamesPlayed?: T;
+              gamesWon?: T;
+              gamesLost?: T;
+              totalRoundsWon?: T;
+              bestFinishTime?: T;
+              averageFinishTime?: T;
+            };
+        totalRacesPlayed?: T;
+        totalRacesWon?: T;
         winRate?: T;
         favoriteCategory?: T;
       };
@@ -1785,6 +2094,7 @@ export interface SupportSelect<T extends boolean = true> {
   status?: T;
   description?: T;
   createdBy?: T;
+  contactEmail?: T;
   responses?:
     | T
     | {
@@ -1965,6 +2275,46 @@ export interface VerificationSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-categories".
+ */
+export interface CustomCategory {
+  id: string;
+  categories?:
+    | {
+        /**
+         * Human-readable name (e.g., "EmpaTee Picks")
+         */
+        name: string;
+        /**
+         * URL-safe identifier, must start with "custom_" (e.g., "custom_empatee-picks")
+         */
+        slug: string;
+        description?: string | null;
+        createdBy?: (string | null) | User;
+        maps: {
+          mapName: string;
+          /**
+           * Auto-fetched from DDNet API
+           */
+          difficulty?: number | null;
+          /**
+           * Auto-fetched from DDNet API
+           */
+          points?: number | null;
+          /**
+           * The DDNet category this map belongs to
+           */
+          type?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verification-settings_select".
  */
 export interface VerificationSettingsSelect<T extends boolean = true> {
@@ -1979,6 +2329,33 @@ export interface VerificationSettingsSelect<T extends boolean = true> {
       };
   maxConcurrentBots?: T;
   verificationTtlMs?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-categories_select".
+ */
+export interface CustomCategoriesSelect<T extends boolean = true> {
+  categories?:
+    | T
+    | {
+        name?: T;
+        slug?: T;
+        description?: T;
+        createdBy?: T;
+        maps?:
+          | T
+          | {
+              mapName?: T;
+              difficulty?: T;
+              points?: T;
+              type?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

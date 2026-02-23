@@ -174,11 +174,20 @@ async function updatePlayerStats(game: Bingo) {
 
         if (!user || !user.bingo) continue
 
+        // Build completed games list (add this game)
+        const existingCompleted = (user.completedGames as any[]) || []
+        const completedGames = [
+          ...existingCompleted,
+          { relationTo: 'bingo', value: game.id },
+        ]
+
         await payload.update({
           collection: 'users',
           id: userId,
           overrideAccess: true,
           data: {
+            activeGame: null,
+            completedGames,
             bingo: {
               ...user.bingo,
               totalGamesPlayed: (user.bingo.totalGamesPlayed || 0) + 1,

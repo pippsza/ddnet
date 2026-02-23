@@ -102,7 +102,7 @@ export default function RaceGamePage({ params }: { params: Promise<{ id: string 
         <h2 className="text-lg font-semibold">
           Players ({race.players?.length || 0}/4)
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {race.players?.map((player: any, i: number) => {
             const playerColor = PLAYER_COLORS[i % PLAYER_COLORS.length]
             const isWinner = race.winner?.id === player.id

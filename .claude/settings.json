@@ -10,7 +10,11 @@
       "Bash(npx tsx:*)",
       "Bash(./node_modules/.bin/tsx:*)",
       "WebFetch(domain:ddstats.tw)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find:*)",
+      "Bash(npm install:*)"
     ],
     "additionalDirectories": [
       "/tmp",
@@ -18,7 +22,10 @@
       "/home/pippsza/code/ddnet/src/app/(frontend)/app/forum/[id]",
       "/home/pippsza/code/ddnet/src/app/api/chat/conversations/[id]",
       "/home/pippsza/code/ddnet/src/app/api/articles/[slug]",
-      "/home/pippsza/code/ddnet/src/app/api/notifications/[id]"
+      "/home/pippsza/code/ddnet/src/app/api/notifications/[id]",
+      "/home/pippsza/code/ddnet/src/app/api/support/[id]",
+      "/home/pippsza/code/ddnet/src/app/(frontend)/app/articles/[slug]",
+      "/home/pippsza/code/ddnet/src/app/(frontend)/support"
     ]
   }
 }

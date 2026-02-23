@@ -3,8 +3,89 @@ import type {
   CollectionAfterChangeHook,
   CollectionBeforeChangeHook,
   PayloadRequest,
+  Field,
 } from 'payload'
-import { DDNET_CATEGORIES, DDNET_SUBCATEGORIES, BINGO_MODES } from '@/lib/ddnet-constants'
+// DDNET_CATEGORIES import removed — favoriteCategory fields changed from select to text
+
+// ── Helper functions to reduce field repetition ──
+
+const bingoModeStats = (): Field[] => [
+  { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
+  { name: 'fastestWin', type: 'number' },
+]
+
+const bingoCategory = (name: string, label: string, modes: string[] = ['solo', 'team']): Field => ({
+  name,
+  type: 'group',
+  label,
+  fields: modes.map((mode) => ({
+    name: mode,
+    type: 'group' as const,
+    label: mode === 'solo' ? 'Solo Mode' : 'Team Mode',
+    fields: bingoModeStats(),
+  })),
+})
+
+const bingoDdmaxGroup = (): Field => ({
+  name: 'ddmax',
+  type: 'group',
+  label: 'DDmaX',
+  fields: [
+    { sub: 'easy', label: 'DDmaX.Easy' },
+    { sub: 'next', label: 'DDmaX.Next' },
+    { sub: 'pro', label: 'DDmaX.Pro' },
+    { sub: 'nut', label: 'DDmaX.Nut' },
+  ].map(({ sub, label }) => ({
+    name: sub,
+    type: 'group' as const,
+    label,
+    fields: ['solo', 'team'].map((mode) => ({
+      name: mode,
+      type: 'group' as const,
+      label: mode === 'solo' ? 'Solo Mode' : 'Team Mode',
+      fields: bingoModeStats(),
+    })),
+  })),
+})
+
+const raceCategoryStats = (): Field[] => [
+  { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'totalRoundsWon', type: 'number', defaultValue: 0, min: 0 },
+  { name: 'bestFinishTime', type: 'number', admin: { description: 'Best round finish time in seconds' } },
+  { name: 'averageFinishTime', type: 'number', defaultValue: 0 },
+]
+
+const raceCategory = (name: string, label: string): Field => ({
+  name,
+  type: 'group',
+  label,
+  fields: raceCategoryStats(),
+})
+
+const raceDdmaxGroup = (): Field => ({
+  name: 'ddmax',
+  type: 'group',
+  label: 'DDmaX',
+  fields: [
+    { sub: 'easy', label: 'DDmaX.Easy' },
+    { sub: 'next', label: 'DDmaX.Next' },
+    { sub: 'pro', label: 'DDmaX.Pro' },
+    { sub: 'nut', label: 'DDmaX.Nut' },
+  ].map(({ sub, label }) => ({
+    name: sub,
+    type: 'group' as const,
+    label,
+    fields: raceCategoryStats(),
+  })),
+})
+
+// ── Access control ──
 
 const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise<boolean> => {
   const user = req.user
@@ -16,6 +97,13 @@ const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise
 
   return false // Deny access for all other roles
 }
+
+const adminOnlyFieldAccess = {
+  create: ({ req }: { req: PayloadRequest }) => req.user?.roles?.includes('admin') ?? false,
+  update: ({ req }: { req: PayloadRequest }) => req.user?.roles?.includes('admin') ?? false,
+}
+
+// ── Hooks ──
 
 /**
  * Hard Reset Hook for nickname protection
@@ -70,8 +158,11 @@ const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, re
 
   setImmediate(async () => {
     try {
-      const { getPlayerData } = await import('@/lib/ddnet-helpers')
-      const playerData = await getPlayerData(ingameNick, true)
+      const { getPlayerData, getPlayerSkinInfo } = await import('@/lib/ddnet-helpers')
+      const [playerData, skinInfo] = await Promise.all([
+        getPlayerData(ingameNick, true),
+        getPlayerSkinInfo(ingameNick),
+      ])
 
       if (!playerData) return
 
@@ -83,6 +174,13 @@ const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, re
           ingameStats: {
             points: playerData.points,
             rank: playerData.rank ?? undefined,
+            skin: skinInfo
+              ? {
+                  name: skinInfo.name,
+                  color_body: skinInfo.colorBody,
+                  color_feet: skinInfo.colorFeet,
+                }
+              : undefined,
             lastSyncedAt: new Date().toISOString(),
           },
         },
@@ -96,6 +194,8 @@ const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, re
 
   return doc
 }
+
+// ── Collection config ──
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -137,15 +237,6 @@ export const Users: CollectionConfig = {
   },
 
   fields: [
-    // Override default email field to make it optional (Payload adds it automatically for auth collections)
-    // {
-    //   name: 'email',
-    //   type: 'email',
-    //   required: false,
-    //   admin: {
-    //     hidden: true, // Hide from admin UI since we use username
-    //   },
-    // },
     {
       name: 'username',
       type: 'text',
@@ -154,7 +245,6 @@ export const Users: CollectionConfig = {
       label: 'Username (Login)',
       admin: {
         description: 'Lowercase login name (auto-set by Payload)',
-        readOnly: true,
       },
     },
     {
@@ -165,7 +255,6 @@ export const Users: CollectionConfig = {
       label: 'In-Game Nickname',
       admin: {
         description: 'Case-sensitive DDNet nickname for verification and display',
-        readOnly: true,
       },
     },
 
@@ -173,23 +262,21 @@ export const Users: CollectionConfig = {
       name: 'roles',
       type: 'select',
       required: true,
-      options: ['admin', 'player', 'moderator'],
+      options: ['admin', 'player', 'moderator', 'tester'],
       defaultValue: 'player',
-      access: {
-        create: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-        update: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-      },
+      access: adminOnlyFieldAccess,
     },
     {
       name: 'isSystemVerified',
       type: 'checkbox',
       label: 'Is System Verified',
       defaultValue: false,
-      access: {
-        // Only admins can verify users
-        update: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-        create: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-      },
+      access: adminOnlyFieldAccess,
+    },
+    {
+      name: 'lastSeenAt',
+      type: 'date',
+      admin: { readOnly: true },
     },
     {
       name: 'avatar',
@@ -197,7 +284,6 @@ export const Users: CollectionConfig = {
       relationTo: 'media',
       label: 'Avatar',
       access: {
-        // Users can update their own avatar
         update: () => true,
       },
     },
@@ -226,7 +312,6 @@ export const Users: CollectionConfig = {
         },
       ],
       access: {
-        // Users can update their own friend list
         update: () => true,
       },
     },
@@ -234,10 +319,7 @@ export const Users: CollectionConfig = {
       name: 'ingameStats',
       type: 'group',
       label: 'In-Game Statistics',
-      access: {
-        create: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-        update: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-      },
+      access: adminOnlyFieldAccess,
       fields: [
         { name: 'points', type: 'number', defaultValue: 0 },
         {
@@ -264,442 +346,63 @@ export const Users: CollectionConfig = {
         },
       ],
     },
+
+    // ── Game tracking (shared across bingo & races) ──
+
+    {
+      name: 'activeGame',
+      type: 'relationship',
+      relationTo: ['bingo', 'races'],
+      label: 'Active Game',
+      admin: {
+        description: 'Current game (bingo or race) with status "waiting", "ready" or "in_progress"',
+      },
+    },
+    {
+      name: 'completedGames',
+      type: 'relationship',
+      relationTo: ['bingo', 'races'],
+      hasMany: true,
+      label: 'Completed Games',
+      admin: {
+        description: 'History of all played games (bingo and races)',
+      },
+    },
+
+    // ── Bingo statistics ──
+
     {
       name: 'bingo',
       type: 'group',
       label: 'Bingo Statistics',
-      access: {
-        create: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-        update: ({ req }) => req.user?.roles?.includes('admin') ?? false,
-      },
+      access: adminOnlyFieldAccess,
       fields: [
-        // Novice Category
-        {
-          name: 'novice',
-          type: 'group',
-          label: 'Novice',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Moderate Category
-        {
-          name: 'moderate',
-          type: 'group',
-          label: 'Moderate',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Brutal Category
-        {
-          name: 'brutal',
-          type: 'group',
-          label: 'Brutal',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Insane Category
-        {
-          name: 'insane',
-          type: 'group',
-          label: 'Insane',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Dummy Category
-        {
-          name: 'dummy',
-          type: 'group',
-          label: 'Dummy',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // DDmaX Category with subcategories
-        {
-          name: 'ddmax',
-          type: 'group',
-          label: 'DDmaX',
-          fields: [
-            {
-              name: 'easy',
-              type: 'group',
-              label: 'DDmaX.Easy',
-              fields: [
-                {
-                  name: 'solo',
-                  type: 'group',
-                  label: 'Solo Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-                {
-                  name: 'team',
-                  type: 'group',
-                  label: 'Team Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'next',
-              type: 'group',
-              label: 'DDmaX.Next',
-              fields: [
-                {
-                  name: 'solo',
-                  type: 'group',
-                  label: 'Solo Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-                {
-                  name: 'team',
-                  type: 'group',
-                  label: 'Team Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'pro',
-              type: 'group',
-              label: 'DDmaX.Pro',
-              fields: [
-                {
-                  name: 'solo',
-                  type: 'group',
-                  label: 'Solo Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-                {
-                  name: 'team',
-                  type: 'group',
-                  label: 'Team Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'nut',
-              type: 'group',
-              label: 'DDmaX.Nut',
-              fields: [
-                {
-                  name: 'solo',
-                  type: 'group',
-                  label: 'Solo Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-                {
-                  name: 'team',
-                  type: 'group',
-                  label: 'Team Mode',
-                  fields: [
-                    { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                    { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                    { name: 'fastestWin', type: 'number' },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        // Oldschool Category
-        {
-          name: 'oldschool',
-          type: 'group',
-          label: 'Oldschool',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-            {
-              name: 'team',
-              type: 'group',
-              label: 'Team Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Solo Maps Category
-        {
-          name: 'solo_maps',
-          type: 'group',
-          label: 'Solo Maps',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Race Category
-        {
-          name: 'race',
-          type: 'group',
-          label: 'Race',
-          fields: [
-            {
-              name: 'solo',
-              type: 'group',
-              label: 'Solo Mode',
-              fields: [
-                { name: 'gamesPlayed', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'totalMapsCompleted', type: 'number', defaultValue: 0, min: 0 },
-                { name: 'averageGameDuration', type: 'number', defaultValue: 0 },
-                { name: 'fastestWin', type: 'number' },
-              ],
-            },
-          ],
-        },
-        // Global stats
-        {
-          name: 'activeGame',
-          type: 'relationship',
-          relationTo: 'bingo',
-          label: 'Active Games',
-          admin: {
-            description: 'Games with status "waiting", "ready" or "in_progress"',
-          },
-        },
-        {
-          name: 'completedGames',
-          type: 'relationship',
-          relationTo: 'bingo',
-          hasMany: true,
-          label: 'Completed Games',
-          admin: {
-            description: 'History of all played games',
-          },
-        },
+        // Per-category stats
+        bingoCategory('novice', 'Novice'),
+        bingoCategory('moderate', 'Moderate'),
+        bingoCategory('brutal', 'Brutal'),
+        bingoCategory('insane', 'Insane'),
+        bingoCategory('dummy', 'Dummy'),
+        bingoDdmaxGroup(),
+        bingoCategory('oldschool', 'Oldschool'),
+        bingoCategory('solo_maps', 'Solo Maps', ['solo']),
+        bingoCategory('race', 'Race', ['solo']),
+        // Global bingo stats
         {
           name: 'totalGamesPlayed',
           type: 'number',
           defaultValue: 0,
           min: 0,
-          label: 'Total Games Played',
-          admin: {
-            readOnly: true,
-            description: 'Calculated automatically',
-          },
+          label: 'Total Bingo Games Played',
+          admin: { readOnly: true, description: 'Calculated automatically' },
         },
         {
           name: 'totalGamesWon',
           type: 'number',
           defaultValue: 0,
           min: 0,
-          label: 'Total Wins',
-          admin: {
-            readOnly: true,
-            description: 'Calculated automatically',
-          },
+          label: 'Total Bingo Wins',
+          admin: { readOnly: true, description: 'Calculated automatically' },
         },
         {
           name: 'winRate',
@@ -707,24 +410,69 @@ export const Users: CollectionConfig = {
           defaultValue: 0,
           min: 0,
           max: 100,
-          label: 'Win Rate (%)',
-          admin: {
-            readOnly: true,
-            description: 'Calculated automatically (totalWins / totalPlayed * 100)',
-          },
+          label: 'Bingo Win Rate (%)',
+          admin: { readOnly: true, description: 'Calculated automatically (totalWins / totalPlayed * 100)' },
         },
         {
           name: 'favoriteCategory',
-          type: 'select',
-          options: DDNET_CATEGORIES,
-          label: 'Favorite Category',
-          admin: {
-            description: 'Automatically determined by most played category',
-          },
+          type: 'text',
+          label: 'Favorite Bingo Category',
+          admin: { description: 'Automatically determined by most played category' },
         },
       ],
     },
-    // Email added by default
-    // Add more fields as needed
+
+    // ── Race statistics ──
+
+    {
+      name: 'raceStats',
+      type: 'group',
+      label: 'Race Statistics',
+      access: adminOnlyFieldAccess,
+      fields: [
+        // Per-category stats
+        raceCategory('novice', 'Novice'),
+        raceCategory('moderate', 'Moderate'),
+        raceCategory('brutal', 'Brutal'),
+        raceCategory('insane', 'Insane'),
+        raceCategory('dummy', 'Dummy'),
+        raceDdmaxGroup(),
+        raceCategory('oldschool', 'Oldschool'),
+        raceCategory('solo_maps', 'Solo Maps'),
+        raceCategory('race', 'Race'),
+        // Global race stats
+        {
+          name: 'totalRacesPlayed',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Total Races Played',
+          admin: { readOnly: true, description: 'Calculated automatically' },
+        },
+        {
+          name: 'totalRacesWon',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Total Race Wins',
+          admin: { readOnly: true, description: 'Calculated automatically' },
+        },
+        {
+          name: 'winRate',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          max: 100,
+          label: 'Race Win Rate (%)',
+          admin: { readOnly: true, description: 'Calculated automatically' },
+        },
+        {
+          name: 'favoriteCategory',
+          type: 'text',
+          label: 'Favorite Race Category',
+          admin: { description: 'Automatically determined by most played category' },
+        },
+      ],
+    },
   ],
 }

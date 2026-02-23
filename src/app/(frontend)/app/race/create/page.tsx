@@ -6,31 +6,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-
-const CATEGORIES = [
-  'novice',
-  'moderate',
-  'brutal',
-  'insane',
-  'dummy',
-  'ddmax',
-  'oldschool',
-  'solo_maps',
-  'race',
-]
+import { CategorySelect } from '@/components/CategorySelect'
 
 export default function CreateRacePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [totalRounds, setTotalRounds] = useState(5)
+  const [availableMapCount, setAvailableMapCount] = useState<number | null>(null)
+
+  const maxRounds = availableMapCount ?? 20
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -80,21 +66,16 @@ export default function CreateRacePage() {
             </div>
 
             <div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select name="category" defaultValue="novice">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Label htmlFor="category">Category</Label>
+              <CategorySelect
+                name="category"
+                defaultValue="novice"
+                onValueChange={(_, mapCount) => {
+                  setAvailableMapCount(mapCount)
+                  const newMax = mapCount ?? 20
+                  if (totalRounds > newMax) setTotalRounds(newMax)
+                }}
+              />
             </div>
 
             <div>
@@ -104,9 +85,18 @@ export default function CreateRacePage() {
                 name="totalRounds"
                 type="number"
                 min={1}
-                max={20}
-                defaultValue={5}
+                max={maxRounds}
+                value={totalRounds}
+                onChange={(e) => {
+                  const val = Math.max(1, Math.min(maxRounds, Number(e.target.value) || 1))
+                  setTotalRounds(val)
+                }}
               />
+              {availableMapCount !== null && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max {maxRounds} rounds ({availableMapCount} maps available)
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -134,7 +124,7 @@ export default function CreateRacePage() {
 
             <div className="flex items-center gap-2">
               <Switch id="isPublic" name="isPublic" />
-              <Label htmlFor="isPublic">Public Race (visible in lobby)</Label>
+              <Label htmlFor="isPublic" className="mb-0">Public Race (visible in lobby)</Label>
             </div>
 
             {error && <p className="text-sm text-red-500">{error}</p>}

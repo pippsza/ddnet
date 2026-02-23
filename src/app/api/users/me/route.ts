@@ -19,6 +19,17 @@ export async function GET(req: NextRequest) {
       depth: 1,
     })
 
+    // Touch lastSeenAt if stale (>30s) — acts as a heartbeat for platform presence
+    const lastSeen = fullUser.lastSeenAt ? new Date(fullUser.lastSeenAt).getTime() : 0
+    if (Date.now() - lastSeen > 30_000) {
+      payload.update({
+        collection: 'users',
+        id: user.id,
+        overrideAccess: true,
+        data: { lastSeenAt: new Date().toISOString() },
+      }).catch(() => {})
+    }
+
     // If skin is missing and user has ingameNick, try to fetch via DDStats/Master Server
     const hasSkin = fullUser.ingameStats?.skin?.name
     if (!hasSkin && fullUser.ingameNick) {

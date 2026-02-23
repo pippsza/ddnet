@@ -103,7 +103,7 @@ async function fetchDDNetStats(playerName: string): Promise<{ points: number; ra
     const data = await res.json()
     if (!data?.player) return null
     return {
-      points: data.points?.total || 0,
+      points: data.points?.points || 0,
       rank: data.points?.rank || undefined,
     }
   } catch {

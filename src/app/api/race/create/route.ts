@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { nanoid } from 'nanoid'
 import type { Race } from '@/payload-types'
+import { isCustomCategory } from '@/lib/category-helpers'
 
 const MAX_ACTIVE_GAMES_PER_USER = parseInt(process.env.MAX_ACTIVE_GAMES_PER_USER || '1')
 
@@ -34,8 +35,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    if (body.totalRounds < 1 || body.totalRounds > 20) {
-      return NextResponse.json({ error: 'Total rounds must be between 1 and 20' }, { status: 400 })
+    if (body.totalRounds < 1) {
+      return NextResponse.json({ error: 'Total rounds must be at least 1' }, { status: 400 })
+    }
+
+    // Validate totalRounds against available maps for custom categories
+    if (isCustomCategory(body.category)) {
+      const customCats = await payload.findGlobal({ slug: 'custom-categories' })
+      const cat = (customCats as any)?.categories?.find((c: any) => c.slug === body.category)
+      if (!cat) {
+        return NextResponse.json({ error: `Category "${body.category}" not found` }, { status: 400 })
+      }
+      const availableMaps = cat.maps?.length || 0
+      if (body.totalRounds > availableMaps) {
+        return NextResponse.json(
+          { error: `Not enough maps. Category has ${availableMaps} maps but ${body.totalRounds} rounds requested.` },
+          { status: 400 },
+        )
+      }
     }
 
     // Check active games limit
@@ -81,6 +98,15 @@ export async function POST(req: NextRequest) {
         status: 'waiting',
         createdBy: user.id,
         inviteCode: body.isPublic ? undefined : nanoid(8),
+      },
+    })
+
+    // Update user's active game reference
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        activeGame: { relationTo: 'races', value: race.id },
       },
     })
 

@@ -1,23 +1,53 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/status-badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { LobbyPageSkeleton } from '@/components/ui/page-skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
+import { usePagination } from '@/hooks/use-pagination'
 import { Grid3X3, Plus, X, Users, User } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-export default function BingoLobbyPage() {
-  const { data: lobbyData } = useSWR('/api/bingo/lobby', fetcher, { refreshInterval: 5000 })
+function BingoLobbyContent() {
+  const { page: lobbyPage, setPage: setLobbyPage, buildUrl } = usePagination({ defaultLimit: 20, pageParam: 'p' })
+  const { page: pastPage, setPage: setPastPage } = usePagination({ defaultLimit: 10, pageParam: 'past' })
+
+  const { data: lobbyData } = useSWR(
+    buildUrl('/api/bingo?where[isPublic][equals]=true&where[gameStatus][equals]=waiting&sort=-createdAt&depth=2'),
+    fetcher,
+    { refreshInterval: 5000 },
+  )
   const { data: myData, mutate: mutateMyGames } = useSWR('/api/bingo/my-games', fetcher, { refreshInterval: 5000 })
 
   const myGames = myData?.games || []
-  const lobbyGames = lobbyData?.games || []
+  const lobbyGames = lobbyData?.docs || []
+  const lobbyTotalPages = lobbyData?.totalPages || 1
+  const lobbyTotalDocs = lobbyData?.totalDocs || 0
+
   const activeGames = myGames.filter((g: any) => ['waiting', 'ready', 'in_progress'].includes(g.gameStatus))
-  const pastGames = myGames.filter((g: any) => g.gameStatus === 'completed' || g.gameStatus === 'cancelled')
+  const allPastGames = myGames.filter((g: any) => g.gameStatus === 'completed' || g.gameStatus === 'cancelled')
+
+  const pastTotalPages = Math.ceil(allPastGames.length / 10)
+  const paginatedPastGames = useMemo(
+    () => allPastGames.slice((pastPage - 1) * 10, pastPage * 10),
+    [allPastGames, pastPage],
+  )
 
   return (
     <div className="space-y-6">
@@ -55,17 +85,31 @@ export default function BingoLobbyPage() {
             </Card>
           )}
         </div>
+        <PaginationControls
+          page={lobbyPage}
+          totalPages={lobbyTotalPages}
+          totalDocs={lobbyTotalDocs}
+          limit={20}
+          onPageChange={setLobbyPage}
+        />
       </section>
 
       {/* Past Games */}
-      {pastGames.length > 0 && (
+      {allPastGames.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-muted-foreground">Past Games</h2>
           <div className="grid gap-3">
-            {pastGames.slice(0, 10).map((game: any) => (
+            {paginatedPastGames.map((game: any) => (
               <GameCard key={game.id} game={game} />
             ))}
           </div>
+          <PaginationControls
+            page={pastPage}
+            totalPages={pastTotalPages}
+            totalDocs={allPastGames.length}
+            limit={10}
+            onPageChange={setPastPage}
+          />
         </section>
       )}
     </div>
@@ -76,7 +120,6 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
   const [cancelling, setCancelling] = useState(false)
 
   const handleCancel = async () => {
-    if (!confirm('Cancel this game?')) return
     setCancelling(true)
     try {
       await fetch(`/api/bingo/${game.id}/cancel`, { method: 'POST' })
@@ -103,13 +146,29 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             {game.mode === 'team' ? <Users className="h-4 w-4" /> : <User className="h-4 w-4" />}
-            {game.players || 0}/{game.maxPlayers || '?'}
+            {game.teams?.reduce((sum: number, t: any) => sum + (t.players?.length || 0), 0) || game.players || 0}/{game.mode === 'solo' ? 2 : 4}
           </div>
           <StatusBadge status={game.gameStatus} />
           {isMine && game.gameStatus !== 'completed' && (
-            <Button size="sm" variant="ghost" onClick={handleCancel} disabled={cancelling}>
-              <X className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={cancelling}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancel game?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will cancel the game for all players. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep playing</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancel}>Cancel game</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           <Link href={`/app/bingo/${game.id}`}>
             <Button size="sm" variant={isMine ? 'default' : 'outline'}>
@@ -119,5 +178,13 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+export default function BingoLobbyPage() {
+  return (
+    <Suspense fallback={<LobbyPageSkeleton />}>
+      <BingoLobbyContent />
+    </Suspense>
   )
 }

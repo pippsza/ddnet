@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
+import { ArrowLeft } from 'lucide-react'
 
 const CATEGORIES = [
   { value: 'news', label: 'News' },
@@ -17,23 +21,6 @@ const CATEGORIES = [
   { value: 'event', label: 'Event' },
   { value: 'announcement', label: 'Announcement' },
 ]
-
-function textToLexical(text: string) {
-  return {
-    root: {
-      type: 'root',
-      children: text.split('\n').map((line) => ({
-        type: 'paragraph',
-        children: [{ type: 'text', text: line, version: 1 }],
-        version: 1,
-      })),
-      direction: 'ltr',
-      format: '',
-      indent: 0,
-      version: 1,
-    },
-  }
-}
 
 function slugify(text: string): string {
   return text
@@ -46,18 +33,25 @@ function slugify(text: string): string {
 
 export default function ArticleCreatePage() {
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [excerpt, setExcerpt] = useState('')
   const [category, setCategory] = useState('news')
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState('')
   const [featured, setFeatured] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const titleRef = useRef<HTMLInputElement>(null)
+  const excerptRef = useRef<HTMLTextAreaElement>(null)
+  const tagsRef = useRef<HTMLInputElement>(null)
+  const contentRef = useRef<any>(null)
+
+  const handleContentChange = (editorState: any) => {
+    contentRef.current = editorState
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !content.trim()) return
+    const title = titleRef.current?.value?.trim() || ''
+    const excerpt = excerptRef.current?.value?.trim() || ''
+    const tags = tagsRef.current?.value || ''
+    if (!title || !contentRef.current) return
     setSubmitting(true)
     setError('')
     try {
@@ -66,10 +60,10 @@ export default function ArticleCreatePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: title.trim(),
+          title,
           slug,
-          content: textToLexical(content.trim()),
-          excerpt: excerpt.trim() || undefined,
+          content: contentRef.current,
+          excerpt: excerpt || undefined,
           category,
           tags: tags
             .split(',')
@@ -85,7 +79,6 @@ export default function ArticleCreatePage() {
       router.push(`/app/articles/${data.doc.slug}`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create article')
-    } finally {
       setSubmitting(false)
     }
   }
@@ -94,9 +87,9 @@ export default function ArticleCreatePage() {
     <div className="space-y-6">
       <Link
         href="/app/articles"
-        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        &larr; Back to Articles
+        <ArrowLeft className="h-4 w-4" /> Back to Articles
       </Link>
 
       <Card>
@@ -108,8 +101,7 @@ export default function ArticleCreatePage() {
             <div>
               <Label>Title</Label>
               <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                ref={titleRef}
                 placeholder="Article title"
                 required
                 maxLength={200}
@@ -118,8 +110,7 @@ export default function ArticleCreatePage() {
             <div>
               <Label>Excerpt</Label>
               <Textarea
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
+                ref={excerptRef}
                 placeholder="Short description for preview..."
                 rows={2}
                 className="resize-none"
@@ -127,34 +118,32 @@ export default function ArticleCreatePage() {
             </div>
             <div>
               <Label>Category</Label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Tags</Label>
               <Input
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
+                ref={tagsRef}
                 placeholder="tag1, tag2, tag3"
               />
               <p className="text-xs text-muted-foreground mt-1">Comma-separated</p>
             </div>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="featured"
                 checked={featured}
-                onChange={(e) => setFeatured(e.target.checked)}
-                className="rounded border-input"
+                onCheckedChange={(checked) => setFeatured(checked === true)}
               />
               <Label htmlFor="featured" className="mb-0 cursor-pointer">
                 Featured article
@@ -162,13 +151,9 @@ export default function ArticleCreatePage() {
             </div>
             <div>
               <Label>Content</Label>
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+              <LexicalRichTextEditor
+                onChange={handleContentChange}
                 placeholder="Write your article..."
-                required
-                rows={15}
-                className="resize-none"
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}

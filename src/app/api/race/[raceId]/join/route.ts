@@ -67,6 +67,15 @@ export async function POST(
       data: { players },
     })
 
+    // Update user's active game reference
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        activeGame: { relationTo: 'races', value: raceId },
+      },
+    })
+
     return NextResponse.json({ success: true, message: 'Joined the race' })
   } catch (error: unknown) {
     console.error('[API] Error joining race:', error)

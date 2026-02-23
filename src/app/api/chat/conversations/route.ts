@@ -36,13 +36,21 @@ export async function GET(req: NextRequest) {
 
         const participants = (conv.participants || []).map((p: any) => {
           const u = typeof p.user === 'object' ? p.user : null
-          return u
-            ? {
-                id: u.id,
-                ingameNick: u.ingameNick,
-                skin: u.ingameStats?.skin,
-              }
-            : null
+          if (!u) return null
+          const rawSkin = u.ingameStats?.skin
+          return {
+            id: u.id,
+            ingameNick: u.ingameNick,
+            roles: u.roles || 'player',
+            lastSeenAt: u.lastSeenAt || null,
+            skin: rawSkin?.name
+              ? {
+                  name: rawSkin.name,
+                  colorBody: rawSkin.color_body || 0,
+                  colorFeet: rawSkin.color_feet || 0,
+                }
+              : null,
+          }
         })
 
         const otherUser = participants.find((p: any) => p?.id !== user.id)

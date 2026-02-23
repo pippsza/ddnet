@@ -21,7 +21,15 @@ async function syncUserStats(userId: string, ingameNick: string) {
 
     // Try to get skin via DDStats (works offline) or Master Server (online only)
     const skinInfo = await getPlayerSkinInfo(ingameNick)
-    const skinUpdate = skinInfo ? { skin: skinInfo } : {}
+    const skinUpdate = skinInfo
+      ? {
+          skin: {
+            name: skinInfo.name,
+            color_body: skinInfo.colorBody,
+            color_feet: skinInfo.colorFeet,
+          },
+        }
+      : {}
 
     await payload.update({
       collection: 'users',

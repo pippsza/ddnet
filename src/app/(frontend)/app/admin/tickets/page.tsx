@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
+import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -60,7 +61,7 @@ export default function AdminTicketsPage() {
               : 'Unknown'
 
             return (
-              <Link key={ticket.id} href={`/app/support/${ticket.id}`} className="block">
+              <Link key={ticket.id} href={`/support/${ticket.id}`} className="block">
                 <Card className="hover:shadow-md hover:border-primary/30 transition-all">
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex-1 min-w-0">
@@ -70,7 +71,22 @@ export default function AdminTicketsPage() {
                         <StatusBadge status={ticket.priority} />
                       </div>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <span>by {author}</span>
+                        <div className="flex items-center gap-1.5">
+                          {(() => {
+                            const authorObj = typeof ticket.createdBy === 'object' ? ticket.createdBy : null
+                            const skinName = authorObj?.ingameStats?.skin?.name
+                            return (
+                              <TeeAvatarWithFallback
+                                skinUrl={skinName ? getDDNetSkinUrl(skinName) : undefined}
+                                bodyColor={authorObj?.ingameStats?.skin?.color_body}
+                                feetColor={authorObj?.ingameStats?.skin?.color_feet}
+                                useCustomColors={!!(authorObj?.ingameStats?.skin?.color_body || authorObj?.ingameStats?.skin?.color_feet)}
+                                size="xs"
+                              />
+                            )
+                          })()}
+                          <span>{author}</span>
+                        </div>
                         <span>&middot;</span>
                         <span>{ticket.category?.replace(/_/g, ' ')}</span>
                         <span>&middot;</span>

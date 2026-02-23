@@ -7,7 +7,18 @@ interface PointsBreakdownCardProps {
 }
 
 export function PointsBreakdownCard({ points }: PointsBreakdownCardProps) {
-  if (!points) return null
+  if (!points) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Points Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No points data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const periodStats = [
     { label: 'This Week', data: points.weekly_points },
@@ -40,25 +51,26 @@ export function PointsBreakdownCard({ points }: PointsBreakdownCardProps) {
         )}
 
         {categoryEntries.length > 0 && (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">By Category</p>
-            {categoryEntries.map(([cat, data], i) => (
-              <div key={cat} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1.5">
+              {categoryEntries.map(([cat, data], i) => (
+                <div key={cat} className="flex items-center gap-2 text-sm ">
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-xs"
-                    style={{ backgroundColor: getCategoryColor(cat, i) }}
+                    style={{ backgroundColor: getCategoryColor(cat, i + 1) }}
                   />
-                  <span>{cat}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-medium">{data.points.toLocaleString()}</span>
+                  <span className="shrink-0">{cat}</span>
+                  <span className="flex-1 border-b border-dotted border-muted-foreground/30" />
+                  <span className="font-mono font-medium shrink-0">
+                    {data.points.toLocaleString()}
+                  </span>
                   {data.rank > 0 && (
-                    <span className="text-xs text-muted-foreground">#{data.rank}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">#{data.rank}</span>
                   )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

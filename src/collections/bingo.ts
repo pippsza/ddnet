@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
 import {
-  DDNET_CATEGORIES,
   DDNET_SUBCATEGORIES,
   BINGO_MODES,
   BINGO_GRID_SIZES,
@@ -9,6 +8,7 @@ import {
   GAME_STATUSES,
   TEAM_STATUSES,
 } from '@/lib/ddnet-constants'
+import { validateCategory, isCustomCategory } from '@/lib/category-helpers'
 
 /**
  * Generate random invite code for private games
@@ -31,6 +31,7 @@ export const Bingo: CollectionConfig = {
   slug: 'bingo',
   admin: {
     useAsTitle: 'title',
+    group: 'Games',
     defaultColumns: ['title', 'mode', 'category', 'status', 'createdAt'],
   },
   access: {
@@ -64,10 +65,10 @@ export const Bingo: CollectionConfig = {
     },
     {
       name: 'category',
-      type: 'select',
+      type: 'text',
       required: true,
-      options: DDNET_CATEGORIES,
       label: 'Category',
+      validate: validateCategory,
     },
     {
       name: 'subcategory',
@@ -75,7 +76,9 @@ export const Bingo: CollectionConfig = {
       label: 'Subcategory',
       options: DDNET_SUBCATEGORIES.map(({ label, value }) => ({ label, value })),
       admin: {
-        condition: (data) => data.category === 'ddmax' || data.category === 'oldschool',
+        condition: (data) =>
+          !isCustomCategory(data.category || '') &&
+          (data.category === 'ddmax' || data.category === 'oldschool'),
         description: 'Available for DDmaX and Oldschool categories',
       },
     },

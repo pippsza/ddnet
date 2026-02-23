@@ -47,6 +47,11 @@ const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondar
   offline: { label: 'Offline', variant: 'secondary' },
   verified: { label: 'Verified', variant: 'default', className: 'bg-green-600 hover:bg-green-600' },
 
+  // Roles
+  admin: { label: 'Admin', variant: 'default', className: 'bg-red-600 hover:bg-red-600' },
+  moderator: { label: 'Moderator', variant: 'default', className: 'bg-blue-600 hover:bg-blue-600' },
+  tester: { label: 'Tester', variant: 'default', className: 'bg-purple-600 hover:bg-purple-600' },
+
   // Misc
   solo: { label: 'Solo', variant: 'outline' },
   team: { label: 'Team', variant: 'outline', className: 'border-purple-500/50 text-purple-600 dark:text-purple-400' },
@@ -77,4 +82,9 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       {config.label}
     </Badge>
   )
+}
+
+export function RoleBadge({ role, className }: { role?: string; className?: string }) {
+  if (!role || role === 'player') return null
+  return <StatusBadge status={role} className={className} />
 }

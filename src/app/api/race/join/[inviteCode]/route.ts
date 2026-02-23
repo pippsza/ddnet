@@ -72,6 +72,15 @@ export async function POST(
       data: { players },
     })
 
+    // Update user's active game reference
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        activeGame: { relationTo: 'races', value: race.id },
+      },
+    })
+
     return NextResponse.json({
       success: true,
       raceId: race.id,

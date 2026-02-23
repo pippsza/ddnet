@@ -38,7 +38,18 @@ interface PointsProgressionChartProps {
 }
 
 export function PointsProgressionChart({ data, compact = false }: PointsProgressionChartProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    const empty = <p className="text-sm text-muted-foreground text-center py-8">No points data yet</p>
+    if (compact) return empty
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Points Progression</CardTitle>
+        </CardHeader>
+        <CardContent>{empty}</CardContent>
+      </Card>
+    )
+  }
 
   const chartData = compact ? data.slice(-50) : data
 

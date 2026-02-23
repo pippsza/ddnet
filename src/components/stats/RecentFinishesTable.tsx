@@ -18,7 +18,18 @@ interface RecentFinishesTableProps {
 }
 
 export function RecentFinishesTable({ data, limit = 15 }: RecentFinishesTableProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recent Finishes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No recent finishes</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const items = data.slice(0, limit)
 

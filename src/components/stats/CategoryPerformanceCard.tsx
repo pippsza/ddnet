@@ -8,15 +8,15 @@ interface CategoryPerformanceCardProps {
 export function CategoryPerformanceCard({ categoryStats }: CategoryPerformanceCardProps) {
   const entries = Object.entries(categoryStats).sort(([, a], [, b]) => b.total - a.total)
 
-  if (!entries.length) return null
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Bingo by Category</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {entries.map(([category, stats], i) => {
+        {entries.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">No category data yet</p>
+        ) : entries.map(([category, stats], i) => {
           const winPct = stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0
           const color = getCategoryColor(category, i)
 

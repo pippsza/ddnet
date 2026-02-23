@@ -42,13 +42,35 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Increment views
-    await payload.update({
-      collection: 'forum-posts',
-      id,
-      data: { views: (post.views || 0) + 1 },
-      overrideAccess: true,
-    })
+    // Deduplicated view counting via cookie
+    const viewedCookie = req.cookies.get('forum_views')?.value
+    const viewedIds: string[] = viewedCookie ? JSON.parse(viewedCookie) : []
+    let shouldIncrement = !viewedIds.includes(id)
+
+    // Also skip if logged-in user is the author
+    if (user && typeof post.author === 'object' && post.author?.id === user.id) {
+      shouldIncrement = false
+    }
+
+    if (shouldIncrement) {
+      await payload.update({
+        collection: 'forum-posts',
+        id,
+        data: { views: (post.views || 0) + 1 },
+        overrideAccess: true,
+      })
+      viewedIds.push(id)
+      // Keep only last 200 IDs to prevent cookie bloat
+      const trimmed = viewedIds.slice(-200)
+      const response = NextResponse.json({ post: { ...post, views: (post.views || 0) + 1 } })
+      response.cookies.set('forum_views', JSON.stringify(trimmed), {
+        maxAge: 60 * 60 * 24, // 24 hours
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      })
+      return response
+    }
 
     return NextResponse.json({ post })
   } catch (error) {
@@ -87,14 +109,17 @@ export async function POST(
     const body = await req.json()
     const { content } = body
 
-    if (!content?.trim()) {
+    if (!content) {
       return NextResponse.json({ error: 'Reply content is required' }, { status: 400 })
     }
+
+    // Accept both Lexical JSON and plain text string
+    const lexicalContent = typeof content === 'string' ? textToLexical(content.trim()) : content
 
     const replies = post.replies || []
     replies.push({
       author: user.id,
-      content: textToLexical(content.trim()),
+      content: lexicalContent,
       createdAt: new Date().toISOString(),
       likes: 0,
     })
@@ -113,35 +138,3 @@ export async function POST(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const body = await req.json()
-    const data: any = {}
-
-    if (body.status) data.status = body.status
-    if (body.isPinned !== undefined) data.isPinned = body.isPinned
-
-    const updated = await payload.update({
-      collection: 'forum-posts',
-      id,
-      data,
-      overrideAccess: true,
-    })
-
-    return NextResponse.json({ post: updated })
-  } catch (error) {
-    console.error('[API] Forum moderate error:', error)
-    return NextResponse.json({ error: 'Failed to update post' }, { status: 500 })
-  }
-}

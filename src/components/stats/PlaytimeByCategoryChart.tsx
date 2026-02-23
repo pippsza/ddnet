@@ -39,7 +39,18 @@ interface PlaytimeByCategoryChartProps {
 }
 
 export function PlaytimeByCategoryChart({ data }: PlaytimeByCategoryChartProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Playtime by Category</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-8">No playtime data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const chartData = data.map((cat) => ({
     category: cat.key,
@@ -60,7 +71,7 @@ export function PlaytimeByCategoryChart({ data }: PlaytimeByCategoryChartProps) 
                 type="category"
                 dataKey="category"
                 tick={{ fontSize: 11 }}
-                width={80}
+                width={70}
               />
               <Tooltip content={<ChartTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
               <Bar dataKey="hours" name="Hours" radius={[0, 4, 4, 0]}>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import useSWR from 'swr'
 import { Bell } from 'lucide-react'
 import {
   Popover,
@@ -10,26 +9,11 @@ import {
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-interface Notification {
-  id: string
-  type: string
-  title: string
-  message: string
-  isRead: boolean
-  actionUrl?: string
-  createdAt: string
-}
+import { useNotifications } from '@/hooks/use-notifications'
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
-  const { data, mutate } = useSWR<{ docs: Notification[] }>('/api/notifications', fetcher, {
-    refreshInterval: 10000,
-  })
-
-  const unreadCount = data?.docs?.filter((n) => !n.isRead).length || 0
+  const { notifications, unreadCount, mutate } = useNotifications()
 
   const markAsRead = async (id: string) => {
     await fetch(`/api/notifications/${id}`, {
@@ -40,7 +24,7 @@ export function NotificationBell() {
     mutate()
   }
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: { id: string; isRead: boolean; actionUrl?: string }) => {
     if (!notification.isRead) {
       markAsRead(notification.id)
     }
@@ -84,7 +68,7 @@ export function NotificationBell() {
           <h4 className="font-semibold text-sm">Notifications</h4>
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {data?.docs?.map((notification) => (
+          {notifications.map((notification) => (
             <button
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
@@ -106,7 +90,7 @@ export function NotificationBell() {
               </div>
             </button>
           ))}
-          {(!data?.docs || data.docs.length === 0) && (
+          {notifications.length === 0 && (
             <div className="p-6 text-center text-muted-foreground text-sm">
               No notifications
             </div>

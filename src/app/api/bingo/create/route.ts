@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { generateBingoGrid, validateGridOptions } from '@/services/bingo/gridGenerator'
-import type { Bingo, User } from '@/payload-types'
+import type { Bingo } from '@/payload-types'
 
 interface CreateGameRequest {
   title: string
@@ -137,19 +137,11 @@ export async function POST(req: NextRequest) {
     })
 
     // Update user's active game reference
-    const userData = await payload.findByID({
-      collection: 'users',
-      id: user.id,
-    })
-
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
-        bingo: {
-          ...userData.bingo,
-          activeGame: game.id,
-        },
+        activeGame: { relationTo: 'bingo', value: game.id },
       },
     })
 

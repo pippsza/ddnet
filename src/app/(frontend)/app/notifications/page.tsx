@@ -1,11 +1,14 @@
 'use client'
 
+import { Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
+import { usePagination } from '@/hooks/use-pagination'
 import { cn } from '@/lib/utils'
 import {
   Bell,
@@ -32,14 +35,18 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> =
   info: { icon: Info, color: 'text-blue-500 bg-blue-500/10', label: 'Info' },
 }
 
-export default function NotificationsPage() {
+function NotificationsContent() {
+  const { page, setPage, buildUrl } = usePagination({ defaultLimit: 20 })
+
   const { data, isLoading, mutate } = useSWR(
-    '/api/notifications?sort=-createdAt&depth=1&limit=50',
+    buildUrl('/api/notifications?sort=-createdAt&depth=1'),
     fetcher,
     { refreshInterval: 10000 },
   )
 
   const notifications = data?.docs || []
+  const totalPages = data?.totalPages || 1
+  const totalDocs = data?.totalDocs || 0
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   const markAsRead = async (id: string) => {
@@ -164,6 +171,14 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
       )}
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        totalDocs={totalDocs}
+        limit={20}
+        onPageChange={setPage}
+      />
     </div>
   )
 }
@@ -181,4 +196,12 @@ function formatTimeAgo(dateStr: string): string {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString()
+}
+
+export default function NotificationsPage() {
+  return (
+    <Suspense fallback={<CardListSkeleton />}>
+      <NotificationsContent />
+    </Suspense>
+  )
 }

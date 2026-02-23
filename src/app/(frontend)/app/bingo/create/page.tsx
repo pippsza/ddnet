@@ -8,16 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-
-const CATEGORIES = [
-  'novice', 'moderate', 'brutal', 'insane', 'dummy',
-  'ddmax', 'oldschool', 'solo_maps', 'race',
-]
+import { CategorySelect } from '@/components/CategorySelect'
 
 export default function CreateBingoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedGridSize, setSelectedGridSize] = useState('3x3')
+  const [availableMapCount, setAvailableMapCount] = useState<number | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -78,26 +76,38 @@ export default function CreateBingoPage() {
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select name="category" defaultValue="novice">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelect
+                  name="category"
+                  defaultValue="novice"
+                  onValueChange={(_, mapCount) => {
+                    setAvailableMapCount(mapCount)
+                    // Auto-downgrade grid size if current one needs more maps than available
+                    if (mapCount !== null) {
+                      const cells: Record<string, number> = { '3x3': 9, '5x5': 25, '7x7': 49 }
+                      if (cells[selectedGridSize] > mapCount) {
+                        const valid = ['7x7', '5x5', '3x3'].find((gs) => cells[gs] <= mapCount)
+                        if (valid) setSelectedGridSize(valid)
+                      }
+                    }
+                  }}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="gridSize">Grid Size</Label>
-                <Select name="gridSize" defaultValue="3x3">
+                <Select name="gridSize" value={selectedGridSize} onValueChange={setSelectedGridSize}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="3x3">3x3 (9 maps)</SelectItem>
-                    <SelectItem value="5x5">5x5 (25 maps)</SelectItem>
-                    <SelectItem value="7x7">7x7 (49 maps)</SelectItem>
+                    {([['3x3', 9], ['5x5', 25], ['7x7', 49]] as const).map(([size, cells]) => {
+                      const disabled = availableMapCount !== null && availableMapCount < cells
+                      return (
+                        <SelectItem key={size} value={size} disabled={disabled}>
+                          {size} ({cells} maps){disabled ? ` — have ${availableMapCount}` : ''}
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -127,7 +137,7 @@ export default function CreateBingoPage() {
 
             <div className="flex items-center gap-2">
               <Switch id="isPublic" name="isPublic" />
-              <Label htmlFor="isPublic">Public Game (visible in lobby)</Label>
+              <Label htmlFor="isPublic" className="mb-0">Public Game (visible in lobby)</Label>
             </div>
 
             {error && <p className="text-sm text-red-500">{error}</p>}

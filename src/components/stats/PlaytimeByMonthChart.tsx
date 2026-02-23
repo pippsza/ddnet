@@ -37,7 +37,18 @@ interface PlaytimeByMonthChartProps {
 }
 
 export function PlaytimeByMonthChart({ data }: PlaytimeByMonthChartProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Playtime by Month</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-8">No playtime data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const chartData = data.slice(-24).map((m) => ({
     month: m.month || m.year_month,

@@ -1,3 +1,5 @@
+import { isCustomCategory } from '@/lib/category-helpers'
+
 interface MapInfo {
   mapName: string
   position: number
@@ -63,8 +65,10 @@ export async function generateBingoGrid(options: GridGeneratorOptions): Promise<
 
   const count = GRID_SIZES[gridSize]
 
-  // Fetch maps from DDNet API for category
-  const allMaps = await fetchMapsByCategory(category, subcategory)
+  // Fetch maps: custom categories use stored maps, standard use DDNet API
+  const allMaps = isCustomCategory(category)
+    ? await fetchCustomCategoryMaps(category)
+    : await fetchMapsByCategory(category, subcategory)
 
   // Filter by difficulty range (in stars)
   const filteredMaps = allMaps.filter(
@@ -137,6 +141,28 @@ async function fetchMapsByCategory(
       difficulty: m.difficulty || 0,
       points: m.points || 0,
     }))
+}
+
+/**
+ * Fetch maps from a custom category stored in the Global
+ */
+async function fetchCustomCategoryMaps(categorySlug: string): Promise<DDNetMapData[]> {
+  const { getPayload } = await import('payload')
+  const payloadConfig = (await import('@/payload.config')).default
+  const payload = await getPayload({ config: payloadConfig })
+
+  const customCats = await payload.findGlobal({ slug: 'custom-categories' })
+  const category = (customCats as any)?.categories?.find((c: any) => c.slug === categorySlug)
+
+  if (!category) {
+    throw new Error(`Custom category "${categorySlug}" not found`)
+  }
+
+  return category.maps.map((m: any) => ({
+    name: m.mapName,
+    difficulty: m.difficulty || 0,
+    points: m.points || 0,
+  }))
 }
 
 /**

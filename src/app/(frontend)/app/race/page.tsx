@@ -1,23 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/status-badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { LobbyPageSkeleton } from '@/components/ui/page-skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
+import { usePagination } from '@/hooks/use-pagination'
 import { Flag, Plus, X, Users, Server } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-export default function RaceLobbyPage() {
-  const { data: lobbyData } = useSWR('/api/race/lobby', fetcher, { refreshInterval: 5000 })
-  const { data: myData, mutate: mutateMyRaces } = useSWR('/api/race/my-races', fetcher, { refreshInterval: 5000 })
+function RaceLobbyContent() {
+  const { data: userData } = useSWR('/api/users/me', fetcher)
+  const userId = userData?.user?.id
 
-  const myRaces = myData?.races || []
-  const lobbyRaces = lobbyData?.races || []
-  const activeRaces = myRaces.filter((r: any) => ['waiting', 'ready', 'in_progress'].includes(r.status))
-  const pastRaces = myRaces.filter((r: any) => r.status === 'completed' || r.status === 'cancelled')
+  const { page: lobbyPage, setPage: setLobbyPage, buildUrl: buildLobbyUrl } = usePagination({ defaultLimit: 20, pageParam: 'p' })
+  const { page: pastPage, setPage: setPastPage, buildUrl: buildPastUrl } = usePagination({ defaultLimit: 10, pageParam: 'past' })
+
+  const { data: lobbyData } = useSWR(
+    buildLobbyUrl('/api/races?where[isPublic][equals]=true&where[status][in]=waiting,ready&sort=-createdAt&depth=1'),
+    fetcher,
+    { refreshInterval: 5000 },
+  )
+
+  // Active races (no pagination — always small count)
+  const { data: activeData, mutate: mutateMyRaces } = useSWR(
+    userId ? `/api/races?where[players.user][equals]=${userId}&where[status][in]=waiting,ready,in_progress&sort=-createdAt&depth=1&limit=50` : null,
+    fetcher,
+    { refreshInterval: 5000 },
+  )
+
+  // Past races (paginated server-side)
+  const { data: pastData } = useSWR(
+    userId ? buildPastUrl(`/api/races?where[players.user][equals]=${userId}&where[status][in]=completed,cancelled&sort=-createdAt&depth=1`) : null,
+    fetcher,
+    { refreshInterval: 5000 },
+  )
+
+  const lobbyRaces = lobbyData?.docs || []
+  const lobbyTotalPages = lobbyData?.totalPages || 1
+  const lobbyTotalDocs = lobbyData?.totalDocs || 0
+
+  const activeRaces = activeData?.docs || []
+
+  const pastRaces = pastData?.docs || []
+  const pastTotalPages = pastData?.totalPages || 1
+  const pastTotalDocs = pastData?.totalDocs || 0
 
   return (
     <div className="space-y-6">
@@ -55,6 +97,13 @@ export default function RaceLobbyPage() {
             </Card>
           )}
         </div>
+        <PaginationControls
+          page={lobbyPage}
+          totalPages={lobbyTotalPages}
+          totalDocs={lobbyTotalDocs}
+          limit={20}
+          onPageChange={setLobbyPage}
+        />
       </section>
 
       {/* Past Races */}
@@ -62,10 +111,17 @@ export default function RaceLobbyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-muted-foreground">Past Races</h2>
           <div className="grid gap-3">
-            {pastRaces.slice(0, 10).map((race: any) => (
+            {pastRaces.map((race: any) => (
               <RaceCard key={race.id} race={race} />
             ))}
           </div>
+          <PaginationControls
+            page={pastPage}
+            totalPages={pastTotalPages}
+            totalDocs={pastTotalDocs}
+            limit={10}
+            onPageChange={setPastPage}
+          />
         </section>
       )}
     </div>
@@ -76,7 +132,6 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
   const [cancelling, setCancelling] = useState(false)
 
   const handleCancel = async () => {
-    if (!confirm('Cancel this race?')) return
     setCancelling(true)
     try {
       await fetch(`/api/race/${race.id}/cancel`, { method: 'POST' })
@@ -112,9 +167,25 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
           </div>
           <StatusBadge status={race.status} />
           {isMine && race.status !== 'completed' && (
-            <Button size="sm" variant="ghost" onClick={handleCancel} disabled={cancelling}>
-              <X className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={cancelling}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancel race?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will cancel the race for all players. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep racing</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancel}>Cancel race</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           <Link href={`/app/race/${race.id}`}>
             <Button size="sm" variant={isMine ? 'default' : 'outline'}>
@@ -124,5 +195,13 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+export default function RaceLobbyPage() {
+  return (
+    <Suspense fallback={<LobbyPageSkeleton />}>
+      <RaceLobbyContent />
+    </Suspense>
   )
 }

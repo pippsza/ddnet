@@ -57,7 +57,7 @@ export function PlayerCard({ team }: BingoPlayerCardProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {team.players?.map((player) => {
             const skinUrl = player.skin?.name
               ? getDDNetSkinUrl(player.skin.name)

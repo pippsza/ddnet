@@ -105,11 +105,10 @@ export const Support: CollectionConfig = {
       name: 'createdBy',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
       label: 'Created By',
       admin: {
         readOnly: true,
-        description: 'User who created this ticket',
+        description: 'User who created this ticket (empty for anonymous)',
       },
       hooks: {
         beforeChange: [
@@ -121,6 +120,15 @@ export const Support: CollectionConfig = {
             return value
           },
         ],
+      },
+    },
+    {
+      name: 'contactEmail',
+      type: 'email',
+      label: 'Contact Email',
+      admin: {
+        description: 'Email for anonymous ticket submissions',
+        condition: (data) => !data.createdBy,
       },
     },
     {
@@ -170,6 +178,8 @@ export const Support: CollectionConfig = {
                 if (req.user && (req.user.roles === 'admin' || req.user.roles === 'moderator')) {
                   return true
                 }
+                // Preserve explicitly set value (e.g. from API routes)
+                if (!req.user) return value
                 return false
               },
             ],

@@ -77,6 +77,9 @@ RUN apk add --no-cache --virtual .build-deps python3 make g++ \
     && rm -rf /tmp/sqlite3-build \
     && apk del .build-deps
 
+# Ensure the nextjs user can write to /app (needed for ddnet's sqlite cache file)
+RUN chown nextjs:nodejs /app
+
 USER nextjs
 
 EXPOSE 3000

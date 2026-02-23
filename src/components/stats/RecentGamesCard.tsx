@@ -12,14 +12,15 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
     .filter((g) => g.status === 'completed' || g.status === 'cancelled')
     .slice(0, limit)
 
-  if (!completed.length) return null
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Recent Games</CardTitle>
       </CardHeader>
       <CardContent>
+        {completed.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">No completed games yet</p>
+        ) : (
         <div className="space-y-1">
           {completed.map((game) => {
             const href = game.type === 'bingo'
@@ -30,21 +31,21 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
               <Link
                 key={`${game.type}-${game.id}`}
                 href={href}
-                className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between gap-2 py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <span className={`
-                    inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold
+                    inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold shrink-0
                     ${game.type === 'bingo' ? 'bg-primary/10 text-primary' : 'bg-amber-500/10 text-amber-500'}
                   `}>
                     {game.type === 'bingo' ? 'B' : 'R'}
                   </span>
-                  <div>
-                    <span className="text-sm font-medium">{game.title}</span>
-                    <span className="text-xs text-muted-foreground ml-2 capitalize">{game.category}</span>
+                  <div className="min-w-0">
+                    <span className="text-sm font-medium truncate block">{game.title}</span>
+                    <span className="text-xs text-muted-foreground capitalize">{game.category}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   {game.status === 'completed' && game.isWinner !== null && (
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
                       game.isWinner
@@ -59,7 +60,7 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
                       Cancelled
                     </span>
                   )}
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">
                     {new Date(game.completedAt || game.createdAt).toLocaleDateString()}
                   </span>
                 </div>
@@ -67,6 +68,7 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
             )
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   )

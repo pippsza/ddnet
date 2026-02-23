@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
           recipient: senderId,
           type: 'friend_accepted',
           title: 'Friend Request Accepted',
-          message: `${user.username} accepted your friend request`,
+          message: `${user.ingameNick || user.username} accepted your friend request`,
           actionUrl: '/app/friends',
           relatedUser: user.id,
         },

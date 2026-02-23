@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
+import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
+import { RoleBadge } from '@/components/ui/status-badge'
 import { cn } from '@/lib/utils'
 import { Server } from 'lucide-react'
 
@@ -181,16 +183,18 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <TeeAvatarWithFallback
-              skinUrl={skinUrl}
-              bodyColor={user?.user?.ingameStats?.skin?.colorBody}
-              feetColor={user?.user?.ingameStats?.skin?.colorFeet}
-              size="lg"
-              useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
-            />
+            <OnlineStatusIndicator status={{ platformOnline: true, inGameOnline: false }} size="lg">
+              <TeeAvatarWithFallback
+                skinUrl={skinUrl}
+                bodyColor={user?.user?.ingameStats?.skin?.colorBody}
+                feetColor={user?.user?.ingameStats?.skin?.colorFeet}
+                size="lg"
+                useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
+              />
+            </OnlineStatusIndicator>
             <div>
               <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username || 'Loading...'}</p>
-              <p className="text-sm text-muted-foreground capitalize">{user?.user?.roles}</p>
+              <RoleBadge role={user?.user?.roles} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

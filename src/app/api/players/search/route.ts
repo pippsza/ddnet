@@ -5,26 +5,40 @@ import config from '@/payload.config'
 export async function GET(req: NextRequest) {
   try {
     const query = req.nextUrl.searchParams.get('q')?.trim()
+    const page = Math.max(1, parseInt(req.nextUrl.searchParams.get('page') || '1', 10) || 1)
+    const limit = Math.min(50, Math.max(1, parseInt(req.nextUrl.searchParams.get('limit') || '12', 10) || 12))
     const payload = await getPayload({ config })
 
     // Search registered users by ingameNick
-    const { docs: registeredUsers } = await payload.find({
+    const { docs: registeredUsers, totalDocs, totalPages } = await payload.find({
       collection: 'users',
       where: query
         ? { ingameNick: { contains: query } }
         : {},
-      limit: query ? 20 : 12,
+      limit,
+      page,
       sort: '-createdAt',
     })
 
-    const registered = registeredUsers.map((u) => ({
-      name: u.ingameNick,
-      points: u.ingameStats?.points || 0,
-      rank: u.ingameStats?.rank || undefined,
-      isVerified: u.isSystemVerified || false,
-      skin: u.ingameStats?.skin || undefined,
-      isRegistered: true,
-    }))
+    const registered = registeredUsers.map((u) => {
+      const rawSkin = u.ingameStats?.skin
+      return {
+        name: u.ingameNick,
+        roles: u.roles || 'player',
+        points: u.ingameStats?.points || 0,
+        rank: u.ingameStats?.rank || undefined,
+        isVerified: u.isSystemVerified || false,
+        lastSeenAt: u.lastSeenAt || null,
+        skin: rawSkin?.name
+          ? {
+              name: rawSkin.name,
+              colorBody: rawSkin.color_body || 0,
+              colorFeet: rawSkin.color_feet || 0,
+            }
+          : undefined,
+        isRegistered: true,
+      }
+    })
 
     // Search DDNet API if query provided
     const ddnetResults: Array<{
@@ -51,7 +65,7 @@ export async function GET(req: NextRequest) {
             if (!alreadyRegistered) {
               ddnetResults.push({
                 name: data.player,
-                points: data.points?.total || 0,
+                points: data.points?.points || 0,
                 rank: data.points?.rank || undefined,
                 skin: undefined,
                 isRegistered: false,
@@ -64,7 +78,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ registered, ddnet: ddnetResults })
+    return NextResponse.json({ registered, ddnet: ddnetResults, totalDocs, totalPages, page })
   } catch (error) {
     console.error('[API] Player search error:', error)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })

@@ -72,11 +72,19 @@ export async function GET(
         ? {
             id: registeredUser.id,
             username: registeredUser.ingameNick,
+            roles: registeredUser.roles || 'player',
             isVerified: registeredUser.isSystemVerified || false,
-            skin: registeredUser.ingameStats?.skin || null,
+            skin: registeredUser.ingameStats?.skin?.name
+              ? {
+                  name: registeredUser.ingameStats.skin.name,
+                  colorBody: registeredUser.ingameStats.skin.color_body || 0,
+                  colorFeet: registeredUser.ingameStats.skin.color_feet || 0,
+                }
+              : null,
             bingo: registeredUser.bingo || null,
             points: registeredUser.ingameStats?.points || 0,
             rank: registeredUser.ingameStats?.rank || null,
+            lastSeenAt: registeredUser.lastSeenAt || null,
           }
         : null,
       ddnet: ddnetData,

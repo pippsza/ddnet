@@ -1,39 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback, Suspense } from 'react'
 import useSWR from 'swr'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { DebouncedInput } from '@/components/ui/debounced-input'
 import { Card, CardContent } from '@/components/ui/card'
 import { PlayerCard } from '@/components/players/PlayerCard'
 import { PlayerGridSkeleton } from '@/components/ui/page-skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
+import { usePagination } from '@/hooks/use-pagination'
+import { isPlatformOnline } from '@/lib/online-utils'
+import { Search } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-export default function PlayersPage() {
-  const [query, setQuery] = useState('')
-  const [searchUrl, setSearchUrl] = useState('/api/players/search')
-  const { data, isLoading } = useSWR(searchUrl, fetcher)
+function PlayersContent() {
+  const [search, setSearch] = useState('')
+  const { page, setPage, resetPage, buildUrl } = usePagination({ defaultLimit: 12 })
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setSearchUrl(
-        query.trim()
-          ? `/api/players/search?q=${encodeURIComponent(query.trim())}`
-          : '/api/players/search',
-      )
-    }, 300)
-    return () => clearTimeout(timeout)
-  }, [query])
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value.trim())
+    resetPage()
+  }, [resetPage])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearchUrl(
-      query.trim()
-        ? `/api/players/search?q=${encodeURIComponent(query.trim())}`
-        : '/api/players/search',
-    )
-  }
+  const baseUrl = search
+    ? `/api/players/search?q=${encodeURIComponent(search)}`
+    : '/api/players/search'
+
+  const { data, isLoading } = useSWR(buildUrl(baseUrl), fetcher)
+
+  const totalPages = data?.totalPages || 1
+  const totalDocs = data?.totalDocs || 0
 
   return (
     <div className="space-y-6">
@@ -41,17 +37,14 @@ export default function PlayersPage() {
         <h1 className="text-2xl font-bold">Players</h1>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <DebouncedInput
+          onDebouncedChange={handleSearchChange}
           placeholder="Search players..."
-          className="max-w-sm"
+          className="pl-10"
         />
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Searching...' : 'Search'}
-        </Button>
-      </form>
+      </div>
 
       {isLoading && <PlayerGridSkeleton />}
 
@@ -61,9 +54,9 @@ export default function PlayersPage() {
           {data.registered?.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-muted-foreground">
-                {query ? 'Registered Players' : 'Community Members'}
+                {search ? 'Registered Players' : 'Community Members'}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.registered.map((player: any) => (
                   <PlayerCard
                     key={player.name}
@@ -71,6 +64,8 @@ export default function PlayersPage() {
                     points={player.points}
                     rank={player.rank}
                     isVerified={player.isVerified}
+                    platformOnline={isPlatformOnline(player.lastSeenAt)}
+                    role={player.roles}
                     skin={player.skin}
                     variant="registered"
                   />
@@ -83,7 +78,7 @@ export default function PlayersPage() {
           {data.ddnet?.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-muted-foreground">DDNet Players</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.ddnet.map((player: any) => (
                   <PlayerCard
                     key={player.name}
@@ -97,15 +92,31 @@ export default function PlayersPage() {
             </div>
           )}
 
-          {data.registered?.length === 0 && data.ddnet?.length === 0 && query && (
+          {data.registered?.length === 0 && data.ddnet?.length === 0 && search && (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
-                No players found for &quot;{query}&quot;. Try a different name.
+                No players found for &quot;{search}&quot;. Try a different name.
               </CardContent>
             </Card>
           )}
         </div>
       )}
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        totalDocs={totalDocs}
+        limit={12}
+        onPageChange={setPage}
+      />
     </div>
+  )
+}
+
+export default function PlayersPage() {
+  return (
+    <Suspense fallback={<PlayerGridSkeleton />}>
+      <PlayersContent />
+    </Suspense>
   )
 }

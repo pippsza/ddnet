@@ -8,7 +8,18 @@ interface GeneralActivityCardProps {
 }
 
 export function GeneralActivityCard({ activity, recentPlayerInfo }: GeneralActivityCardProps) {
-  if (!activity) return null
+  if (!activity) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No activity data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const lastSeen = recentPlayerInfo?.[0]?.last_seen
 
@@ -25,7 +36,7 @@ export function GeneralActivityCard({ activity, recentPlayerInfo }: GeneralActiv
         <CardTitle className="text-base">Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>

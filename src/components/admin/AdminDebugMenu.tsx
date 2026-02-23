@@ -10,7 +10,15 @@ export function AdminDebugMenu() {
 
   const handleUnverify = async () => {
     try {
-      const res = await fetch('/api/admin/debug/unverify', { method: 'POST' })
+      const meRes = await fetch('/api/users/me')
+      const meData = await meRes.json()
+      const userId = meData?.user?.id
+      if (!userId) throw new Error('Not authenticated')
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSystemVerified: false }),
+      })
       if (!res.ok) throw new Error('Failed')
       toast.success('Верификация сброшена')
     } catch {

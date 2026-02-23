@@ -1,49 +1,39 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useMemo, Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { StatusBadge, RoleBadge } from '@/components/ui/status-badge'
 import { Button } from '@/components/ui/button'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
-import { DetailPageSkeleton } from '@/components/ui/page-skeleton'
+import { PlayerDetailSkeleton } from '@/components/ui/page-skeleton'
 import { useDDStats } from '@/hooks/use-ddstats'
-import { formatPlaytime, formatDateShort } from '@/lib/format-utils'
-import { Skeleton } from '@/components/ui/skeleton'
-import { UserPlus, MessageCircle, Check, Wifi, Copy, Map, Server, Globe } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { useGameStats } from '@/hooks/use-game-stats'
+import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils'
+import { UserPlus, MessageCircle, Copy, Map, UserCheck, Clock, ArrowLeft } from 'lucide-react'
+import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 
-import { StatCard } from '@/components/stats/StatCard'
-import { PointsProgressionChart } from '@/components/stats/PointsProgressionChart'
-import { CompletionProgressCard } from '@/components/stats/CompletionProgressCard'
-import { PlaytimeByMonthChart } from '@/components/stats/PlaytimeByMonthChart'
-import { PlaytimeByCategoryChart } from '@/components/stats/PlaytimeByCategoryChart'
-import { MostPlayedMapsTable } from '@/components/stats/MostPlayedMapsTable'
-import { RecentFinishesTable } from '@/components/stats/RecentFinishesTable'
-import { FavoritePartnersCard } from '@/components/stats/FavoritePartnersCard'
-import { GeneralActivityCard } from '@/components/stats/GeneralActivityCard'
-import { PointsBreakdownCard } from '@/components/stats/PointsBreakdownCard'
+import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
+import { DDNetSection } from '@/components/stats/DDNetSection'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-function DDStatsSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-72 w-full rounded-lg" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-64 w-full rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-lg" />
-      </div>
-    </div>
-  )
-}
+const TAB_TRIGGER_CLASSES =
+  'flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground dark:data-[state=active]:border-primary'
 
-export default function PlayerDetailPage({ params }: { params: Promise<{ name: string }> }) {
-  const { name } = use(params)
+function PlayerDetailContent({ name }: { name: string }) {
   const decodedName = decodeURIComponent(name)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const activeTab = searchParams.get('tab') || 'service'
+
   const { data, isLoading, error } = useSWR(`/api/players/${encodeURIComponent(decodedName)}`, fetcher)
+  const { data: meData } = useSWR('/api/users/me', fetcher)
+  const { data: pendingData } = useSWR('/api/friends/pending', fetcher)
 
   const reg = data?.registered
   const ddnet = data?.ddnet
@@ -51,10 +41,38 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ name: s
   const playerName = reg?.username || ddnet?.player || decodedName
 
   const { ddstats, ddstatsLoading } = useDDStats(playerName)
-  const router = useRouter()
+  const gameStats = useGameStats(reg?.id)
+
   const [friendSent, setFriendSent] = useState(false)
   const [friendSending, setFriendSending] = useState(false)
-  const [chatStarting, setChatStarting] = useState(false)
+
+
+  const isOwnProfile = meData?.user?.id && reg?.id && meData.user.id === reg.id
+
+  const friendStatus = useMemo<'friends' | 'pending_sent' | 'pending_received' | 'none'>(() => {
+    if (!meData?.user || !reg?.id) return 'none'
+    // Check if already friends
+    const friends: any[] = meData.user.friend || []
+    const isFriend = friends.some((f: any) => {
+      const friendId = typeof f.user === 'string' ? f.user : f.user?.id
+      return friendId === reg.id
+    })
+    if (isFriend) return 'friends'
+    // Check pending requests
+    if (pendingData) {
+      const sentToThem = pendingData.outgoing?.some((r: any) => r.otherUser?.id === reg.id)
+      if (sentToThem) return 'pending_sent'
+      const receivedFromThem = pendingData.incoming?.some((r: any) => r.otherUser?.id === reg.id)
+      if (receivedFromThem) return 'pending_received'
+    }
+    return 'none'
+  }, [meData?.user, pendingData, reg?.id])
+
+  const setTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', tab)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
   const handleAddFriend = async () => {
     if (!reg?.id) return
@@ -73,32 +91,17 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ name: s
     }
   }
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!reg?.id) return
-    setChatStarting(true)
-    try {
-      const res = await fetch('/api/chat/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: reg.id }),
-      })
-      const data = await res.json()
-      if (data.conversation?.id) {
-        router.push(`/app/chat?c=${data.conversation.id}`)
-      }
-    } catch {
-      // ignore
-    } finally {
-      setChatStarting(false)
-    }
+    router.push(`/app/chat?user=${reg.id}`)
   }
 
-  if (isLoading) return <DetailPageSkeleton />
+  if (isLoading) return <PlayerDetailSkeleton />
   if (error || (!reg && !ddnet)) {
     return (
       <div className="space-y-4">
-        <Link href="/app/players" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          &larr; Back to Players
+        <Link href="/app/players" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to Players
         </Link>
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -115,52 +118,82 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ name: s
   const skinColorBody = reg?.skin?.colorBody ?? ddstats?.profile?.skin_color_body
   const skinColorFeet = reg?.skin?.colorFeet ?? ddstats?.profile?.skin_color_feet
 
-  const totalPoints = reg?.points || ddnet?.points?.total || 0
+  const totalPoints = reg?.points || ddnet?.points?.points || 0
   const rank = reg?.rank || ddnet?.points?.rank || null
 
   // Weekly trend from DDStats
   const weeklyPts = ddstats?.points?.weekly_points?.points
-  const weeklyTrend = weeklyPts && weeklyPts > 0 ? `+${weeklyPts} this week` : undefined
+  const weeklyTrend = weeklyPts && weeklyPts > 0 ? `+${weeklyPts}` : undefined
 
   // Playtime from DDStats
   const totalPlaytime = ddstats?.general_activity?.total_seconds_played
   const playingSince = ddstats?.general_activity?.start_of_playtime
 
+  // Current month playtime
+  const currentMonthData = ddstats?.playtime_per_month?.at(-1)
+  const currentMonthHours = currentMonthData
+    ? formatHours(currentMonthData.seconds_played)
+    : undefined
+
+  // Map thumbnail for online players
+  const mapThumbnailUrl = online?.server?.map
+    ? `https://ddnet.org/ranks/maps/${online.server.map.replace(/ /g, '_')}.png`
+    : null
+
   return (
     <div className="space-y-6">
-      <Link href="/app/players" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-        &larr; Back to Players
+      <Link href="/app/players" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft className="h-4 w-4" /> Back to Players
       </Link>
 
-      {/* Profile Header */}
-      <Card>
-        <CardContent className="flex flex-col sm:flex-row items-center gap-6 p-6">
-          <TeeAvatarWithFallback
-            skinUrl={skinUrl}
-            bodyColor={skinColorBody}
-            feetColor={skinColorFeet}
+      {/* Profile Hero Card */}
+      <Card className="relative overflow-hidden">
+        {mapThumbnailUrl && (
+          <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mapThumbnailUrl}
+              alt=""
+              className="w-full h-full object-cover blur-[2px] scale-110 opacity-30"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-card/90 via-card/75 to-card/60" />
+          </div>
+        )}
+        <CardContent className="relative z-10 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6">
+          <OnlineStatusIndicator
+            status={{
+              platformOnline: reg?.lastSeenAt
+                ? (Date.now() - new Date(reg.lastSeenAt).getTime()) < 2 * 60_000
+                : false,
+              inGameOnline: !!online,
+              serverName: online?.server?.name,
+              mapName: online?.server?.map,
+            }}
             size="2xl"
-            lookAtCursor
-            useCustomColors={!!(skinColorBody || skinColorFeet)}
-          />
-          <div className="flex-1 text-center sm:text-left">
+            className="shrink-0"
+          >
+            <TeeAvatarWithFallback
+              skinUrl={skinUrl}
+              bodyColor={skinColorBody}
+              feetColor={skinColorFeet}
+              size="2xl"
+              lookAtCursor
+              useCustomColors={!!(skinColorBody || skinColorFeet)}
+            />
+          </OnlineStatusIndicator>
+          <div className="flex-1 min-w-0 text-center sm:text-left">
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-              <h1 className="text-3xl font-bold">{playerName}</h1>
-              {online && (
-                <span className="flex items-center gap-1 text-xs text-green-500 bg-green-500/10 px-2 py-0.5 rounded font-medium">
-                  <Wifi className="h-3 w-3" />
-                  Online
-                </span>
-              )}
+              <h1 className="text-3xl font-bold truncate">{playerName}</h1>
               {reg?.isVerified && <StatusBadge status="verified" />}
+              {reg && (
+                reg.roles && reg.roles !== 'player'
+                  ? <RoleBadge role={reg.roles} />
+                  : <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Member</span>
+              )}
               {ddstats?.is_mapper && (
                 <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-medium">
                   Mapper
-                </span>
-              )}
-              {reg && (
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                  Member
                 </span>
               )}
             </div>
@@ -185,35 +218,65 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ name: s
                 First finish: {new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString()} on {ddnet.firstFinish.map}
               </p>
             )}
-            <div className="flex gap-2 mt-3 justify-center sm:justify-start flex-wrap">
-              {reg?.id && (
-                <>
-                  <Button
-                    size="sm"
-                    variant={friendSent ? 'secondary' : 'default'}
-                    disabled={friendSent || friendSending}
-                    onClick={handleAddFriend}
+
+            {/* Currently playing — inline */}
+            {online?.server && (
+              <div className="flex items-center gap-4 mt-2 text-sm flex-wrap">
+                <span className="flex items-center gap-1.5 text-green-500">
+                  <Map className="h-3.5 w-3.5" />
+                  <span className="font-medium">{online.server.map}</span>
+                </span>
+                <span className="text-muted-foreground truncate">{online.server.name}</span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <code className="text-xs font-mono">{online.server.ip}:{online.server.port}</code>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(`${online.server.ip}:${online.server.port}`)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    title="Copy address"
                   >
-                    {friendSent ? (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                        Request Sent
-                      </>
-                    ) : (
-                      <>
+                    <Copy className="h-3 w-3" />
+                  </button>
+                </span>
+              </div>
+            )}
+
+            <div className="flex gap-2 mt-3 justify-center sm:justify-start flex-wrap">
+              {reg?.id && !isOwnProfile && (
+                <>
+                  {friendStatus === 'friends' ? (
+                    <Button size="sm" variant="secondary" disabled>
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      Friends
+                    </Button>
+                  ) : friendStatus === 'pending_sent' || friendSent ? (
+                    <Button size="sm" variant="secondary" disabled>
+                      <Clock className="h-4 w-4 mr-1" />
+                      Request Sent
+                    </Button>
+                  ) : friendStatus === 'pending_received' ? (
+                    <Button size="sm" variant="default" asChild>
+                      <Link href="/app/friends">
                         <UserPlus className="h-4 w-4 mr-1" />
-                        {friendSending ? 'Sending...' : 'Add Friend'}
-                      </>
-                    )}
-                  </Button>
+                        Accept Request
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      disabled={friendSending}
+                      onClick={handleAddFriend}
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {friendSending ? 'Sending...' : 'Add Friend'}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleSendMessage}
-                    disabled={chatStarting}
                   >
                     <MessageCircle className="h-4 w-4 mr-1" />
-                    {chatStarting ? 'Opening...' : 'Message'}
+                    Message
                   </Button>
                 </>
               )}
@@ -240,181 +303,72 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ name: s
         </CardContent>
       </Card>
 
-      {/* ═══ ONLINE STATUS ═══ */}
-      {online?.server && (
-        <Card className="border-green-500/30 bg-green-500/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <Wifi className="h-4 w-4 text-green-500" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-green-500">Currently Playing</p>
-                <p className="text-xs text-muted-foreground">Live on a DDNet server right now</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="flex items-center gap-2">
-                <Server className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Server</p>
-                  <p className="text-sm font-medium truncate">{online.server.name}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Map className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Map</p>
-                  <p className="text-sm font-medium truncate">{online.server.map}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Address</p>
-                  <div className="flex items-center gap-1.5">
-                    <code className="text-sm font-mono">{online.server.ip}:{online.server.port}</code>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(`${online.server.ip}:${online.server.port}`)}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                      title="Copy address"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Content: Tabs for registered, DDNet only for unregistered */}
+      {reg ? (
+        <Tabs value={activeTab} onValueChange={setTab}>
+          <TabsList className="w-full h-11">
+            <TabsTrigger value="service" className={TAB_TRIGGER_CLASSES}>
+              Service
+            </TabsTrigger>
+            <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
+              DDNet
+            </TabsTrigger>
+          </TabsList>
 
-      {/* ═══ SERVICE STATS (primary) ═══ */}
-      {reg?.bingo && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            title="Bingo Games"
-            value={reg.bingo.totalGamesPlayed || 0}
-            subtitle={`${reg.bingo.totalGamesWon || 0} won`}
-          />
-          <StatCard
-            title="Win Rate"
-            value={`${reg.bingo.winRate || 0}%`}
-            subtitle="Bingo"
-          />
-          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} trend={weeklyTrend} />
-          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} />
-        </div>
-      )}
+          {/* ═══ SERVICE TAB ═══ */}
+          <TabsContent value="service" className="space-y-6 mt-4">
+            {reg.bingo ? (
+              <ServiceStatsSection gameStats={gameStats} />
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  <p className="text-lg font-medium mb-2">No service stats available</p>
+                  <p className="text-sm">This player hasn&apos;t participated in any bingo or race games yet.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-      {/* For non-registered players, show DDNet stats in the top grid */}
-      {!reg?.bingo && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard title="Total Points" value={totalPoints.toLocaleString()} trend={weeklyTrend} />
-          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} />
-          <StatCard
-            title="Total Playtime"
-            value={totalPlaytime ? formatPlaytime(totalPlaytime) : ddnet?.hoursPlayed ? `${ddnet.hoursPlayed}h` : '—'}
-          />
-          <StatCard
-            title="Playing Since"
-            value={playingSince ? formatDateShort(playingSince) : '—'}
-          />
-        </div>
-      )}
-
-      {/* ═══ DDNET STATISTICS (secondary) ═══ */}
-      {ddstatsLoading ? (
-        <DDStatsSkeleton />
-      ) : ddstats ? (
-        <>
-          {reg?.bingo && (
-            <div className="pt-2">
-              <h2 className="text-lg font-semibold text-muted-foreground">DDNet Statistics</h2>
-            </div>
-          )}
-
-          {/* Quick DDNet stats row (only for registered players who had bingo stats above) */}
-          {reg?.bingo && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard
-                title="Total Playtime"
-                value={totalPlaytime ? formatPlaytime(totalPlaytime) : '—'}
-              />
-              <StatCard
-                title="Playing Since"
-                value={playingSince ? formatDateShort(playingSince) : '—'}
-              />
-              <StatCard
-                title="Avg / Day"
-                value={ddstats.general_activity?.average_seconds_played ? formatPlaytime(ddstats.general_activity.average_seconds_played) : '—'}
-              />
-              <StatCard
-                title="Partners"
-                value={ddstats.favourite_teammates?.length || 0}
-              />
-            </div>
-          )}
-
-          {/* Points Progression */}
-          <PointsProgressionChart data={ddstats.points_graph} />
-
-          {/* Points by Category + Completion Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PointsBreakdownCard points={ddstats.points} />
-            <CompletionProgressCard data={ddstats.completion_progress} />
-          </div>
-
-          {/* Playtime charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PlaytimeByMonthChart data={ddstats.playtime_per_month} />
-            <PlaytimeByCategoryChart data={ddstats.most_played_categories} />
-          </div>
-
-          {/* Most Played Maps */}
-          <MostPlayedMapsTable data={ddstats.most_played_maps} />
-
-          {/* Recent Finishes */}
-          <RecentFinishesTable data={ddstats.recent_finishes} />
-
-          {/* Activity + Partners */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <GeneralActivityCard
-              activity={ddstats.general_activity}
-              recentPlayerInfo={ddstats.recent_player_info}
+          {/* ═══ DDNET TAB ═══ */}
+          <TabsContent value="ddnet" className="space-y-6 mt-4">
+            <DDNetSection
+              ddstatsLoading={ddstatsLoading}
+              ddstats={ddstats}
+              ddnet={ddnet}
+              totalPoints={totalPoints}
+              rank={rank}
+              weeklyTrend={weeklyTrend}
+              totalPlaytime={totalPlaytime}
+              currentMonthHours={currentMonthHours}
+              playingSince={playingSince}
             />
-            <FavoritePartnersCard data={ddstats.favourite_teammates} />
-          </div>
-        </>
+          </TabsContent>
+        </Tabs>
       ) : (
-        /* Fallback to ddnet.org data if DDStats unavailable */
-        ddnet?.lastFinishes && ddnet.lastFinishes.length > 0 && (
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-base font-semibold mb-3">Recent Finishes</h3>
-              <div className="space-y-1">
-                {ddnet.lastFinishes.map((finish: any, i: number) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium">{finish.map}</span>
-                      <span className="text-xs text-muted-foreground">{finish.type}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span>
-                        {Math.floor(finish.time / 60)}:{(finish.time % 60).toFixed(2).padStart(5, '0')}
-                      </span>
-                      <span>{new Date(finish.timestamp * 1000).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )
+        /* Unregistered: show DDNet content directly */
+        <div className="space-y-6">
+          <DDNetSection
+            ddstatsLoading={ddstatsLoading}
+            ddstats={ddstats}
+            ddnet={ddnet}
+            totalPoints={totalPoints}
+            rank={rank}
+            weeklyTrend={weeklyTrend}
+            totalPlaytime={totalPlaytime}
+            currentMonthHours={currentMonthHours}
+            playingSince={playingSince}
+          />
+        </div>
       )}
     </div>
+  )
+}
+
+export default function PlayerDetailPage({ params }: { params: Promise<{ name: string }> }) {
+  const { name } = use(params)
+  return (
+    <Suspense fallback={<PlayerDetailSkeleton />}>
+      <PlayerDetailContent name={name} />
+    </Suspense>
   )
 }

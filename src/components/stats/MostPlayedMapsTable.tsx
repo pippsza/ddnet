@@ -18,7 +18,18 @@ interface MostPlayedMapsTableProps {
 }
 
 export function MostPlayedMapsTable({ data, limit = 15 }: MostPlayedMapsTableProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Most Played Maps</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No map data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const items = data.slice(0, limit)
 

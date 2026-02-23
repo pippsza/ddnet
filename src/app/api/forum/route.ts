@@ -78,7 +78,9 @@ export async function GET(req: NextRequest) {
           ? {
               id: author.id,
               ingameNick: (author as any).ingameNick,
-              skin: (author as any).ingameStats?.skin,
+              roles: (author as any).roles || 'player',
+              skin: (author as any).ingameStats?.skin?.name || null,
+              lastSeenAt: (author as any).lastSeenAt || null,
             }
           : null,
         createdAt: post.createdAt,
@@ -104,9 +106,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { title, category, content } = body
 
-    if (!title?.trim() || !category || !content?.trim()) {
+    if (!title?.trim() || !category || !content) {
       return NextResponse.json({ error: 'Title, category, and content are required' }, { status: 400 })
     }
+
+    // Accept both Lexical JSON and plain text string
+    const lexicalContent = typeof content === 'string' ? textToLexical(content.trim()) : content
 
     const baseSlug = slugify(title.trim())
     const slug = `${baseSlug}-${Date.now().toString(36)}`
@@ -116,7 +121,7 @@ export async function POST(req: NextRequest) {
       data: {
         title: title.trim(),
         slug,
-        content: textToLexical(content.trim()),
+        content: lexicalContent,
         author: user.id,
         category,
         status: 'published',

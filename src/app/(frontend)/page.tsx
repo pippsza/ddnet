@@ -23,6 +23,7 @@ import { LocaleSwitcher } from '@/components/locale-switcher'
 import { getUserLocale } from '@/services/locale'
 import './globals.css'
 import { ThemeToggleButton } from '@/components/theme/theme-toggle'
+import { DevQuickLogin } from '@/components/auth/DevQuickLogin'
 import Link from 'next/link'
 
 export async function generateMetadata() {
@@ -328,6 +329,7 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
+      <DevQuickLogin />
     </div>
   )
 }

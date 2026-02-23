@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Bingo, User } from '@/payload-types'
+import type { Bingo } from '@/payload-types'
 
 interface JoinGameRequest {
   teamIndex?: number // 0 or 1 for team mode
@@ -88,19 +88,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
     })
 
     // Update user's active game
-    const userData = await payload.findByID({
-      collection: 'users',
-      id: user.id,
-    })
-
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
-        bingo: {
-          ...userData.bingo,
-          activeGame: gameId,
-        },
+        activeGame: { relationTo: 'bingo', value: gameId },
       },
     })
 

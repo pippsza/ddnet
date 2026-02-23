@@ -17,6 +17,7 @@ import { ForumPosts } from './collections/ForumPosts'
 import { Support } from './collections/Support'
 import { VerificationRequests } from './collections/VerificationRequests'
 import { VerificationSettings } from './globals/VerificationSettings'
+import { CustomCategories } from './globals/CustomCategories'
 import { ChatSessions } from './collections/ChatSessions'
 import { PushSubscriptions } from './collections/PushSubscriptions'
 import { Conversations } from './collections/Conversations'
@@ -49,7 +50,7 @@ export default buildConfig({
     Conversations,
     Messages,
   ],
-  globals: [VerificationSettings],
+  globals: [VerificationSettings, CustomCategories],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

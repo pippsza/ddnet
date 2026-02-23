@@ -18,7 +18,7 @@ export const Articles: CollectionConfig = {
       }
 
       return {
-        status: {
+        _status: {
           equals: 'published',
         },
       }

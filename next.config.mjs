@@ -9,6 +9,15 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/*': ['./node_modules/sqlite3/**/*', './node_modules/ddnet/**/*'],
   },
+  // Proxy ddnet.org skin images to avoid CORS issues with TeeAssembler canvas
+  async rewrites() {
+    return [
+      {
+        source: '/ddnet-skins/:path*',
+        destination: 'https://ddnet.org/skins/:path*',
+      },
+    ]
+  },
   // Your Next.js config here
   webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {

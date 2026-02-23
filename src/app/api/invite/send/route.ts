@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         recipient: recipientId,
         type: 'game_invite',
         title: 'Game Invite',
-        message: `${user.username} invited you to ${game.title}`,
+        message: `${user.ingameNick || user.username} invited you to ${game.title}`,
         actionUrl: `/app/${gameType}/${gameId}`,
         relatedGame: { relationTo: gameType, value: gameId },
         relatedUser: user.id,

@@ -15,13 +15,14 @@ interface TeeAvatarProps {
   fallbackSkin?: string
   className?: string
   useCustomColors?: boolean
+  mirrored?: boolean
 }
 
 interface TeeOptions {
-  container: HTMLElement
+  container?: HTMLElement
   imageLink: string
-  bodyColor?: number
-  feetColor?: number
+  bodyColor?: number | string
+  feetColor?: number | string
   colorFormat?: 'code' | 'rgb' | 'hsl'
 }
 
@@ -31,6 +32,7 @@ interface TeeInstance {
       lookAtCursor: () => void
       dontLookAtCursor: () => void
       unbindContainer: (clear?: boolean) => void
+      setContainer: (el: HTMLElement) => Promise<void>
     }
   }
 }
@@ -60,7 +62,8 @@ const SIZES = {
 
 const TEE_BASE_SIZE = 96 // TeeAssembler renders at 96em with font-size: 1px
 
-const DEFAULT_SKIN = 'https://ddnet.org/skins/skin/default.png'
+const DEFAULT_SKIN = '/ddnet-skins/skin/default.png'
+const isDev = process.env.NODE_ENV === 'development'
 
 // ============================================================================
 // Shared script loader — loads the script exactly once for all instances
@@ -68,21 +71,78 @@ const DEFAULT_SKIN = 'https://ddnet.org/skins/skin/default.png'
 
 let loadPromise: Promise<void> | null = null
 
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = src
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error(`Failed to load ${src}`))
+    document.head.appendChild(script)
+  })
+}
+
 function ensureTeeAssemblerLoaded(): Promise<void> {
   if (window.TeeAssembler) return Promise.resolve()
 
   if (loadPromise) return loadPromise
 
-  loadPromise = new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = '/js/teeassembler.min.js'
-    script.async = true
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('Failed to load TeeAssembler'))
-    document.head.appendChild(script)
-  })
+  // color.js must load first — it defines globals (COLOR_FORMAT, COLOR_MODE, etc.)
+  // that TeeAssembler.js references
+  loadPromise = loadScript('/js/teeassembler-color.min.js').then(() =>
+    loadScript('/js/teeassembler.min.js'),
+  )
 
   return loadPromise
+}
+
+// ============================================================================
+// Image resolution — try normal path, then community, then fallback
+// ============================================================================
+
+const resolvedSkinCache = new Map<string, string>()
+
+async function probeImage(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: 'HEAD' })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+/** Try normal → community → fallback. Returns the first URL that loads. */
+async function resolveSkinUrl(skinUrl: string, fallback: string): Promise<string> {
+  const cached = resolvedSkinCache.get(skinUrl)
+  if (cached) return cached
+
+  // If it's already the fallback or an absolute URL (not a ddnet-skins proxy path), just probe it
+  if (skinUrl === fallback || !skinUrl.startsWith('/ddnet-skins/skin/')) {
+    const ok = await probeImage(skinUrl)
+    const result = ok ? skinUrl : fallback
+    resolvedSkinCache.set(skinUrl, result)
+    return result
+  }
+
+  // Try normal path first (e.g. /ddnet-skins/skin/name.png)
+  if (await probeImage(skinUrl)) {
+    resolvedSkinCache.set(skinUrl, skinUrl)
+    return skinUrl
+  }
+
+  // Try community path (e.g. /ddnet-skins/skin/community/name.png)
+  const filename = skinUrl.split('/').pop() // "name.png"
+  const communityUrl = `/ddnet-skins/skin/community/${filename}`
+  if (await probeImage(communityUrl)) {
+    resolvedSkinCache.set(skinUrl, communityUrl)
+    if (isDev) console.log('[TeeAvatar] resolved community skin:', communityUrl)
+    return communityUrl
+  }
+
+  // Both failed — use fallback
+  if (isDev) console.warn('[TeeAvatar] skin not found (normal + community):', skinUrl)
+  resolvedSkinCache.set(skinUrl, fallback)
+  return fallback
 }
 
 // ============================================================================
@@ -98,75 +158,125 @@ export function TeeAvatar({
   fallbackSkin = DEFAULT_SKIN,
   className = '',
   useCustomColors = true,
+  mirrored = false,
 }: TeeAvatarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const teeRef = useRef<TeeInstance | null>(null)
   const [ready, setReady] = useState(false)
-  const [error, setError] = useState(false)
+  const [validatedUrl, setValidatedUrl] = useState<string | null>(null)
 
   const pixelSize = SIZES[size]
   const fontSize = pixelSize / TEE_BASE_SIZE // scale via font-size
-  const currentSkinUrl = error ? fallbackSkin : (skinUrl || fallbackSkin)
+
+  if (isDev) {
+    console.log('[TeeAvatar] render', {
+      skinUrl,
+      validatedUrl,
+      bodyColor,
+      feetColor,
+      size,
+    })
+  }
 
   // Load script once, then mark ready
   useEffect(() => {
     let cancelled = false
+    if (isDev) console.log('[TeeAvatar] loading TeeAssembler script...')
     ensureTeeAssemblerLoaded()
       .then(() => {
+        if (isDev) console.log('[TeeAvatar] TeeAssembler script loaded')
         if (!cancelled) setReady(true)
       })
-      .catch(() => {
-        console.error('[TeeAvatar] Failed to load TeeAssembler script')
+      .catch((err) => {
+        console.error('[TeeAvatar] Failed to load TeeAssembler script', err)
       })
     return () => {
       cancelled = true
     }
   }, [])
 
-  const initTee = useCallback(() => {
-    if (!containerRef.current || !window.TeeAssembler) return
-
-    // Cleanup previous instance
-    if (teeRef.current) {
-      try {
-        teeRef.current.api.functions.dontLookAtCursor()
-      } catch {
-        // Ignore cleanup errors
-      }
-      teeRef.current = null
-    }
-
-    // Clear container children from previous render
-    containerRef.current.replaceChildren()
-
-    try {
-      const options: TeeOptions = {
-        container: containerRef.current,
-        imageLink: currentSkinUrl,
-        colorFormat: 'code',
-      }
-
-      if (useCustomColors && (bodyColor !== 0 || feetColor !== 0)) {
-        options.bodyColor = bodyColor
-        options.feetColor = feetColor
-      }
-
-      const tee = new window.TeeAssembler.Tee(options)
-      teeRef.current = tee
-
-      if (lookAtCursor) {
-        tee.api.functions.lookAtCursor()
-      }
-    } catch (e) {
-      console.error('[TeeAvatar] Failed to initialize:', e)
-      if (!error) setError(true)
-    }
-  }, [currentSkinUrl, bodyColor, feetColor, lookAtCursor, useCustomColors, error])
-
-  // Initialize when script is ready or dependencies change
+  // Resolve skin URL: try normal → community → fallback
   useEffect(() => {
-    if (ready) {
-      initTee()
+    let cancelled = false
+    const targetUrl = skinUrl || fallbackSkin
+
+    resolveSkinUrl(targetUrl, fallbackSkin).then((resolved) => {
+      if (!cancelled) setValidatedUrl(resolved)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [skinUrl, fallbackSkin])
+
+  const createTee = useCallback(
+    async (imageLink: string) => {
+      if (!containerRef.current || !window.TeeAssembler) return
+
+      // Cleanup previous instance
+      if (teeRef.current) {
+        try {
+          teeRef.current.api.functions.dontLookAtCursor()
+        } catch {
+          // Ignore cleanup errors
+        }
+        teeRef.current = null
+      }
+
+      containerRef.current.replaceChildren()
+      containerRef.current.style.transform = ''
+
+      try {
+        const options: TeeOptions = {
+          imageLink,
+          colorFormat: 'code',
+        }
+
+        if (useCustomColors && (bodyColor !== 0 || feetColor !== 0)) {
+          options.bodyColor = String(bodyColor)
+          options.feetColor = String(feetColor)
+        }
+
+        if (isDev) {
+          console.log('[TeeAvatar] creating TeeAssembler instance', {
+            imageLink,
+            bodyColor: options.bodyColor,
+            feetColor: options.feetColor,
+          })
+        }
+
+        // Don't pass container in constructor when mirrored — setContainer is async
+        // (loads image, then calculates eye positions via getBoundingClientRect).
+        // If scaleX(-1) is applied before that calculation, the flipped coordinates
+        // cause the library to counteract the flip for the eyes.
+        if (mirrored) {
+          const tee = new window.TeeAssembler.Tee(options)
+          teeRef.current = tee
+          // Await the full init (image load + eye positioning) with no transforms
+          await tee.api.functions.setContainer(containerRef.current!)
+          // NOW safe to flip — all getBoundingClientRect calculations are done
+          if (containerRef.current) {
+            containerRef.current.style.transform = 'scaleX(-1)'
+          }
+        } else {
+          options.container = containerRef.current
+          const tee = new window.TeeAssembler.Tee(options)
+          teeRef.current = tee
+          if (lookAtCursor) {
+            tee.api.functions.lookAtCursor()
+          }
+        }
+      } catch (e) {
+        console.error('[TeeAvatar] Failed to initialize:', e, { imageLink })
+      }
+    },
+    [bodyColor, feetColor, lookAtCursor, mirrored, useCustomColors],
+  )
+
+  // Initialize when script is ready AND image is validated
+  useEffect(() => {
+    if (ready && validatedUrl) {
+      createTee(validatedUrl)
     }
 
     return () => {
@@ -179,7 +289,7 @@ export function TeeAvatar({
         teeRef.current = null
       }
     }
-  }, [ready, initTee])
+  }, [ready, validatedUrl, createTee])
 
   return (
     <div
@@ -250,7 +360,7 @@ export function twCodeToHsl(code: number): { h: number; s: number; l: number } {
 }
 
 export function getDDNetSkinUrl(skinName: string): string {
-  return `https://ddnet.org/skins/skin/${encodeURIComponent(skinName)}.png`
+  return `/ddnet-skins/skin/${encodeURIComponent(skinName)}.png`
 }
 
 export default TeeAvatar

@@ -40,14 +40,28 @@ export async function GET(req: NextRequest) {
         (s) => s.name.toLowerCase() === nickname.toLowerCase(),
       )
 
+      // Prefer database skin (always available), fall back to online skin
+      const dbSkin = friendUser?.ingameStats?.skin
+      const skin = dbSkin?.name
+        ? {
+            name: dbSkin.name,
+            colorBody: dbSkin.color_body || 0,
+            colorFeet: dbSkin.color_feet || 0,
+          }
+        : onlineStatus?.skin || null
+
       return {
         userId: friendUser?.id || f.user,
         username: friendUser?.ingameNick,
+        roles: friendUser?.roles || 'player',
         nickname: f.nickname || nickname,
         addedAt: f.addedAt,
         online: onlineStatus?.online || false,
+        platformOnline: friendUser?.lastSeenAt
+          ? (Date.now() - new Date(friendUser.lastSeenAt).getTime()) < 2 * 60_000
+          : false,
         server: onlineStatus?.server,
-        skin: onlineStatus?.skin,
+        skin,
       }
     })
 

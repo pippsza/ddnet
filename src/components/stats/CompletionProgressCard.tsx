@@ -4,13 +4,21 @@ import type { DDStatsPlayerData } from '@/lib/ddstats-types'
 
 interface CompletionProgressCardProps {
   data: DDStatsPlayerData['completion_progress']
-  compact?: boolean
 }
 
-export function CompletionProgressCard({ data, compact = false }: CompletionProgressCardProps) {
-  if (!data?.length) return null
-
-  const items = compact ? data.slice(0, 5) : data
+export function CompletionProgressCard({ data }: CompletionProgressCardProps) {
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Completion Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No completion data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
@@ -18,7 +26,7 @@ export function CompletionProgressCard({ data, compact = false }: CompletionProg
         <CardTitle className="text-base">Completion Progress</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {items.map((cat, i) => {
+        {data.map((cat, i) => {
           const pct = cat.maps_total > 0 ? (cat.maps_finished / cat.maps_total) * 100 : 0
           const color = getCategoryColor(cat.category, i)
           return (

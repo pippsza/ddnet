@@ -8,7 +8,18 @@ interface FavoritePartnersCardProps {
 }
 
 export function FavoritePartnersCard({ data, limit = 20 }: FavoritePartnersCardProps) {
-  if (!data?.length) return null
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Favorite Partners</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">No partner data yet</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const items = data.slice(0, limit)
 

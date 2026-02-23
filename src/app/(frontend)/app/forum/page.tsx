@@ -1,15 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { DebouncedInput } from '@/components/ui/debounced-input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
+import { usePagination } from '@/hooks/use-pagination'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
+import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
+import { RoleBadge } from '@/components/ui/status-badge'
+import { isPlatformOnline } from '@/lib/online-utils'
 import { MessageSquare, Eye, Pin, Search, Plus } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -35,10 +40,15 @@ const CATEGORY_COLORS: Record<string, string> = {
   offtopic: 'bg-gray-500/10 text-gray-500',
 }
 
-export default function ForumPage() {
+function ForumContent() {
   const [category, setCategory] = useState('all')
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const { page, setPage, resetPage } = usePagination({ defaultLimit: 20 })
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value)
+    resetPage()
+  }, [resetPage])
 
   const queryParams = new URLSearchParams()
   if (category !== 'all') queryParams.set('category', category)
@@ -52,7 +62,7 @@ export default function ForumPage() {
   const totalPages = data?.totalPages || 1
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Forum</h1>
         <Button asChild>
@@ -66,16 +76,15 @@ export default function ForumPage() {
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+        <DebouncedInput
+          onDebouncedChange={handleSearchChange}
           placeholder="Search posts..."
           className="pl-10"
         />
       </div>
 
       {/* Category Tabs */}
-      <Tabs value={category} onValueChange={(v) => { setCategory(v); setPage(1) }}>
+      <Tabs value={category} onValueChange={(v) => { setCategory(v); resetPage() }}>
         <TabsList className="flex-wrap h-auto">
           {CATEGORIES.map((c) => (
             <TabsTrigger key={c.value} value={c.value}>
@@ -96,16 +105,15 @@ export default function ForumPage() {
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Author Avatar */}
                   <div className="shrink-0">
-                    {post.author?.skin ? (
+                    <OnlineStatusIndicator
+                      status={{ platformOnline: isPlatformOnline(post.author?.lastSeenAt), inGameOnline: false }}
+                      size="sm"
+                    >
                       <TeeAvatarWithFallback
-                        skinUrl={getDDNetSkinUrl(post.author.skin)}
-                        size="xs"
+                        skinUrl={post.author?.skin ? getDDNetSkinUrl(post.author.skin) : undefined}
+                        size="sm"
                       />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                        {post.author?.ingameNick?.[0]?.toUpperCase() || '?'}
-                      </div>
-                    )}
+                    </OnlineStatusIndicator>
                   </div>
 
                   {/* Post Info */}
@@ -121,6 +129,7 @@ export default function ForumPage() {
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                       <span>{post.author?.ingameNick || 'Unknown'}</span>
+                      <RoleBadge role={post.author?.roles} className="text-[10px] px-1.5 py-0" />
                       <span>&middot;</span>
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CATEGORY_COLORS[post.category] || ''}`}>
                         {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
@@ -155,29 +164,20 @@ export default function ForumPage() {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        limit={20}
+        onPageChange={setPage}
+      />
     </div>
+  )
+}
+
+export default function ForumPage() {
+  return (
+    <Suspense fallback={<CardListSkeleton />}>
+      <ForumContent />
+    </Suspense>
   )
 }

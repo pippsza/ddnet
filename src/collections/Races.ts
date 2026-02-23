@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { DDNET_CATEGORIES, GAME_STATUSES } from '@/lib/ddnet-constants'
+import { GAME_STATUSES } from '@/lib/ddnet-constants'
+import { validateCategory } from '@/lib/category-helpers'
 
 export const Races: CollectionConfig = {
   slug: 'races',
@@ -53,10 +54,10 @@ export const Races: CollectionConfig = {
     },
     {
       name: 'category',
-      type: 'select',
+      type: 'text',
       required: true,
-      options: DDNET_CATEGORIES,
       label: 'Map Category',
+      validate: validateCategory,
     },
     {
       name: 'totalRounds',

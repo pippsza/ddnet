@@ -3,44 +3,80 @@
 import { use, useState } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { DetailPageSkeleton } from '@/components/ui/page-skeleton'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
-import { Eye, MessageSquare, Pin, Lock, EyeOff } from 'lucide-react'
+import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
+import { RoleBadge } from '@/components/ui/status-badge'
+import { LexicalContent } from '@/components/ui/LexicalContent'
+import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
+import { useTypingIndicator } from '@/hooks/use-typing-indicator'
+import { isPlatformOnline } from '@/lib/online-utils'
+import { Eye, MessageSquare, Pin, Lock, EyeOff, ArrowLeft } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-function extractText(richText: any): string {
-  if (typeof richText === 'string') return richText
-  if (!richText?.root?.children) return ''
-  return richText.root.children
-    .map((node: any) => {
-      if (node.children) {
-        return node.children.map((child: any) => child.text || '').join('')
-      }
-      return ''
-    })
-    .join('\n')
+function MessageAvatar({ user, mirrored }: { user: any; mirrored?: boolean }) {
+  const skin = user?.ingameStats?.skin
+  return (
+    <div className="shrink-0">
+      <OnlineStatusIndicator
+        status={{ platformOnline: isPlatformOnline(user?.lastSeenAt), inGameOnline: false }}
+        size="sm"
+      >
+        <TeeAvatarWithFallback
+          skinUrl={skin?.name ? getDDNetSkinUrl(skin.name) : undefined}
+          bodyColor={skin?.color_body}
+          feetColor={skin?.color_feet}
+          useCustomColors={!!(skin?.color_body || skin?.color_feet)}
+          size="sm"
+          mirrored={mirrored}
+        />
+      </OnlineStatusIndicator>
+    </div>
+  )
+}
+
+function MessageHeader({ user, timestamp, isOwn }: { user: any; timestamp: string; isOwn: boolean }) {
+  const name = user?.ingameNick || 'Unknown'
+  const time = <span className="text-xs text-muted-foreground">{new Date(timestamp).toLocaleString()}</span>
+  const role = <RoleBadge role={user?.roles} className="text-[10px] px-1.5 py-0" />
+  const nameEl = <span className="text-sm font-medium">{name}</span>
+
+  return isOwn
+    ? <>{time}{role}{nameEl}</>
+    : <>{nameEl}{role}{time}</>
 }
 
 export default function ForumPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data, isLoading, mutate } = useSWR(`/api/forum/${id}`, fetcher)
-  const [reply, setReply] = useState('')
+  const { data: meData } = useSWR('/api/users/me', fetcher)
   const [sending, setSending] = useState(false)
   const [moderating, setModerating] = useState(false)
 
+  const post = data?.post
+  const author = post ? (typeof post.author === 'object' ? post.author : null) : null
+  const currentUserId = meData?.user?.id
+
+  // Typing indicator
+  const { typingUsers, notifyTyping } = useTypingIndicator({
+    scope: 'forum',
+    scopeId: id,
+  })
+  const typingText = typingUsers.length > 0
+    ? `${typingUsers.map((u) => u.userName).join(', ')} typing...`
+    : null
+
   if (isLoading) return <DetailPageSkeleton />
 
-  const post = data?.post
   if (!post) {
     return (
       <div className="space-y-4">
-        <Link href="/app/forum" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          &larr; Back to Forum
+        <Link href="/app/forum" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to Forum
         </Link>
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -51,31 +87,50 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  const author = typeof post.author === 'object' ? post.author : null
+  const handleReply = async (content: any) => {
+    if (!content) return
 
-  const handleReply = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!reply.trim()) return
-    setSending(true)
-    try {
-      await fetch(`/api/forum/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: reply }),
-      })
-      setReply('')
-      mutate()
-    } catch {
-      // ignore
-    } finally {
-      setSending(false)
+    const optimisticReply = {
+      author: meData?.user || { id: currentUserId },
+      content,
+      createdAt: new Date().toISOString(),
     }
+
+    setSending(true)
+    await mutate(
+      async (current: any) => {
+        try {
+          await fetch(`/api/forum/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          })
+          const res = await fetch(`/api/forum/${id}`)
+          return await res.json()
+        } catch {
+          return current
+        }
+      },
+      {
+        optimisticData: data
+          ? {
+              ...data,
+              post: {
+                ...data.post,
+                replies: [...(data.post.replies || []), optimisticReply],
+              },
+            }
+          : undefined,
+        rollbackOnError: true,
+      },
+    )
+    setSending(false)
   }
 
   const handleModerate = async (action: Record<string, any>) => {
     setModerating(true)
     try {
-      await fetch(`/api/forum/${id}`, {
+      await fetch(`/api/forum-posts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(action),
@@ -88,177 +143,116 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
     }
   }
 
+  const isLocked = post.status === 'locked'
+
   return (
-    <div className="space-y-6">
-      <Link href="/app/forum" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-        &larr; Back to Forum
-      </Link>
-
-      {/* Post Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                {post.isPinned && <Pin className="h-4 w-4 text-amber-500" />}
-                <CardTitle className="text-xl">{post.title}</CardTitle>
-              </div>
-              <div className="flex items-center gap-3">
-                {author && (
-                  <div className="flex items-center gap-2">
-                    {author.ingameStats?.skin ? (
-                      <TeeAvatarWithFallback
-                        skinUrl={getDDNetSkinUrl(author.ingameStats.skin)}
-                        size="xs"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                        {author.ingameNick?.[0]?.toUpperCase() || '?'}
-                      </div>
-                    )}
-                    <span className="text-sm font-medium">{author.ingameNick}</span>
-                  </div>
-                )}
-                <Badge variant="secondary" className="text-xs">
-                  {post.category}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(post.createdAt).toLocaleString()}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                <span>{post.views || 0}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4" />
-                <span>{post.replies?.length || 0}</span>
-              </div>
-              {post.status === 'locked' && (
-                <Badge variant="outline">
-                  <Lock className="h-3 w-3 mr-1" />
-                  Locked
-                </Badge>
-              )}
-              {post.status === 'hidden' && (
-                <Badge variant="destructive">
-                  <EyeOff className="h-3 w-3 mr-1" />
-                  Hidden
-                </Badge>
-              )}
-            </div>
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+      {/* Compact header */}
+      <div className="shrink-0 pb-3 space-y-2">
+        <div className="flex items-center gap-3">
+          <Link href="/app/forum" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            {post.isPinned && <Pin className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+            <h1 className="text-base font-semibold truncate">{post.title}</h1>
+            <Badge variant="secondary" className="text-[10px] shrink-0">
+              {post.category}
+            </Badge>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{extractText(post.content)}</p>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+            <span className="hidden sm:inline">
+              {author?.ingameNick || 'Unknown'} &middot; {new Date(post.createdAt).toLocaleDateString()}
+            </span>
+            <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" />{post.views || 0}</span>
+            <span className="flex items-center gap-0.5"><MessageSquare className="h-3 w-3" />{post.replies?.length || 0}</span>
+            {isLocked && <Lock className="h-3 w-3 text-muted-foreground" />}
+            {post.status === 'hidden' && <EyeOff className="h-3 w-3 text-destructive" />}
+          </div>
+        </div>
 
-      {/* Moderation Panel */}
-      {data?.isModeratorOrAdmin && (
-        <Card>
-          <CardContent className="flex flex-wrap items-center gap-2 p-4">
-            <span className="text-xs font-medium text-muted-foreground mr-2">Moderate:</span>
+        {/* Moderation Panel */}
+        {data?.isModeratorOrAdmin && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-medium text-muted-foreground mr-1">Mod:</span>
             <Button
               size="sm"
               variant={post.isPinned ? 'default' : 'outline'}
               onClick={() => handleModerate({ isPinned: !post.isPinned })}
               disabled={moderating}
+              className="h-6 text-xs px-2"
             >
-              <Pin className="h-3.5 w-3.5 mr-1" />
+              <Pin className="h-3 w-3 mr-1" />
               {post.isPinned ? 'Unpin' : 'Pin'}
             </Button>
             <Button
               size="sm"
-              variant={post.status === 'locked' ? 'default' : 'outline'}
-              onClick={() => handleModerate({ status: post.status === 'locked' ? 'published' : 'locked' })}
+              variant={isLocked ? 'default' : 'outline'}
+              onClick={() => handleModerate({ status: isLocked ? 'published' : 'locked' })}
               disabled={moderating}
+              className="h-6 text-xs px-2"
             >
-              <Lock className="h-3.5 w-3.5 mr-1" />
-              {post.status === 'locked' ? 'Unlock' : 'Lock'}
+              <Lock className="h-3 w-3 mr-1" />
+              {isLocked ? 'Unlock' : 'Lock'}
             </Button>
             <Button
               size="sm"
               variant={post.status === 'hidden' ? 'destructive' : 'outline'}
               onClick={() => handleModerate({ status: post.status === 'hidden' ? 'published' : 'hidden' })}
               disabled={moderating}
+              className="h-6 text-xs px-2"
             >
-              <EyeOff className="h-3.5 w-3.5 mr-1" />
+              <EyeOff className="h-3 w-3 mr-1" />
               {post.status === 'hidden' ? 'Unhide' : 'Hide'}
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Replies */}
-      {post.replies?.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground">
-            {post.replies.length} {post.replies.length === 1 ? 'Reply' : 'Replies'}
-          </h3>
-          {post.replies.map((r: any, i: number) => {
-            const replyAuthor = typeof r.author === 'object' ? r.author : null
-            return (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="shrink-0">
-                      {replyAuthor?.ingameStats?.skin ? (
-                        <TeeAvatarWithFallback
-                          skinUrl={getDDNetSkinUrl(replyAuthor.ingameStats.skin)}
-                          size="xs"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                          {replyAuthor?.ingameNick?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">
-                          {replyAuthor?.ingameNick || 'Unknown'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(r.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{extractText(r.content)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+      {/* Chat-style messages — scrollable */}
+      <ChatMessages scrollKey={post.replies?.length} emptyText="" typingText={typingText}>
+        {/* Original post */}
+        {(() => {
+          const isOwn = author?.id === currentUserId
+          return (
+            <ChatBubble
+              isOwn={isOwn}
+              avatar={<MessageAvatar user={author} mirrored={isOwn} />}
+              header={<MessageHeader user={author} timestamp={post.createdAt} isOwn={isOwn} />}
+            >
+              <LexicalContent content={post.content} />
+            </ChatBubble>
+          )
+        })()}
 
-      {/* Reply Form */}
-      {post.status !== 'locked' && (
-        <form onSubmit={handleReply} className="space-y-3">
-          <Textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            placeholder="Write a reply..."
-            rows={4}
-            className="resize-none"
-          />
-          <Button type="submit" disabled={sending}>
-            {sending ? 'Sending...' : 'Reply'}
-          </Button>
-        </form>
-      )}
+        {/* Replies */}
+        {post.replies?.map((r: any, i: number) => {
+          const replyAuthor = typeof r.author === 'object' ? r.author : null
+          const isOwn = replyAuthor?.id === currentUserId
 
-      {post.status === 'locked' && (
-        <Card>
-          <CardContent className="p-4 text-center text-sm text-muted-foreground">
-            <Lock className="h-4 w-4 inline mr-2" />
-            This post is locked. No new replies can be added.
-          </CardContent>
-        </Card>
-      )}
+          return (
+            <ChatBubble
+              key={i}
+              isOwn={isOwn}
+              avatar={<MessageAvatar user={replyAuthor} mirrored={isOwn} />}
+              header={<MessageHeader user={replyAuthor} timestamp={r.createdAt} isOwn={isOwn} />}
+            >
+              <LexicalContent content={r.content} />
+            </ChatBubble>
+          )
+        })}
+      </ChatMessages>
+
+      {/* Reply Editor */}
+      <ChatInput
+        richText
+        onSend={handleReply}
+        placeholder="Write a reply..."
+        sending={sending}
+        disabled={isLocked}
+        disabledMessage="This post is locked. No new replies can be added."
+        onTyping={notifyTyping}
+      />
     </div>
   )
 }

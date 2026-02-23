@@ -66,6 +66,8 @@ export const TEAM_STATUSES = [
 ]
 
 // Type helpers
+export type CategoryValue = DDNetCategory | `custom_${string}`
+
 export type DDNetCategory =
   | 'novice'
   | 'moderate'
@@ -106,6 +108,25 @@ export const hasSubcategories = (category: DDNetCategory): boolean => {
 
 export const getSubcategoriesForCategory = (category: DDNetCategory) => {
   return DDNET_SUBCATEGORIES.filter((sub) => sub.parent === category)
+}
+
+/**
+ * Get label for any category (standard or custom).
+ * For custom categories, returns the name from the provided list, or the raw slug.
+ */
+export const getCategoryLabelUniversal = (
+  value: string,
+  customCategories?: Array<{ name: string; slug: string }>,
+): string => {
+  const standard = DDNET_CATEGORIES.find((c) => c.value === value)
+  if (standard) return standard.label
+
+  if (customCategories) {
+    const custom = customCategories.find((c) => c.slug === value)
+    if (custom) return custom.name
+  }
+
+  return value
 }
 
 // Points calculation (from DDNet)

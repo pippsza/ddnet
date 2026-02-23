@@ -71,14 +71,14 @@ export function useGameStats(userId?: string) {
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )
-  const { data: raceData } = useSWR<{ races: RaceGameEntry[] }>(
-    userId ? '/api/race/my-races' : null,
+  const { data: raceData } = useSWR<{ docs: RaceGameEntry[] }>(
+    userId ? `/api/races?where[players.user][equals]=${userId}&sort=-createdAt&depth=1&limit=50` : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )
 
   const bingoGames = bingoData?.games || []
-  const raceGames = raceData?.races || []
+  const raceGames = raceData?.docs || []
 
   // Completed games
   const completedBingo = bingoGames.filter((g) => g.gameStatus === 'completed')

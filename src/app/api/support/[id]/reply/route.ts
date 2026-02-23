@@ -22,42 +22,6 @@ function textToLexical(text: string) {
   }
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const ticket = await payload.findByID({
-      collection: 'support',
-      id,
-      depth: 1,
-    })
-
-    if (!ticket) {
-      return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
-    }
-
-    // Check ownership (unless admin)
-    const ticketAuthor = typeof ticket.createdBy === 'string' ? ticket.createdBy : ticket.createdBy?.id
-    if (ticketAuthor !== user.id && user.roles !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    return NextResponse.json({ ticket })
-  } catch (error) {
-    console.error('[API] Support detail error:', error)
-    return NextResponse.json({ error: 'Failed to fetch ticket' }, { status: 500 })
-  }
-}
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -89,11 +53,11 @@ export async function POST(
     }
 
     const ticketAuthor = typeof ticket.createdBy === 'string' ? ticket.createdBy : ticket.createdBy?.id
-    if (ticketAuthor !== user.id && user.roles !== 'admin') {
+    if (ticketAuthor !== user.id && user.roles !== 'admin' && user.roles !== 'moderator') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const isStaff = user.roles === 'admin'
+    const isStaff = user.roles === 'admin' || user.roles === 'moderator'
     const responses = ticket.responses || []
     responses.push({
       message: textToLexical(message.trim()),

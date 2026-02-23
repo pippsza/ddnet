@@ -31,7 +31,7 @@ export async function GET(
       const playerUser = typeof p.user === 'object' ? (p.user as User) : null
       return {
         id: playerUser?.id || (typeof p.user === 'string' ? p.user : ''),
-        username: playerUser?.username || p.ingameNick,
+        username: playerUser?.ingameNick || p.ingameNick,
         ingameNick: p.ingameNick,
         roundsWon: p.roundsWon || 0,
         isReady: p.isReady || false,
@@ -53,7 +53,7 @@ export async function GET(
       : null
     const winnerName = race.winner
       ? typeof race.winner === 'object'
-        ? (race.winner as User).username
+        ? (race.winner as User).ingameNick
         : null
       : null
 
@@ -71,7 +71,7 @@ export async function GET(
       players,
       rounds: race.rounds || [],
       winner: winnerId ? { id: winnerId, username: winnerName } : null,
-      createdBy: { id: creatorId, username: creator?.username },
+      createdBy: { id: creatorId, username: creator?.ingameNick },
       currentUserId: currentUser?.id || null,
       startedAt: race.startedAt,
       completedAt: race.completedAt,

@@ -1,4 +1,4 @@
-import type { BotDriverInterface, ServerInfo } from './types'
+import type { BotDriverInterface } from './types'
 import { MockBotDriver } from './MockBotDriver'
 import { MAX_CONCURRENT_BOTS } from '@/lib/verification-constants'
 
@@ -48,17 +48,17 @@ export class BotManager implements BotDriverInterface {
 
   async startVerification(
     nickname: string,
-    token: string,
     requestId: string,
-    servers?: ServerInfo[],
+    serverIp: string,
+    serverPort: number,
+    botLoginToken: string,
   ): Promise<string> {
-    // Initialize Docker if not already done
     if (!this.mockDriver && !this.dockerInitialized) {
       await this.initDocker()
     }
 
     if (this.mockDriver) {
-      return this.mockDriver.startVerification(nickname, token, requestId)
+      return this.mockDriver.startVerification(nickname, requestId, serverIp, serverPort, botLoginToken)
     }
 
     if (this.activeContainers.size >= MAX_CONCURRENT_BOTS) {
@@ -69,23 +69,22 @@ export class BotManager implements BotDriverInterface {
       throw new Error('Docker not available')
     }
 
-    const serversJson = JSON.stringify(servers || [])
     const docker = this.docker as import('dockerode')
 
     const container = await docker.createContainer({
       Image: 'bingo-bot:latest',
       Env: [
         `TARGET_NICK=${nickname}`,
-        `VERIFY_TOKEN=${token}`,
         `REQUEST_ID=${requestId}`,
-        `SERVERS_LIST=${serversJson}`,
-        `BACKEND_URL=${process.env.NEXT_PUBLIC_SERVER_URL || 'http://host.docker.internal:3000'}`,
+        `SERVER_IP=${serverIp}`,
+        `SERVER_PORT=${serverPort}`,
+        `BOT_LOGIN_TOKEN=${botLoginToken}`,
+        `BACKEND_URL=${(process.env.NEXT_PUBLIC_SERVER_URL || 'http://host.docker.internal:3000').replace('localhost', '127.0.0.1')}`,
         `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
       ],
       HostConfig: {
-        AutoRemove: true,
-        NetworkMode: 'bridge',
-        ExtraHosts: ['host.docker.internal:host-gateway'],
+        AutoRemove: false,
+        NetworkMode: 'host',
       },
     })
 
@@ -138,7 +137,7 @@ export class BotManager implements BotDriverInterface {
         `SERVER_IP=${serverIp}`,
         `SERVER_PORT=${serverPort}`,
         `PLAYERS_LIST=${JSON.stringify(players)}`,
-        `BACKEND_URL=${process.env.NEXT_PUBLIC_SERVER_URL || 'http://host.docker.internal:3000'}`,
+        `BACKEND_URL=${(process.env.NEXT_PUBLIC_SERVER_URL || 'http://host.docker.internal:3000').replace('localhost', '127.0.0.1')}`,
         `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
       ],
       HostConfig: {

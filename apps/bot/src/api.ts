@@ -14,7 +14,7 @@ export class BackendApi {
   // Verification callbacks
   // =========================================================================
 
-  async reportFound(
+  async reportVerified(
     requestId: string,
     nickname: string,
     serverIp: string,
@@ -25,7 +25,22 @@ export class BackendApi {
       nickname,
       serverIp,
       serverPort,
-      found: true,
+      result: 'verified',
+    })
+  }
+
+  async reportHidden(
+    requestId: string,
+    nickname: string,
+    serverIp: string,
+    serverPort: number,
+  ): Promise<void> {
+    await this.post('/api/verification/bot-callback', {
+      requestId,
+      nickname,
+      serverIp,
+      serverPort,
+      result: 'hidden',
     })
   }
 
@@ -35,7 +50,18 @@ export class BackendApi {
       nickname,
       serverIp: '',
       serverPort: 0,
-      found: false,
+      result: 'not_found',
+    })
+  }
+
+  async reportError(requestId: string, nickname: string, error: string): Promise<void> {
+    await this.post('/api/verification/bot-callback', {
+      requestId,
+      nickname,
+      serverIp: '',
+      serverPort: 0,
+      result: 'error',
+      message: error,
     })
   }
 

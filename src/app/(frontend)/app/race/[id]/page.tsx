@@ -127,7 +127,7 @@ export default function RaceGamePage({ params }: { params: Promise<{ id: string 
                   useCustomColors={!!(player.skin?.colorBody || player.skin?.colorFeet)}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{player.username}</span>
+                  <span className="text-sm font-medium truncate block">{player.ingameNick || player.username}</span>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {player.points > 0 && (
                       <span>{player.points.toLocaleString()} pts</span>
@@ -174,7 +174,7 @@ export default function RaceGamePage({ params }: { params: Promise<{ id: string 
             <p className="text-lg font-bold text-green-600 dark:text-green-400">Race Completed!</p>
             {race.winner && (
               <p className="text-muted-foreground mt-1">
-                Winner: {race.winner.username || 'Unknown'}
+                Winner: {race.winner.username || race.winner.ingameNick || 'Unknown'}
               </p>
             )}
           </CardContent>

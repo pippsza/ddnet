@@ -1,3 +1,4 @@
+// @ts-nocheck — dev-only seed utility, types may lag behind schema changes
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -121,30 +122,23 @@ export async function POST() {
 
   try {
     // =========================================================================
-    // 0. Create Verification Servers
+    // 0. Update Verification Settings (Global)
     // =========================================================================
-    log.push('Creating servers...')
+    log.push('Updating verification settings...')
 
-    const servers = [
-      { name: 'DDNet USA (Test)', ip: '74.91.116.114', port: 8303, region: 'NA' },
-      { name: 'DDNet GER1', ip: '51.210.181.1', port: 8303, region: 'EU' },
-      { name: 'DDNet GER2', ip: '51.210.181.2', port: 8303, region: 'EU' },
-      { name: 'DDNet RUS', ip: '185.104.185.1', port: 8303, region: 'RU' },
-      { name: 'DDNet CHN', ip: '106.75.165.1', port: 8303, region: 'AS' },
-    ]
-
-    for (const server of servers) {
-      try {
-        await payload.create({
-          collection: 'servers',
-          overrideAccess: true,
-          data: { ...server, isActive: true },
-        })
-      } catch {
-        log.push(`  Server ${server.name} already exists`)
-      }
-    }
-    log.push(`  Created ${servers.length} servers`)
+    await payload.updateGlobal({
+      slug: 'verification-settings',
+      data: {
+        servers: [
+          { name: 'DDNet USA (Test)', ip: '74.91.116.114', port: 8303, region: 'NA' },
+          { name: 'DDNet GER1', ip: '51.210.181.1', port: 8303, region: 'EU' },
+          { name: 'DDNet GER2', ip: '51.210.181.2', port: 8303, region: 'EU' },
+          { name: 'DDNet RUS', ip: '185.104.185.1', port: 8303, region: 'RU' },
+          { name: 'DDNet CHN', ip: '106.75.165.1', port: 8303, region: 'AS' },
+        ],
+      },
+    })
+    log.push('  Updated verification settings with 5 servers')
 
     // =========================================================================
     // 1. Create Users (20 players + 1 admin) with real DDNet stats

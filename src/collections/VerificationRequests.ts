@@ -6,7 +6,7 @@ export const VerificationRequests: CollectionConfig = {
   admin: {
     useAsTitle: 'nickname',
     group: 'Verification',
-    defaultColumns: ['nickname', 'status', 'currentServer', 'expiresAt', 'createdAt'],
+    defaultColumns: ['nickname', 'status', 'message', 'currentServer', 'expiresAt', 'createdAt'],
   },
   access: {
     read: ({ req }) => {
@@ -40,24 +40,19 @@ export const VerificationRequests: CollectionConfig = {
       },
     },
     {
-      name: 'token',
-      type: 'text',
-      required: true,
-      label: 'Verification Token',
-      admin: {
-        readOnly: true,
-        description: '6-digit verification code',
-      },
-    },
-    {
       name: 'status',
       type: 'select',
       required: true,
       options: VERIFICATION_STATUSES.map((s) => s),
       defaultValue: 'pending',
       label: 'Status',
+    },
+    {
+      name: 'message',
+      type: 'text',
+      label: 'Message',
       admin: {
-        description: 'Current verification status',
+        description: 'Reason for failure (not_logged_in, not_found, error details)',
       },
     },
     {
@@ -65,7 +60,7 @@ export const VerificationRequests: CollectionConfig = {
       type: 'text',
       label: 'Current Server',
       admin: {
-        description: 'IP:Port where the bot found the player',
+        description: 'IP:Port where the bot checked the player',
       },
     },
     {
@@ -82,9 +77,6 @@ export const VerificationRequests: CollectionConfig = {
       relationTo: 'users',
       required: true,
       label: 'User',
-      admin: {
-        description: 'User who initiated the verification',
-      },
     },
     {
       name: 'expiresAt',
@@ -94,7 +86,6 @@ export const VerificationRequests: CollectionConfig = {
       label: 'Expires At',
       admin: {
         readOnly: true,
-        description: 'When this verification request expires',
         date: {
           pickerAppearance: 'dayAndTime',
         },

@@ -9,13 +9,22 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { cn } from '@/lib/utils'
+import { Server } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-type VerificationStep = 'idle' | 'starting' | 'searching' | 'found' | 'confirming' | 'success' | 'failed' | 'expired'
+interface VerificationServer {
+  name: string
+  ip: string
+  port: number
+  region?: string | null
+}
+
+type VerificationStep = 'idle' | 'starting' | 'pending' | 'success' | 'failed' | 'expired'
 
 export default function SettingsPage() {
   const { data: user, mutate } = useSWR('/api/users/me', fetcher)
+  const { data: serversData } = useSWR<{ servers: VerificationServer[] }>('/api/verification/servers', fetcher)
   const [message, setMessage] = useState('')
   const [pushSupported, setPushSupported] = useState(false)
   const [pushSubscribed, setPushSubscribed] = useState(false)
@@ -23,9 +32,11 @@ export default function SettingsPage() {
   // Verification state
   const [verifyStep, setVerifyStep] = useState<VerificationStep>('idle')
   const [requestId, setRequestId] = useState<string | null>(null)
-  const [token, setToken] = useState<string | null>(null)
   const [currentServer, setCurrentServer] = useState<string | null>(null)
   const [verifyError, setVerifyError] = useState<string | null>(null)
+  const [verifyMessage, setVerifyMessage] = useState<string | null>(null)
+
+  const servers = serversData?.servers || []
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -40,7 +51,7 @@ export default function SettingsPage() {
 
   // Poll verification status
   useEffect(() => {
-    if (!requestId || verifyStep !== 'searching') return
+    if (!requestId || verifyStep !== 'pending') return
 
     const interval = setInterval(async () => {
       try {
@@ -51,20 +62,25 @@ export default function SettingsPage() {
         })
         const data = await res.json()
 
-        if (data.status === 'active') {
-          setVerifyStep('found')
-          setCurrentServer(data.currentServer || null)
-          clearInterval(interval)
-        } else if (data.status === 'expired') {
+        if (data.status === 'expired') {
           setVerifyStep('expired')
           setVerifyError('Verification request expired. Please try again.')
           clearInterval(interval)
         } else if (data.status === 'failed') {
           setVerifyStep('failed')
-          setVerifyError('Bot could not find you on any server.')
+          setVerifyMessage(data.message || null)
+          if (data.message === 'not_logged_in') {
+            setVerifyError('You are not logged in on the server. Use /login to log in and try again.')
+          } else if (data.message === 'not_found') {
+            setVerifyError('Player not found on the server. Make sure you are connected.')
+          } else {
+            setVerifyError('Verification failed. Please try again.')
+          }
+          setCurrentServer(data.currentServer || null)
           clearInterval(interval)
         } else if (data.status === 'success') {
           setVerifyStep('success')
+          setCurrentServer(data.currentServer || null)
           mutate()
           clearInterval(interval)
         }
@@ -111,61 +127,43 @@ export default function SettingsPage() {
   const startVerification = useCallback(async () => {
     setVerifyStep('starting')
     setVerifyError(null)
+    setVerifyMessage(null)
     setCurrentServer(null)
     try {
       const res = await fetch('/api/verification/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname: user?.user?.username }),
+        body: JSON.stringify({}),
       })
       const data = await res.json()
 
-      if (res.status === 409) {
-        // Already have active request — resume it
-        setRequestId(data.requestId)
-        setToken(data.token)
-        setVerifyStep(data.status === 'active' ? 'found' : 'searching')
-        return
+      if (!res.ok) {
+        if (data.error === 'offline') {
+          throw new Error('You are not online. Please join a verification server first.')
+        }
+        if (data.error === 'wrong_server') {
+          const serverList = (data.verificationServers || [])
+            .map((s: { name: string; ip: string; port: number }) => `${s.name} (${s.ip}:${s.port})`)
+            .join(', ')
+          throw new Error(`You are on the wrong server. Please join: ${serverList}`)
+        }
+        throw new Error(data.error || 'Failed to start verification')
       }
 
-      if (!res.ok) throw new Error(data.error)
-
       setRequestId(data.requestId)
-      setToken(data.token)
-      setVerifyStep('searching')
+      setVerifyStep('pending')
     } catch (err: unknown) {
       setVerifyStep('failed')
       setVerifyError(err instanceof Error ? err.message : 'Failed to start verification')
     }
-  }, [user?.user?.username])
-
-  const confirmVerification = useCallback(async () => {
-    if (!requestId || !token) return
-    setVerifyStep('confirming')
-    try {
-      const res = await fetch('/api/verification/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId, token }),
-      })
-      const data = await res.json()
-
-      if (!res.ok) throw new Error(data.error)
-
-      setVerifyStep('success')
-      mutate()
-    } catch (err: unknown) {
-      setVerifyStep('failed')
-      setVerifyError(err instanceof Error ? err.message : 'Confirmation failed')
-    }
-  }, [requestId, token, mutate])
+  }, [])
 
   const resetVerification = () => {
     setVerifyStep('idle')
     setRequestId(null)
-    setToken(null)
     setCurrentServer(null)
     setVerifyError(null)
+    setVerifyMessage(null)
   }
 
   const skinUrl = user?.user?.ingameStats?.skin?.name
@@ -191,13 +189,19 @@ export default function SettingsPage() {
               useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
             />
             <div>
-              <p className="text-lg font-semibold">{user?.user?.username || 'Loading...'}</p>
+              <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username || 'Loading...'}</p>
               <p className="text-sm text-muted-foreground capitalize">{user?.user?.roles}</p>
             </div>
           </div>
-          <div>
-            <Label>Username</Label>
-            <Input value={user?.user?.username || ''} disabled />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Platform Login</Label>
+              <Input value={user?.user?.username || ''} disabled />
+            </div>
+            <div>
+              <Label>In-Game Nickname</Label>
+              <Input value={user?.user?.ingameNick || ''} disabled />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -230,9 +234,22 @@ export default function SettingsPage() {
               {verifyStep === 'idle' && (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    Verify your DDNet nickname to unlock all features. A bot will search for you on active servers
-                    and confirm your identity.
+                    Verify your DDNet nickname to unlock all features. Join one of the servers below,
+                    log in with <code className="text-xs bg-muted px-1 py-0.5 rounded">/login</code>, then click the button.
                   </p>
+                  {servers.length > 0 && (
+                    <div className="p-3 rounded-lg bg-muted/50 border space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verification Servers</p>
+                      {servers.map((s, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <Server className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="font-medium">{s.name}</span>
+                          <span className="font-mono text-xs text-muted-foreground">{s.ip}:{s.port}</span>
+                          {s.region && <Badge variant="outline" className="text-xs py-0">{s.region}</Badge>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <Button onClick={startVerification}>
                     Verify Nickname
                   </Button>
@@ -246,72 +263,25 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {verifyStep === 'searching' && (
+              {verifyStep === 'pending' && (
                 <div className="space-y-4">
                   <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 space-y-3">
                     <div className="flex items-center gap-3">
                       <Spinner className="text-blue-500" />
                       <div>
                         <p className="font-medium text-blue-700 dark:text-blue-400">
-                          Searching for you on servers...
+                          Verifying your identity...
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Make sure you are connected to a DDNet server with the nickname &quot;{user?.user?.username}&quot;
+                          Bot is checking your account on the server. This usually takes a few seconds.
                         </p>
                       </div>
                     </div>
                   </div>
-
-                  {token && (
-                    <div className="p-4 rounded-lg bg-muted border space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Your Verification Token</p>
-                      <p className="text-2xl font-mono font-bold tracking-widest text-center py-2">
-                        {token}
-                      </p>
-                      <p className="text-xs text-muted-foreground text-center">
-                        The bot will send this code in-game to confirm it found you.
-                      </p>
-                    </div>
-                  )}
 
                   <Button variant="outline" size="sm" onClick={resetVerification}>
                     Cancel
                   </Button>
-                </div>
-              )}
-
-              {verifyStep === 'found' && (
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium text-green-700 dark:text-green-400">
-                          Bot found you!
-                        </p>
-                        {currentServer && (
-                          <p className="text-sm text-muted-foreground">
-                            On server: {currentServer}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button onClick={confirmVerification} className="w-full">
-                    Confirm Verification
-                  </Button>
-                </div>
-              )}
-
-              {verifyStep === 'confirming' && (
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted">
-                  <Spinner />
-                  <p className="text-sm">Confirming verification...</p>
                 </div>
               )}
 

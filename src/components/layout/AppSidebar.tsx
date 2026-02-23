@@ -31,6 +31,11 @@ import {
   ChevronsUpDown,
   LifeBuoy,
   Ticket,
+  Wrench,
+  MessageSquare,
+  FileText,
+  MessageCircle,
+  Bell,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -41,6 +46,10 @@ const menuItems = [
   { title: 'Friends', url: '/app/friends', icon: UserPlus },
   { title: 'Bingo', url: '/app/bingo', icon: Grid3X3 },
   { title: 'Race', url: '/app/race', icon: Trophy },
+  { title: 'Forum', url: '/app/forum', icon: MessageSquare },
+  { title: 'Articles', url: '/app/articles', icon: FileText },
+  { title: 'Chat', url: '/app/chat', icon: MessageCircle },
+  { title: 'Notifications', url: '/app/notifications', icon: Bell },
   { title: 'Support', url: '/app/support', icon: LifeBuoy },
   { title: 'Settings', url: '/app/settings', icon: Settings },
 ]
@@ -50,9 +59,15 @@ const adminItems = [
   { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket },
 ]
 
+const devItems = [
+  { title: 'Dev Tools', url: '/app/dev', icon: Wrench },
+]
+
+const isDev = process.env.NODE_ENV === 'development'
+
 interface AppSidebarProps {
   user: {
-    username?: string
+    ingameNick?: string
     roles?: string
   }
 }
@@ -113,6 +128,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+        {isDev && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Development</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {devItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
+                      <Link href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -122,10 +157,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="h-auto py-2">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium shrink-0">
-                    {user.username?.[0]?.toUpperCase() || '?'}
+                    {user.ingameNick?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0  text-left">
-                    <p className="font-medium  truncate my-0 text-sm">{user.username}</p>
+                    <p className="font-medium  truncate my-0 text-sm">{user.ingameNick}</p>
                   </div>
                   <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                 </SidebarMenuButton>

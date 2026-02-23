@@ -2,33 +2,27 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN npm install
 
 # Copy source
 COPY tsconfig.json ./
 COPY src ./src
 
 # Build
-RUN pnpm build
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 # Copy package files and install production deps only
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
+COPY package.json ./
+RUN npm install --omit=dev
 
 # Copy built files
 COPY --from=builder /app/dist ./dist

@@ -170,7 +170,7 @@ export function RaceMap({ rounds, totalRounds, currentRound, players }: RaceMapP
                   fill="hsl(var(--muted-foreground))"
                   fontSize={8}
                 >
-                  {typeof round.winner === 'object' ? round.winner.username : ''}
+                  {typeof round.winner === 'object' ? (round.winner.username || '') : ''}
                   {round.finishTime ? ` ${formatTime(round.finishTime)}` : ''}
                 </text>
               )}

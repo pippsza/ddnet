@@ -64,7 +64,7 @@ export abstract class BaseBotMode implements BotMode {
 
   async cleanup(): Promise<void> {
     if (this.client?.isConnected()) {
-      this.client.disconnect()
+      await this.client.gracefulDisconnect()
     }
   }
 }

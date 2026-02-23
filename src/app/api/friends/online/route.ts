@@ -24,10 +24,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ friends: [] })
     }
 
-    // Get friend usernames
+    // Get friend ingame nicknames for DDNet API lookup
     const friendNicknames = currentUser.friend.map((f) => {
       const friendUser = typeof f.user === 'string' ? null : f.user
-      return friendUser?.username || ''
+      return friendUser?.ingameNick || ''
     }).filter(Boolean)
 
     const onlineStatuses = await findPlayersOnline(friendNicknames)
@@ -35,14 +35,14 @@ export async function GET(req: NextRequest) {
     // Merge friend data with online status
     const friends = currentUser.friend.map((f) => {
       const friendUser = typeof f.user === 'string' ? null : f.user
-      const nickname = friendUser?.username || ''
+      const nickname = friendUser?.ingameNick || ''
       const onlineStatus = onlineStatuses.find(
         (s) => s.name.toLowerCase() === nickname.toLowerCase(),
       )
 
       return {
         userId: friendUser?.id || f.user,
-        username: friendUser?.username,
+        username: friendUser?.ingameNick,
         nickname: f.nickname || nickname,
         addedAt: f.addedAt,
         online: onlineStatus?.online || false,

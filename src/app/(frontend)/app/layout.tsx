@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/AppSidebar'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { ThemeToggleButton } from '@/components/theme/theme-toggle'
+import { AdminDebugMenu } from '@/components/admin/AdminDebugMenu'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
@@ -11,6 +12,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session.user) {
     redirect('/login')
   }
+
+  const isAdmin = session.user.roles === 'admin'
 
   return (
     <SidebarProvider>
@@ -25,6 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
         <div className="flex-1 p-6">{children}</div>
       </main>
+      {isAdmin && <AdminDebugMenu />}
     </SidebarProvider>
   )
 }

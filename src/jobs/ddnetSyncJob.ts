@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { getPlayerData } from '@/lib/ddnet-helpers'
+import { getPlayerData, getPlayerSkinInfo } from '@/lib/ddnet-helpers'
 
 const SYNC_INTERVAL = 24 * 60 * 60 * 1000 // 24 hours
 const BATCH_DELAY = 200 // ms between requests to not hammer DDNet API
@@ -10,14 +10,18 @@ let syncTimer: ReturnType<typeof setTimeout> | null = null
 /**
  * Sync DDNet stats for a single user
  */
-async function syncUserStats(userId: string, username: string) {
+async function syncUserStats(userId: string, ingameNick: string) {
   const payload = await getPayload({ config })
 
   try {
-    const playerData = await getPlayerData(username, true) // bypass cache for fresh data
+    const playerData = await getPlayerData(ingameNick, true) // bypass cache for fresh data
     if (!playerData) {
       return { success: false, reason: 'Player not found on DDNet' }
     }
+
+    // Try to get skin via DDStats (works offline) or Master Server (online only)
+    const skinInfo = await getPlayerSkinInfo(ingameNick)
+    const skinUpdate = skinInfo ? { skin: skinInfo } : {}
 
     await payload.update({
       collection: 'users',
@@ -28,13 +32,14 @@ async function syncUserStats(userId: string, username: string) {
           points: playerData.points,
           rank: playerData.rank ?? undefined,
           lastSyncedAt: new Date().toISOString(),
+          ...skinUpdate,
         },
       },
     })
 
     return { success: true }
   } catch (error) {
-    console.error(`[DDNet Sync] Error syncing user ${username}:`, error)
+    console.error(`[DDNet Sync] Error syncing user ${ingameNick}:`, error)
     return { success: false, reason: String(error) }
   }
 }
@@ -60,14 +65,14 @@ export async function runDDNetSyncJob() {
         limit: 50,
         page,
         select: {
-          username: true,
+          ingameNick: true,
         },
       })
 
       for (const user of users) {
-        if (!user.username) continue
+        if (!user.ingameNick) continue
 
-        const result = await syncUserStats(user.id, user.username)
+        const result = await syncUserStats(user.id, user.ingameNick)
         if (result.success) {
           totalSynced++
         } else {

@@ -21,14 +21,17 @@ const STATUS_FILTERS = [
 
 export default function AdminTicketsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
-  const { data, isLoading } = useSWR(
-    `/api/admin/tickets?status=${statusFilter}`,
-    fetcher,
-  )
+  const queryParams = new URLSearchParams()
+  if (statusFilter !== 'all') queryParams.set('where[status][equals]', statusFilter)
+  queryParams.set('sort', '-createdAt')
+  queryParams.set('depth', '1')
+  queryParams.set('limit', '100')
+
+  const { data, isLoading } = useSWR(`/api/support?${queryParams}`, fetcher)
 
   if (isLoading) return <CardListSkeleton />
 
-  const tickets = data?.tickets || []
+  const tickets = data?.docs || []
 
   return (
     <div className="space-y-6">
@@ -53,7 +56,7 @@ export default function AdminTicketsPage() {
         {tickets.length > 0 ? (
           tickets.map((ticket: any) => {
             const author = typeof ticket.createdBy === 'object'
-              ? ticket.createdBy?.username
+              ? ticket.createdBy?.ingameNick
               : 'Unknown'
 
             return (

@@ -23,7 +23,8 @@ import { Loader2, Info } from 'lucide-react'
 
 const registerSchema = z
   .object({
-    name: z.string().min(2).max(16),
+    username: z.string().min(2).max(32),
+    ingameNick: z.string().min(2).max(16),
     password: z.string().min(8),
     confirmPassword: z.string(),
   })
@@ -42,7 +43,7 @@ export function RegisterForm() {
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', password: '', confirmPassword: '' },
+    defaultValues: { username: '', ingameNick: '', password: '', confirmPassword: '' },
   })
 
   async function onSubmit(data: RegisterFormValues) {
@@ -54,7 +55,8 @@ export function RegisterForm() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: data.name,
+          username: data.username,
+          ingameNick: data.ingameNick,
           password: data.password,
         }),
       })
@@ -93,14 +95,28 @@ export function RegisterForm() {
         >
           <FormField
             control={form.control}
-            name="name"
+            name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('nickname')}</FormLabel>
+                <FormLabel>{t('platformNickname')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="YourNickname" {...field} />
+                  <Input placeholder="my_login" {...field} />
                 </FormControl>
-                <FormDescription>{t('nicknameDescription')}</FormDescription>
+                <FormDescription>{t('platformNicknameDescription')}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="ingameNick"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('ingameNickname')}</FormLabel>
+                <FormControl>
+                  <Input placeholder="YourDDNetNick" {...field} />
+                </FormControl>
+                <FormDescription>{t('ingameNicknameDescription')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

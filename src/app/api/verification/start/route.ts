@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import payloadConfig from '@payload-config'
 import { getBotManager } from '@/services/verification/BotManager'
-import { generateVerificationToken } from '@/services/bot/tokenGenerator'
 import { auth } from '@/lib/auth'
-import type { ServerInfo } from '@/services/verification/types'
+import { findPlayerOnline } from '@/lib/ddnet-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,51 +13,100 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id
+    const payload = await getPayload({ config: payloadConfig })
 
-    const body = await request.json()
-    const { nickname } = body
+    // Get the user's ingame nick from their profile
+    const user = await payload.findByID({ collection: 'users', id: userId })
+    const nickname = user.ingameNick
 
-    if (!nickname || typeof nickname !== 'string') {
-      return NextResponse.json({ error: 'Nickname is required' }, { status: 400 })
-    }
-
-    if (nickname.length < 2 || nickname.length > 16) {
+    if (!nickname) {
       return NextResponse.json(
-        { error: 'Nickname must be between 2 and 16 characters' },
+        { error: 'No in-game nickname set on your profile.' },
         { status: 400 },
       )
     }
 
-    const payload = await getPayload({ config: payloadConfig })
+    // Load verification settings from global
+    const settings = await payload.findGlobal({ slug: 'verification-settings' })
 
-    // Check if user already has pending/active verification
-    const existingRequest = await payload.find({
+    if (!settings.servers || settings.servers.length === 0) {
+      return NextResponse.json(
+        { error: 'No verification servers configured. Please contact support.' },
+        { status: 503 },
+      )
+    }
+
+    const botLoginToken = process.env.BOT_LOGIN_TOKEN
+    if (!botLoginToken) {
+      return NextResponse.json(
+        { error: 'Bot login token not configured. Please contact support.' },
+        { status: 503 },
+      )
+    }
+
+    // Cancel any existing pending verification requests
+    const existingRequests = await payload.find({
       collection: 'verification-requests',
       where: {
         and: [
           { user: { equals: userId } },
-          { status: { in: ['pending', 'active'] } },
-          { expiresAt: { greater_than: new Date().toISOString() } },
+          { status: { equals: 'pending' } },
         ],
       },
-      limit: 1,
+      limit: 10,
     })
 
-    if (existingRequest.docs.length > 0) {
-      const existing = existingRequest.docs[0]
+    const botManager = getBotManager()
+
+    for (const req of existingRequests.docs) {
+      if (req.containerId) {
+        try {
+          await botManager.stopBot(req.containerId)
+        } catch {
+          // Container may already be stopped
+        }
+      }
+      await payload.update({
+        collection: 'verification-requests',
+        id: req.id,
+        data: { status: 'expired', message: 'Cancelled by new request' },
+      })
+    }
+
+    // Check where the player is online via DDNet Master API
+    const onlineStatus = await findPlayerOnline(nickname)
+
+    if (!onlineStatus.online || !onlineStatus.server) {
       return NextResponse.json(
         {
-          error: 'You already have an active verification request',
-          requestId: existing.id,
-          token: existing.token,
-          status: existing.status,
+          error: 'offline',
+          message: 'Player is not online. Please join a verification server first.',
+          verificationServers: settings.servers,
         },
-        { status: 409 },
+        { status: 400 },
+      )
+    }
+
+    // Check if the player is on one of the verification servers
+    const playerIp = onlineStatus.server.ip
+    const playerPort = onlineStatus.server.port
+    const matchedServer = settings.servers.find(
+      (s) => s.ip === playerIp && s.port === playerPort,
+    )
+
+    if (!matchedServer) {
+      return NextResponse.json(
+        {
+          error: 'wrong_server',
+          message: 'You are on the wrong server.',
+          playerServer: onlineStatus.server,
+          verificationServers: settings.servers,
+        },
+        { status: 400 },
       )
     }
 
     // Check bot availability
-    const botManager = getBotManager()
     if (!botManager.hasAvailableSlots()) {
       return NextResponse.json(
         { error: 'All verification slots are currently in use. Please try again later.' },
@@ -66,37 +114,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get active servers for bot
-    const serversResult = await payload.find({
-      collection: 'servers',
-      where: { isActive: { equals: true } },
-      limit: 100,
-    })
-
-    const servers: ServerInfo[] = serversResult.docs.map((s) => ({
-      ip: s.ip,
-      port: s.port,
-      name: s.name,
-    }))
-
-    if (servers.length === 0) {
-      return NextResponse.json(
-        { error: 'No verification servers configured. Please contact support.' },
-        { status: 503 },
-      )
-    }
-
-    const token = generateVerificationToken()
-
     // Create verification request
-    const verificationRequest = await payload.create({
+    const verificationRequest = await (payload.create as any)({
       collection: 'verification-requests',
       data: {
         nickname,
-        token,
         status: 'pending',
         user: userId,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        currentServer: `${matchedServer.ip}:${matchedServer.port}`,
       },
     })
 
@@ -104,30 +129,28 @@ export async function POST(request: NextRequest) {
     try {
       const containerId = await botManager.startVerification(
         nickname,
-        token,
         verificationRequest.id,
-        servers,
+        matchedServer.ip,
+        matchedServer.port,
+        botLoginToken,
       )
 
-      // Update request with container ID
       await payload.update({
         collection: 'verification-requests',
         id: verificationRequest.id,
         data: { containerId },
       })
     } catch (botError) {
-      // If bot fails to start, mark request as failed
       await payload.update({
         collection: 'verification-requests',
         id: verificationRequest.id,
-        data: { status: 'failed' },
+        data: { status: 'failed', message: 'Bot failed to start' },
       })
       throw botError
     }
 
     return NextResponse.json({
       requestId: verificationRequest.id,
-      token,
       status: 'pending',
     })
   } catch (error) {

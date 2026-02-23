@@ -19,37 +19,40 @@ const adminAccessControl = ({ req }: { req: PayloadRequest }): boolean | Promise
 
 /**
  * Hard Reset Hook for nickname protection
- * - If user with same username exists and isSystemVerified: false -> delete unverified user (allows re-registration)
- * - If user with same username exists and isSystemVerified: true -> throw error
+ * Checks both platform username and in-game nickname:
+ * - If unverified user exists with same username or ingameNick -> delete (allows re-registration)
+ * - If verified user exists with same username or ingameNick -> throw error
  */
 const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
   if (operation !== 'create' || !data.username) return data
 
   const payload = req.payload
 
-  // Check if user with same username exists
+  // Check both username and ingameNick conflicts
   const existingUsers = await payload.find({
     collection: 'users',
-    where: { username: { equals: data.username } },
-    limit: 1,
+    where: {
+      or: [
+        { username: { equals: data.username } },
+        ...(data.ingameNick ? [{ ingameNick: { equals: data.ingameNick } }] : []),
+      ],
+    },
+    limit: 10,
   })
 
-  if (existingUsers.docs.length === 0) return data
+  for (const existingUser of existingUsers.docs) {
+    if (existingUser.isSystemVerified) {
+      throw new Error(
+        'This nickname is already protected. Please choose a different name or contact support.',
+      )
+    }
 
-  const existingUser = existingUsers.docs[0]
-
-  // If verified, throw error - nickname is protected
-  if (existingUser.isSystemVerified) {
-    throw new Error(
-      'This nickname is already protected. Please choose a different name or contact support.',
-    )
+    // Hard Reset: Delete the unverified user to allow new registration
+    await payload.delete({
+      collection: 'users',
+      id: existingUser.id,
+    })
   }
-
-  // Hard Reset: Delete the unverified user to allow new registration with same nickname
-  await payload.delete({
-    collection: 'users',
-    id: existingUser.id,
-  })
 
   return data
 }
@@ -58,17 +61,17 @@ const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation 
  * After user creation, fetch DDNet stats and populate ingameStats
  */
 const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
-  if (operation !== 'create' || !doc.username) return doc
+  if (operation !== 'create' || !doc.ingameNick) return doc
 
   // Run async — don't block the registration response
   const payload = req.payload
   const userId = doc.id
-  const username = doc.username
+  const ingameNick = doc.ingameNick
 
   setImmediate(async () => {
     try {
       const { getPlayerData } = await import('@/lib/ddnet-helpers')
-      const playerData = await getPlayerData(username, true)
+      const playerData = await getPlayerData(ingameNick, true)
 
       if (!playerData) return
 
@@ -85,9 +88,9 @@ const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, re
         },
       })
 
-      console.log(`[Users] Synced DDNet stats for new user ${username}`)
+      console.log(`[Users] Synced DDNet stats for new user ${ingameNick}`)
     } catch (error) {
-      console.error(`[Users] Failed to sync DDNet stats for ${username}:`, error)
+      console.error(`[Users] Failed to sync DDNet stats for ${ingameNick}:`, error)
     }
   })
 
@@ -150,20 +153,19 @@ export const Users: CollectionConfig = {
       required: true,
       label: 'Username (Login)',
       admin: {
-        description: 'Your username for login (cannot be changed)',
+        description: 'Lowercase login name (auto-set by Payload)',
         readOnly: true,
       },
-      hooks: {
-        beforeChange: [
-          ({ value, operation }) => {
-            // Set username = name on creation
-            if (operation === 'create') {
-              return value
-            }
-            // Prevent username changes after creation
-            return value
-          },
-        ],
+    },
+    {
+      name: 'ingameNick',
+      type: 'text',
+      unique: true,
+      required: true,
+      label: 'In-Game Nickname',
+      admin: {
+        description: 'Case-sensitive DDNet nickname for verification and display',
+        readOnly: true,
       },
     },
 
@@ -238,7 +240,11 @@ export const Users: CollectionConfig = {
       },
       fields: [
         { name: 'points', type: 'number', defaultValue: 0 },
-        { name: 'rank', type: 'number', admin: { description: 'Global completionist rank from DDNet' } },
+        {
+          name: 'rank',
+          type: 'number',
+          admin: { description: 'Global completionist rank from DDNet' },
+        },
         {
           name: 'skin',
           type: 'group',

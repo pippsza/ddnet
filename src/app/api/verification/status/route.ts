@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       status: verificationRequest.status,
+      message: verificationRequest.message || null,
       currentServer: verificationRequest.currentServer || null,
       expiresAt: verificationRequest.expiresAt,
     })

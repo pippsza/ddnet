@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         players: [
           {
             user: user.id,
-            ingameNick: user.username,
+            ingameNick: user.ingameNick,
             roundsWon: 0,
             isReady: false,
           },

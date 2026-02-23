@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/pippsza/code/steam-diploma/**)",
+      "Bash(sudo docker build:*)",
+      "Bash(docker ps:*)",
+      "Bash(npx payload:*)",
+      "WebFetch(domain:ddnet.org)",
+      "Bash(node /tmp/check-online.mjs:*)",
+      "Bash(npx tsx:*)",
+      "Bash(./node_modules/.bin/tsx:*)",
+      "WebFetch(domain:ddstats.tw)",
+      "Bash(echo:*)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/home/pippsza/code/ddnet/src/app/api/forum",
+      "/home/pippsza/code/ddnet/src/app/(frontend)/app/forum/[id]",
+      "/home/pippsza/code/ddnet/src/app/api/chat/conversations/[id]",
+      "/home/pippsza/code/ddnet/src/app/api/articles/[slug]",
+      "/home/pippsza/code/ddnet/src/app/api/notifications/[id]"
+    ]
+  }
+}

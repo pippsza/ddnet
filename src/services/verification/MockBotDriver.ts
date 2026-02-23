@@ -7,15 +7,24 @@ import type { BotDriverInterface } from './types'
 export class MockBotDriver implements BotDriverInterface {
   private activeContainers = new Map<string, NodeJS.Timeout>()
 
-  async startVerification(nickname: string, token: string, requestId: string): Promise<string> {
+  async startVerification(
+    nickname: string,
+    requestId: string,
+    serverIp: string,
+    serverPort: number,
+    _botLoginToken: string,
+  ): Promise<string> {
     const containerId = `mock-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
-    // Simulate bot finding player after 2-5 seconds
-    const delay = 2000 + Math.random() * 3000
+    // Simulate bot checking player after 3-5 seconds
+    const delay = 3000 + Math.random() * 2000
 
     const timeout = setTimeout(async () => {
       try {
         const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        // Randomly simulate verified or hidden
+        const result = Math.random() > 0.3 ? 'verified' : 'hidden'
+
         await fetch(`${backendUrl}/api/verification/bot-callback`, {
           method: 'POST',
           headers: {
@@ -25,9 +34,9 @@ export class MockBotDriver implements BotDriverInterface {
           body: JSON.stringify({
             requestId,
             nickname,
-            serverIp: '127.0.0.1',
-            serverPort: 8303,
-            found: true,
+            serverIp,
+            serverPort,
+            result,
           }),
         })
       } catch (error) {
@@ -36,7 +45,7 @@ export class MockBotDriver implements BotDriverInterface {
     }, delay)
 
     this.activeContainers.set(containerId, timeout)
-    console.log(`[MockBotDriver] Started verification for ${nickname} (container: ${containerId})`)
+    console.log(`[MockBotDriver] Started verification for ${nickname} on ${serverIp}:${serverPort} (container: ${containerId})`)
 
     return containerId
   }
@@ -62,10 +71,9 @@ export class MockBotDriver implements BotDriverInterface {
       `[MockBotDriver] Started race bot for ${raceId} on ${serverIp}:${serverPort} (players: ${players.join(', ')})`,
     )
 
-    // Send first finish quickly, then periodic finishes
     const sendFinish = async () => {
       const randomPlayer = players[Math.floor(Math.random() * players.length)]
-      const randomTime = 30 + Math.random() * 120 // 30-150 seconds
+      const randomTime = 30 + Math.random() * 120
 
       try {
         const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
@@ -87,12 +95,11 @@ export class MockBotDriver implements BotDriverInterface {
       }
     }
 
-    // First finish after 3 seconds
     setTimeout(() => sendFinish(), 3000)
 
     const interval = setInterval(async () => {
       await sendFinish()
-    }, 10000 + Math.random() * 10000) // Every 10-20 seconds
+    }, 10000 + Math.random() * 10000)
 
     this.activeContainers.set(containerId, interval)
     return containerId

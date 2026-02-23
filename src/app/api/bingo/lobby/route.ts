@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
         createdBy: creator
           ? {
               id: creator.id,
-              username: creator.username,
+              username: creator.ingameNick,
             }
           : null,
         players: totalPlayers,

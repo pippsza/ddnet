@@ -77,10 +77,11 @@ export interface Config {
     articles: Article;
     'forum-posts': ForumPost;
     support: Support;
-    servers: Server;
     'verification-requests': VerificationRequest;
     'chat-sessions': ChatSession;
     'push-subscriptions': PushSubscription;
+    conversations: Conversation;
+    messages: Message;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,10 +99,11 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'forum-posts': ForumPostsSelect<false> | ForumPostsSelect<true>;
     support: SupportSelect<false> | SupportSelect<true>;
-    servers: ServersSelect<false> | ServersSelect<true>;
     'verification-requests': VerificationRequestsSelect<false> | VerificationRequestsSelect<true>;
     'chat-sessions': ChatSessionsSelect<false> | ChatSessionsSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -111,8 +113,12 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'verification-settings': VerificationSetting;
+  };
+  globalsSelect: {
+    'verification-settings': VerificationSettingsSelect<false> | VerificationSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -144,6 +150,10 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  /**
+   * Case-sensitive DDNet nickname for verification and display
+   */
+  ingameNick: string;
   roles: 'admin' | 'player' | 'moderator';
   isSystemVerified?: boolean | null;
   avatar?: (string | null) | Media;
@@ -408,7 +418,7 @@ export interface User {
   apiKeyIndex?: string | null;
   email?: string | null;
   /**
-   * Your username for login (cannot be changed)
+   * Lowercase login name (auto-set by Payload)
    */
   username: string;
   resetPasswordToken?: string | null;
@@ -433,28 +443,12 @@ export interface User {
 export interface Media {
   id: string;
   alt: string;
-  cloudinaryPublicId?: string | null;
-  cloudinaryUrl?: string | null;
-  cloudinaryResourceType?: string | null;
-  cloudinaryFormat?: string | null;
-  cloudinaryVersion?: number | null;
-  /**
-   * Direct URL to the original file without transformations
-   */
-  originalUrl?: string | null;
-  /**
-   * URL with applied transformations
-   */
-  transformedUrl?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
   mimeType?: string | null;
-  /**
-   * File size in bytes
-   */
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
@@ -987,35 +981,6 @@ export interface Support {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "servers".
- */
-export interface Server {
-  id: string;
-  /**
-   * Human-readable name for the server
-   */
-  name: string;
-  /**
-   * Server IP address (e.g., 127.0.0.1)
-   */
-  ip: string;
-  /**
-   * Server port (default: 8303)
-   */
-  port: number;
-  /**
-   * Whether this server should be included in bot searches
-   */
-  isActive?: boolean | null;
-  /**
-   * Server region (e.g., EU, NA, AS)
-   */
-  region?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verification-requests".
  */
 export interface VerificationRequest {
@@ -1024,29 +989,20 @@ export interface VerificationRequest {
    * The in-game nickname to verify
    */
   nickname: string;
+  status: 'pending' | 'success' | 'expired' | 'failed';
   /**
-   * 6-digit verification code
+   * Reason for failure (not_logged_in, not_found, error details)
    */
-  token: string;
+  message?: string | null;
   /**
-   * Current verification status
-   */
-  status: 'pending' | 'active' | 'success' | 'expired' | 'failed';
-  /**
-   * IP:Port where the bot found the player
+   * IP:Port where the bot checked the player
    */
   currentServer?: string | null;
   /**
    * Docker container ID running the bot
    */
   containerId?: string | null;
-  /**
-   * User who initiated the verification
-   */
   user: string | User;
-  /**
-   * When this verification request expires
-   */
   expiresAt: string;
   updatedAt: string;
   createdAt: string;
@@ -1086,6 +1042,35 @@ export interface PushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: string;
+  participants: {
+    user: string | User;
+    id?: string | null;
+  }[];
+  lastMessage?: string | null;
+  lastMessageAt?: string | null;
+  lastMessageBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: string;
+  conversation: string | Conversation;
+  sender: string | User;
+  content: string;
+  isRead?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1154,10 +1139,6 @@ export interface PayloadLockedDocument {
         value: string | Support;
       } | null)
     | ({
-        relationTo: 'servers';
-        value: string | Server;
-      } | null)
-    | ({
         relationTo: 'verification-requests';
         value: string | VerificationRequest;
       } | null)
@@ -1168,6 +1149,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'push-subscriptions';
         value: string | PushSubscription;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: string | Conversation;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: string | Message;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1216,6 +1205,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  ingameNick?: T;
   roles?: T;
   isSystemVerified?: T;
   avatar?: T;
@@ -1550,13 +1540,6 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
-  cloudinaryPublicId?: T;
-  cloudinaryUrl?: T;
-  cloudinaryResourceType?: T;
-  cloudinaryFormat?: T;
-  cloudinaryVersion?: T;
-  originalUrl?: T;
-  transformedUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1831,25 +1814,12 @@ export interface SupportSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "servers_select".
- */
-export interface ServersSelect<T extends boolean = true> {
-  name?: T;
-  ip?: T;
-  port?: T;
-  isActive?: T;
-  region?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verification-requests_select".
  */
 export interface VerificationRequestsSelect<T extends boolean = true> {
   nickname?: T;
-  token?: T;
   status?: T;
+  message?: T;
   currentServer?: T;
   containerId?: T;
   user?: T;
@@ -1893,6 +1863,35 @@ export interface PushSubscriptionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  participants?:
+    | T
+    | {
+        user?: T;
+        id?: T;
+      };
+  lastMessage?: T;
+  lastMessageAt?: T;
+  lastMessageBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  sender?: T;
+  content?: T;
+  isRead?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1930,6 +1929,59 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-settings".
+ */
+export interface VerificationSetting {
+  id: string;
+  /**
+   * Servers where /verify command is available
+   */
+  servers: {
+    /**
+     * Human-readable name (e.g., "GER Verify #1")
+     */
+    name: string;
+    ip: string;
+    port: number;
+    /**
+     * Server region (e.g., EU, NA, AS)
+     */
+    region?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Maximum number of verification bots running simultaneously
+   */
+  maxConcurrentBots?: number | null;
+  /**
+   * How long a verification request stays valid (default: 10 minutes)
+   */
+  verificationTtlMs?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-settings_select".
+ */
+export interface VerificationSettingsSelect<T extends boolean = true> {
+  servers?:
+    | T
+    | {
+        name?: T;
+        ip?: T;
+        port?: T;
+        region?: T;
+        id?: T;
+      };
+  maxConcurrentBots?: T;
+  verificationTtlMs?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

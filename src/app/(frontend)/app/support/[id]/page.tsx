@@ -97,7 +97,7 @@ export default function SupportTicketPage({ params }: { params: Promise<{ id: st
         {(ticket.responses || []).map((response: any, i: number) => {
           const isStaff = response.isStaffResponse
           const authorName = typeof response.author === 'object'
-            ? response.author?.username || 'Staff'
+            ? response.author?.ingameNick || 'Staff'
             : isStaff ? 'Staff' : 'You'
 
           return (

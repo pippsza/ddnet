@@ -7,18 +7,18 @@ export async function GET(req: NextRequest) {
     const query = req.nextUrl.searchParams.get('q')?.trim()
     const payload = await getPayload({ config })
 
-    // Search registered users
+    // Search registered users by ingameNick
     const { docs: registeredUsers } = await payload.find({
       collection: 'users',
       where: query
-        ? { username: { contains: query } }
+        ? { ingameNick: { contains: query } }
         : {},
       limit: query ? 20 : 12,
       sort: '-createdAt',
     })
 
     const registered = registeredUsers.map((u) => ({
-      name: u.username,
+      name: u.ingameNick,
       points: u.ingameStats?.points || 0,
       rank: u.ingameStats?.rank || undefined,
       isVerified: u.isSystemVerified || false,
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
           if (data.player) {
             // Check if already in registered list
             const alreadyRegistered = registered.some(
-              (r) => r.name.toLowerCase() === data.player.toLowerCase(),
+              (r) => r.name?.toLowerCase() === data.player.toLowerCase(),
             )
             if (!alreadyRegistered) {
               ddnetResults.push({

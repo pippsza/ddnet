@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { findPlayerOnline } from '@/lib/ddnet-helpers'
 
 export async function GET(
   req: NextRequest,
@@ -12,10 +13,10 @@ export async function GET(
 
     const payload = await getPayload({ config })
 
-    // Check if registered user
+    // Check if registered user by ingameNick
     const { docs: users } = await payload.find({
       collection: 'users',
-      where: { username: { equals: playerName } },
+      where: { ingameNick: { equals: playerName } },
       limit: 1,
       depth: 1,
     })
@@ -52,11 +53,25 @@ export async function GET(
       return NextResponse.json({ error: 'Player not found' }, { status: 404 })
     }
 
+    // Check online status via DDNet Master Server
+    let onlineStatus = null
+    try {
+      const status = await findPlayerOnline(playerName)
+      if (status.online) {
+        onlineStatus = {
+          server: status.server,
+          skin: status.skin,
+        }
+      }
+    } catch {
+      // Online check failure is non-critical
+    }
+
     return NextResponse.json({
       registered: registeredUser
         ? {
             id: registeredUser.id,
-            username: registeredUser.username,
+            username: registeredUser.ingameNick,
             isVerified: registeredUser.isSystemVerified || false,
             skin: registeredUser.ingameStats?.skin || null,
             bingo: registeredUser.bingo || null,
@@ -65,6 +80,7 @@ export async function GET(
           }
         : null,
       ddnet: ddnetData,
+      online: onlineStatus,
     })
   } catch (error) {
     console.error('[API] Player detail error:', error)

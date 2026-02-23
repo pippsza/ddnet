@@ -1,6 +1,5 @@
 export const VERIFICATION_STATUSES = [
   { label: 'Pending', value: 'pending' },
-  { label: 'Active', value: 'active' },
   { label: 'Success', value: 'success' },
   { label: 'Expired', value: 'expired' },
   { label: 'Failed', value: 'failed' },
@@ -10,5 +9,4 @@ export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number]['value']
 
 export const VERIFICATION_TTL_MS = 10 * 60 * 1000 // 10 minutes
 export const MAX_CONCURRENT_BOTS = 4
-export const TOKEN_LENGTH = 6
 export const POLLING_INTERVAL_MS = 3000 // 3 seconds

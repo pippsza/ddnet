@@ -306,18 +306,39 @@ export async function checkMapsFinishedAfter(
 // ============================================================================
 
 /**
- * Get player's skin info from online status
+ * Get player's skin info.
+ * First tries DDStats profile API (works even when player is offline),
+ * then falls back to Master Server (only when online, but has live colors).
  */
 export async function getPlayerSkinInfo(
   nickname: string
 ): Promise<{ name: string; colorBody: number; colorFeet: number } | null> {
-  const onlineStatus = await findPlayerOnline(nickname)
+  // Try DDStats profile API first (works offline, has skin_name)
+  try {
+    const res = await fetch(
+      `https://ddstats.tw/profile/json?player=${encodeURIComponent(nickname)}`,
+      { signal: AbortSignal.timeout(5000) },
+    )
+    if (res.ok) {
+      const profile = await res.json()
+      if (profile.skin_name) {
+        return {
+          name: profile.skin_name,
+          colorBody: profile.skin_color_body || 0,
+          colorFeet: profile.skin_color_feet || 0,
+        }
+      }
+    }
+  } catch {
+    // DDStats unavailable, try Master Server
+  }
 
+  // Fallback: Master Server (only works when player is online)
+  const onlineStatus = await findPlayerOnline(nickname)
   if (onlineStatus.online && onlineStatus.skin) {
     return onlineStatus.skin
   }
 
-  // Player is offline, can't get current skin
   return null
 }
 

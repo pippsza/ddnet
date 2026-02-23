@@ -55,7 +55,7 @@ export async function POST(
       ...race.players,
       {
         user: user.id,
-        ingameNick: user.username,
+        ingameNick: user.ingameNick,
         roundsWon: 0,
         isReady: false,
       },

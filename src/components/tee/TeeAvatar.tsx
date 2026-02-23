@@ -26,10 +26,13 @@ interface TeeOptions {
 }
 
 interface TeeInstance {
-  lookAtCursor: () => void
-  unbindContainer: (clear?: boolean) => void
-  setBodyColor: (color: number) => void
-  setFeetColor: (color: number) => void
+  api: {
+    functions: {
+      lookAtCursor: () => void
+      dontLookAtCursor: () => void
+      unbindContainer: (clear?: boolean) => void
+    }
+  }
 }
 
 interface TeeAssemblerGlobal {
@@ -47,12 +50,12 @@ declare global {
 // ============================================================================
 
 const SIZES = {
-  xs: 24,
-  sm: 32,
-  md: 48,
-  lg: 64,
-  xl: 96,
-  '2xl': 128,
+  xs: 40,
+  sm: 56,
+  md: 80,
+  lg: 112,
+  xl: 160,
+  '2xl': 210,
 } as const
 
 const TEE_BASE_SIZE = 96 // TeeAssembler renders at 96em with font-size: 1px
@@ -126,7 +129,7 @@ export function TeeAvatar({
     // Cleanup previous instance
     if (teeRef.current) {
       try {
-        teeRef.current.unbindContainer(true)
+        teeRef.current.api.functions.dontLookAtCursor()
       } catch {
         // Ignore cleanup errors
       }
@@ -152,7 +155,7 @@ export function TeeAvatar({
       teeRef.current = tee
 
       if (lookAtCursor) {
-        tee.lookAtCursor()
+        tee.api.functions.lookAtCursor()
       }
     } catch (e) {
       console.error('[TeeAvatar] Failed to initialize:', e)
@@ -169,7 +172,7 @@ export function TeeAvatar({
     return () => {
       if (teeRef.current) {
         try {
-          teeRef.current.unbindContainer(true)
+          teeRef.current.api.functions.dontLookAtCursor()
         } catch {
           // Ignore cleanup errors
         }

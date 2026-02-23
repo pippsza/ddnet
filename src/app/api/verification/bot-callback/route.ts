@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import payloadConfig from '@payload-config'
+import type { BotCallbackResult } from '@/services/verification/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,10 +13,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { requestId, nickname, serverIp, serverPort, found } = body
+    const { requestId, nickname, serverIp, serverPort, result, message } = body as {
+      requestId: string
+      nickname: string
+      serverIp: string
+      serverPort: number
+      result: BotCallbackResult
+      message?: string
+    }
 
-    if (!requestId) {
-      return NextResponse.json({ error: 'Request ID is required' }, { status: 400 })
+    if (!requestId || !result) {
+      return NextResponse.json({ error: 'Request ID and result are required' }, { status: 400 })
     }
 
     const payload = await getPayload({ config: payloadConfig })
@@ -32,31 +40,77 @@ export async function POST(request: NextRequest) {
 
     // Don't update if already completed
     if (['success', 'expired'].includes(verificationRequest.status)) {
-      return NextResponse.json({
-        success: true,
-        message: 'Request already completed',
-      })
+      return NextResponse.json({ success: true, message: 'Request already completed' })
     }
 
-    if (found) {
-      // Bot found the player - update status to active
-      await payload.update({
-        collection: 'verification-requests',
-        id: requestId,
-        data: {
-          status: 'active',
-          currentServer: `${serverIp}:${serverPort}`,
-        },
-      })
-      console.log(`[Bot Callback] Player ${nickname} found on ${serverIp}:${serverPort}`)
-    } else {
-      // Bot couldn't find player on any server
-      await payload.update({
-        collection: 'verification-requests',
-        id: requestId,
-        data: { status: 'failed' },
-      })
-      console.log(`[Bot Callback] Player ${nickname} not found on any server`)
+    const serverStr = serverIp ? `${serverIp}:${serverPort}` : undefined
+
+    switch (result) {
+      case 'verified': {
+        // Mark user as verified
+        const userId =
+          typeof verificationRequest.user === 'string'
+            ? verificationRequest.user
+            : verificationRequest.user.id
+
+        await payload.update({
+          collection: 'users',
+          id: userId,
+          data: { isSystemVerified: true },
+        })
+
+        await payload.update({
+          collection: 'verification-requests',
+          id: requestId,
+          data: {
+            status: 'success',
+            currentServer: serverStr,
+          },
+        })
+
+        console.log(`[Bot Callback] Player ${nickname} VERIFIED on ${serverStr}`)
+        break
+      }
+
+      case 'hidden': {
+        await payload.update({
+          collection: 'verification-requests',
+          id: requestId,
+          data: {
+            status: 'failed',
+            message: 'not_logged_in',
+            currentServer: serverStr,
+          },
+        })
+        console.log(`[Bot Callback] Player ${nickname} is HIDDEN (not logged in) on ${serverStr}`)
+        break
+      }
+
+      case 'not_found': {
+        await payload.update({
+          collection: 'verification-requests',
+          id: requestId,
+          data: {
+            status: 'failed',
+            message: 'not_found',
+          },
+        })
+        console.log(`[Bot Callback] Player ${nickname} not found on server`)
+        break
+      }
+
+      case 'error': {
+        await payload.update({
+          collection: 'verification-requests',
+          id: requestId,
+          data: {
+            status: 'failed',
+            message: message || 'unknown_error',
+          },
+        })
+        console.log(`[Bot Callback] Error for ${nickname}: ${message}`)
+        break
+      }
     }
 
     return NextResponse.json({ success: true })

@@ -17,9 +17,15 @@ export async function POST(req: NextRequest) {
     // Resolve recipient: either by ID directly or look up by username
     let resolvedRecipientId: string | undefined = body.recipientId
     if (!resolvedRecipientId && targetUsername) {
+      // Search by both username (login) and ingameNick (display name)
       const { docs: found } = await payload.find({
         collection: 'users',
-        where: { username: { equals: targetUsername } },
+        where: {
+          or: [
+            { username: { equals: targetUsername } },
+            { ingameNick: { equals: targetUsername } },
+          ],
+        },
         limit: 1,
       })
       if (found.length === 0) {

@@ -15,6 +15,16 @@ export interface ClientOptions {
   timeout?: number
 }
 
+interface RawMessage {
+  team: number
+  client_id: number
+  message: string
+  author?: {
+    ClientInfo?: { name: string; clan: string; skin: string; country: number }
+    PlayerInfo?: { client_id: number; team: number; score: number }
+  }
+}
+
 /**
  * Teeworlds client wrapper for bot functionality
  * Uses the teeworlds npm package (v2.5.x)
@@ -131,10 +141,22 @@ export class TeeworldsClient {
   disconnect(): void {
     this.onDisconnectHandler = null // Prevent reconnect on intentional disconnect
     if (this.client && this.connected) {
+      this.flush() // flush any queued messages before sending disconnect
       this.client.Disconnect()
       this.connected = false
       this.players.clear()
     }
+  }
+
+  /**
+   * Gracefully disconnect — flushes queued messages, sends disconnect, and
+   * waits for packets to be flushed before returning.
+   */
+  async gracefulDisconnect(waitMs = 500): Promise<void> {
+    this.flush() // ensure any queued messages are sent
+    await this.sleep(waitMs) // wait for server to process the message
+    this.disconnect()        // flush again + send disconnect packet
+    await this.sleep(300)    // wait for disconnect packet to flush before process exits
   }
 
   /**
@@ -163,11 +185,31 @@ export class TeeworldsClient {
   }
 
   /**
-   * Send a whisper to a player
+   * Flush all queued messages immediately.
+   * The teeworlds library queues messages via QueueChunkEx() and only
+   * auto-flushes every ~500ms. Call this after say()/whisper() to ensure
+   * the message is actually sent over the wire before disconnecting.
+   */
+  flush(): void {
+    if (!this.client) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(this.client as any).Flush()
+  }
+
+  /**
+   * Send a whisper to a player by name.
+   * DDNet /whisper accepts both client_id and player name.
    */
   whisper(nickname: string, message: string): void {
-    this.say(`/w "${nickname}" ${message}`)
-    console.log(`[Client] Whispered to ${nickname}`)
+    const player = this.getPlayerByName(nickname)
+    if (player) {
+      this.say(`/whisper ${player.clientId} ${message}`)
+      console.log(`[Client] Whispered to ${nickname} (cid: ${player.clientId})`)
+    } else {
+      // Fallback: DDNet accepts player name directly
+      this.say(`/whisper ${nickname} ${message}`)
+      console.log(`[Client] Whispered to ${nickname} (by name, no snapshot data)`)
+    }
   }
 
   /**
@@ -204,17 +246,67 @@ export class TeeworldsClient {
   }
 
   /**
-   * Subscribe to chat messages
+   * Subscribe to chat messages (from players only, client_id >= 0)
    */
   onMessage(handler: (message: { author: string; text: string; team: boolean }) => void): void {
     if (!this.client) return
 
-    this.client.on('message', (msg: { message: string; author: { name: string }; team: boolean }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(this.client as any).on('message', (msg: RawMessage) => {
+      // Skip server messages (client_id === -1, no author)
+      if (msg.client_id === -1 || !msg.author?.ClientInfo) return
+
       handler({
-        author: msg.author.name,
+        author: msg.author.ClientInfo.name,
         text: msg.message,
-        team: msg.team,
+        team: !!msg.team,
       })
+    })
+  }
+
+  /**
+   * Subscribe to server/system messages (client_id === -1)
+   */
+  onServerMessage(handler: (text: string) => void): void {
+    if (!this.client) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(this.client as any).on('message', (msg: RawMessage) => {
+      if (msg.client_id === -1) {
+        handler(msg.message)
+      }
+    })
+  }
+
+  /**
+   * Wait for a server message matching a regex pattern.
+   * Returns the full message text or null on timeout.
+   */
+  waitForServerMessage(pattern: RegExp, timeoutMs: number): Promise<string | null> {
+    return new Promise((resolve) => {
+      if (!this.client) {
+        resolve(null)
+        return
+      }
+
+      const emitter = this.client as any // eslint-disable-line @typescript-eslint/no-explicit-any
+
+      const listener = (msg: RawMessage) => {
+        if (msg.client_id !== -1) return
+
+        if (pattern.test(msg.message)) {
+          clearTimeout(timeout)
+          emitter.off('message', listener)
+          resolve(msg.message)
+        }
+      }
+
+      const timeout = setTimeout(() => {
+        emitter.off('message', listener)
+        resolve(null)
+      }, timeoutMs)
+
+      emitter.on('message', listener)
     })
   }
 

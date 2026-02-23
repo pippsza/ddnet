@@ -30,6 +30,18 @@ export async function GET(req: NextRequest) {
       const maxPlayers = game.mode === 'solo' ? 2 : 4
       const creator = typeof game.createdBy === 'object' ? game.createdBy : null
 
+      // Determine if current user won this game
+      let isWinner: boolean | null = null
+      if (game.gameStatus === 'completed' && game.winnerTeam != null) {
+        const userTeamIndex = game.teams.findIndex((team) =>
+          team.players?.some((p) => {
+            const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
+            return pUserId === user.id
+          }),
+        )
+        isWinner = userTeamIndex === game.winnerTeam
+      }
+
       return {
         id: game.id,
         title: game.title,
@@ -39,10 +51,13 @@ export async function GET(req: NextRequest) {
         winCondition: game.winCondition,
         gameStatus: game.gameStatus,
         isPublic: game.isPublic,
-        createdBy: creator ? { id: creator.id, username: creator.username } : null,
+        isWinner,
+        createdBy: creator ? { id: creator.id, username: creator.ingameNick } : null,
         players: totalPlayers,
         maxPlayers,
         createdAt: game.createdAt,
+        completedAt: game.completedAt || null,
+        duration: game.duration || null,
       }
     })
 

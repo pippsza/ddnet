@@ -5,6 +5,10 @@ const nextConfig = {
   output: 'standalone',
   // Externalize dockerode and its native dependencies for server-side only
   serverExternalPackages: ['dockerode', 'ssh2', 'cpu-features', 'sqlite3', 'better-sqlite3'],
+  // Force-include sqlite3/ddnet in standalone output (not auto-traced due to dynamic import)
+  outputFileTracingIncludes: {
+    '/*': ['./node_modules/sqlite3/**/*', './node_modules/ddnet/**/*'],
+  },
   // Your Next.js config here
   webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {

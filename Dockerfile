@@ -69,10 +69,6 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# sqlite3/ddnet not auto-traced by standalone (dynamic import) — copy from deps
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.pnpm/sqlite3@* ./node_modules/.pnpm/sqlite3@
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.pnpm/ddnet@* ./node_modules/.pnpm/ddnet@
-
 USER nextjs
 
 EXPOSE 3000

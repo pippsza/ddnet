@@ -4,6 +4,7 @@ import {
   addMessages,
   addDeliveries,
   addWhisperParticipant,
+  updateServerPlayers,
   popOutbox,
   updateStatus,
 } from '@/lib/ingame-chat-store'
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === 'messages') {
-      const { messages, deliveries } = body
+      const { messages, deliveries, players } = body
       if (Array.isArray(messages) && messages.length > 0) {
         addMessages(sessionId, messages)
         // Track unique message authors as whisper participants
@@ -51,6 +52,10 @@ export async function POST(req: NextRequest) {
       }
       if (Array.isArray(deliveries) && deliveries.length > 0) {
         addDeliveries(sessionId, deliveries)
+      }
+      // Update server player list from bot snapshots
+      if (Array.isArray(players)) {
+        updateServerPlayers(sessionId, players)
       }
     } else if (type === 'status') {
       const { status } = body
@@ -67,7 +72,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** GET — bot polls for messages to send (whisper) */
+/** GET — bot polls for messages to send (public chat or whisper) */
 export async function GET(req: NextRequest) {
   if (!verifyBotSecret(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

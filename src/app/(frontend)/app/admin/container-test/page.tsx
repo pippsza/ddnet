@@ -113,7 +113,7 @@ export default function ContainerTestPage() {
 
     if (newMessages.length > 0 || deliveries.length > 0) {
       setAllMessages((prev) => {
-        let updated = newMessages.length > 0 ? [...prev, ...newMessages] : [...prev]
+        const updated = newMessages.length > 0 ? [...prev, ...newMessages] : [...prev]
         for (const text of deliveries) {
           const idx = updated.findIndex((m) => m.isOwn && !m.delivered && m.text === text)
           if (idx !== -1) {

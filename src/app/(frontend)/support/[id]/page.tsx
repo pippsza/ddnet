@@ -18,6 +18,7 @@ import { LexicalContent } from '@/components/ui/LexicalContent'
 import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { extractText } from '@/lib/lexical-utils'
+import { usePermissions } from '@/hooks/use-permissions'
 import { ArrowLeft } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -40,7 +41,8 @@ export default function SupportTicketPage({ params }: { params: Promise<{ id: st
 
   const ticket = data?.id ? data : null
 
-  const isStaff = meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator'
+  const { hasPermission: hasPerm } = usePermissions()
+  const isStaff = hasPerm('support', 'reply')
 
   // Typing indicator
   const { typingUsers, notifyTyping } = useTypingIndicator({
@@ -184,7 +186,7 @@ export default function SupportTicketPage({ params }: { params: Promise<{ id: st
           const authorObj = typeof response.author === 'object' ? response.author : null
           const authorName = authorObj?.ingameNick || (isOwn ? 'You' : 'Support')
           const skinName = authorObj?.ingameStats?.skin?.name
-          const authorRole = authorObj?.roles
+          const authorRole = (authorObj as any)?.primaryRole || authorObj?.roles
 
           const avatar = (
             <div className="shrink-0">

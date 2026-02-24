@@ -203,7 +203,7 @@ function LeaderboardContent() {
                               {entry.user.isSystemVerified && (
                                 <StatusBadge status="verified" className="text-[10px] px-1.5 py-0" />
                               )}
-                              <RoleBadge role={entry.user.roles} className="text-[10px] px-1.5 py-0" />
+                              <RoleBadge role={(entry.user as any).primaryRole || entry.user.roles} className="text-[10px] px-1.5 py-0" />
                             </Link>
                           </TableCell>
                           <TableCell className="text-right text-muted-foreground">

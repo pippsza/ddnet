@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -12,31 +13,26 @@ export const Articles: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: ({ req }) => {
-      if (req.user && (req.user.roles === 'admin' || req.user.roles === 'moderator')) {
+    read: async ({ req }) => {
+      if (req.user && (await hasPermission(req, 'articles', 'view_drafts'))) {
         return true
       }
-
-      return {
-        _status: {
-          equals: 'published',
-        },
-      }
+      return { _status: { equals: 'published' } }
     },
 
-    create: ({ req }) => {
+    create: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'articles', 'create')
     },
 
-    update: ({ req }) => {
+    update: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'articles', 'edit')
     },
 
-    delete: ({ req }) => {
+    delete: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin'
+      return hasPermission(req, 'articles', 'delete')
     },
   },
 

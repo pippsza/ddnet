@@ -12,6 +12,7 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Eye, Heart, Clock, Pencil, ArrowLeft } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -44,8 +45,8 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
     `/api/articles?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
     fetcher,
   )
-  const { data: meData } = useSWR('/api/users/me', fetcher)
-  const isStaff = meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator'
+  const { hasPermission } = usePermissions()
+  const canEditArticles = hasPermission('articles', 'edit')
 
   const [liking, setLiking] = useState(false)
   const [liked, setLiked] = useState(false)
@@ -99,7 +100,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
         >
           <ArrowLeft className="h-4 w-4" /> Back to Articles
         </Link>
-        {isStaff && (
+        {canEditArticles && (
           <Button asChild size="sm" variant="outline">
             <Link href={`/app/articles/${slug}/edit`}>
               <Pencil className="h-3.5 w-3.5 mr-1.5" />
@@ -176,7 +177,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
               />
             </OnlineStatusIndicator>
             <span>{article.author?.ingameNick || 'Admin'}</span>
-            <RoleBadge role={article.author?.roles} className="text-[10px] px-1.5 py-0" />
+            <RoleBadge role={(article.author as any)?.primaryRole || article.author?.roles} className="text-[10px] px-1.5 py-0" />
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" />

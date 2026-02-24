@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requireAdminPage } from '@/lib/api-auth'
 import { getBotManager } from '@/services/verification/BotManager'
 
 /** GET — fetch Docker container logs */
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-    if (!user || user.roles !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'container_test')
+    if (result instanceof NextResponse) return result
 
     const containerId = req.nextUrl.searchParams.get('containerId')
     if (!containerId) {

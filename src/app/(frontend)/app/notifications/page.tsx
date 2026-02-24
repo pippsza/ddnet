@@ -19,6 +19,7 @@ import {
   Star,
   Info,
   CheckCheck,
+  Wifi,
 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -33,6 +34,7 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> =
   achievement: { icon: Star, color: 'text-amber-500 bg-amber-500/10', label: 'Achievement' },
   system: { icon: Info, color: 'text-gray-500 bg-gray-500/10', label: 'System' },
   info: { icon: Info, color: 'text-blue-500 bg-blue-500/10', label: 'Info' },
+  player_online: { icon: Wifi, color: 'text-green-500 bg-green-500/10', label: 'Player Online' },
 }
 
 function NotificationsContent() {

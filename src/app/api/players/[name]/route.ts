@@ -73,6 +73,7 @@ export async function GET(
             id: registeredUser.id,
             username: registeredUser.ingameNick,
             roles: registeredUser.roles || 'player',
+            primaryRole: (registeredUser as any).primaryRole || null,
             isVerified: registeredUser.isSystemVerified || false,
             skin: registeredUser.ingameStats?.skin?.name
               ? {

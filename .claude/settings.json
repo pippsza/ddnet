@@ -31,7 +31,12 @@
       "Bash(xargs cat)",
       "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/settings/page.tsx)",
       "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/layout.tsx)",
-      "Bash(head -100 /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/dashboard/page.tsx)"
+      "Bash(head -100 /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/dashboard/page.tsx)",
+      "Bash(grep -r \"sendPushToUser\\\\|Notifications collection\\\\|notification\" /home/pippsza/code/ddnet/src/collections/*.ts)",
+      "Bash(docker images --format '{{.Repository}}:{{.Tag}}\\\\t{{.Size}}')",
+      "Bash(docker images bingo-bot:latest --format '{{.Size}}')",
+      "Bash(docker images node:22.17.0-alpine --format '{{.Size}}')",
+      "Bash(docker run --rm node:22.17.0-alpine sh -c \"apk info --size docker-cli 2>/dev/null\")"
     ],
     "additionalDirectories": [
       "/tmp",
@@ -43,7 +48,8 @@
       "/home/pippsza/code/ddnet/src/app/api/support/[id]",
       "/home/pippsza/code/ddnet/src/app/(frontend)/app/articles/[slug]",
       "/home/pippsza/code/ddnet/src/app/(frontend)/support",
-      "/home/pippsza/code/ddnet/src/app/api/articles/[id]"
+      "/home/pippsza/code/ddnet/src/app/api/articles/[id]",
+      "/home/pippsza/code/ddnet/src/app/api/watched-players"
     ]
   }
 }

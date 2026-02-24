@@ -13,9 +13,12 @@ export async function register() {
     const { startBotCleanupJob } = await import('@/jobs/botCleanup')
     const { startBingoProgressJob } = await import('@/jobs/bingoProgressJob')
 
+    const { startOnlineWatchJob } = await import('@/jobs/onlineWatchJob')
+
     startDDNetSyncJob()
     startBotCleanupJob()
     startBingoProgressJob()
+    startOnlineWatchJob()
 
     console.log('[Instrumentation] All background jobs started')
   }

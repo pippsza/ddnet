@@ -9,14 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { ArrowLeft, Square, Loader2, Lock, ShieldCheck, Users } from 'lucide-react'
+import { ArrowLeft, Square, Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatMessages } from '@/components/chat/ChatMessages'
 import { ChatInput } from '@/components/chat/ChatInput'
@@ -80,10 +73,6 @@ function InGameChatContent() {
   const [containerId, setContainerId] = useState<string | null>(() =>
     sessionId ? loadContainerId(sessionId) : null,
   )
-  // Multi-whisper: track participants and selected recipient
-  const [whisperParticipants, setWhisperParticipants] = useState<string[]>([])
-  const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null)
-
   // Current user data
   const { data: meData } = useSWR('/api/users/me', fetcher)
 
@@ -103,18 +92,9 @@ function InGameChatContent() {
     // Persist target nick and server name from first poll
     if (chatData.targetNick && !targetNick) {
       setTargetNick(chatData.targetNick)
-      // Set default recipient to target nick
-      if (!selectedRecipient) {
-        setSelectedRecipient(chatData.targetNick)
-      }
     }
     if (chatData.serverName && !serverName) {
       setServerName(chatData.serverName)
-    }
-
-    // Update whisper participants from poll
-    if (chatData.whisperParticipants) {
-      setWhisperParticipants(chatData.whisperParticipants)
     }
 
     if (chatData.messages?.length > 0) {
@@ -124,20 +104,6 @@ function InGameChatContent() {
         setMessages((prev) => [...prev, ...incoming])
       }
       messagesSinceRef.current = chatData.totalMessages
-    }
-
-    // Process delivery confirmations
-    if (chatData.deliveries?.length > 0) {
-      setMessages((prev) => {
-        const updated = [...prev]
-        for (const text of chatData.deliveries) {
-          const idx = updated.findIndex((m) => m.isOwn && m.status === 'pending' && m.text === text)
-          if (idx !== -1) {
-            updated[idx] = { ...updated[idx], status: 'delivered' }
-          }
-        }
-        return updated
-      })
     }
 
     // Handle login required
@@ -186,14 +152,14 @@ function InGameChatContent() {
       if (!sessionId || !content.trim()) return
       const trimmed = content.trim()
 
-      // Optimistic update — show message immediately with pending status
+      // Optimistic update — always delivered (public chat, no echo confirmation)
       const optimisticMsg: ChatMessage = {
         author: meData?.user?.ingameNick || 'You',
         text: trimmed,
         isServer: false,
         isOwn: true,
         timestamp: new Date().toISOString(),
-        status: 'pending',
+        status: 'delivered',
       }
       setMessages((prev) => [...prev, optimisticMsg])
 
@@ -202,11 +168,7 @@ function InGameChatContent() {
         const res = await fetch('/api/ingame-chat/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            message: trimmed,
-            recipient: selectedRecipient || undefined,
-          }),
+          body: JSON.stringify({ sessionId, message: trimmed }),
         })
         if (!res.ok) {
           const data = await res.json()
@@ -214,7 +176,6 @@ function InGameChatContent() {
         }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to send')
-        // Mark optimistic message as failed
         setMessages((prev) =>
           prev.map((m) => (m === optimisticMsg ? { ...m, status: 'failed' as const } : m)),
         )
@@ -222,7 +183,7 @@ function InGameChatContent() {
         setSending(false)
       }
     },
-    [sessionId, meData?.user?.ingameNick, selectedRecipient],
+    [sessionId, meData?.user?.ingameNick],
   )
 
   const handleLoginSubmit = useCallback(async () => {
@@ -286,8 +247,6 @@ function InGameChatContent() {
     )
   }
 
-  const showRecipientSelector = whisperParticipants.length > 1
-
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header */}
@@ -301,7 +260,7 @@ function InGameChatContent() {
           </Link>
           <div>
             <h1 className="text-xl font-bold">
-              Chat with {targetNick || '...'}
+              In-Game Chat
             </h1>
             {serverName && (
               <p className="text-xs text-muted-foreground">{serverName}</p>
@@ -441,32 +400,9 @@ function InGameChatContent() {
               })}
             </ChatMessages>
 
-            {/* Recipient selector — shown when multiple players message the bot */}
-            {showRecipientSelector && !chatEnded && (
-              <div className="shrink-0 flex items-center gap-2 pt-2 pb-1">
-                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-xs text-muted-foreground shrink-0">Whisper to:</span>
-                <Select
-                  value={selectedRecipient || ''}
-                  onValueChange={setSelectedRecipient}
-                >
-                  <SelectTrigger className="h-7 text-xs w-auto min-w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {whisperParticipants.map((nick) => (
-                      <SelectItem key={nick} value={nick} className="text-xs">
-                        {nick}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             <ChatInput
               onSend={handleSend}
-              placeholder={chatEnded ? '' : `Whisper to ${selectedRecipient || targetNick || '...'}...`}
+              placeholder={chatEnded ? '' : 'Send to chat...'}
               disabled={chatEnded || botStatus !== 'connected'}
               sending={sending}
               disabledMessage={

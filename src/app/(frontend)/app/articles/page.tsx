@@ -17,6 +17,7 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Eye, Heart, Search, Clock, Plus } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -94,8 +95,8 @@ function ArticlesContent() {
     fetcher,
   )
 
-  const { data: meData } = useSWR('/api/users/me', fetcher)
-  const isStaff = meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator'
+  const { hasPermission } = usePermissions()
+  const canCreateArticles = hasPermission('articles', 'create')
 
   const featured = featuredData?.docs || []
   const featuredIds = new Set(featured.map((a: any) => a.id))
@@ -107,7 +108,7 @@ function ArticlesContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Articles</h1>
-        {isStaff && (
+        {canCreateArticles && (
           <Button asChild>
             <Link href="/app/articles/create">
               <Plus className="h-4 w-4 mr-2" />
@@ -250,7 +251,7 @@ function ArticlesContent() {
                         />
                       </OnlineStatusIndicator>
                       <span>{article.author?.ingameNick || 'Admin'}</span>
-                      <RoleBadge role={article.author?.roles} className="text-[10px] px-1 py-0" />
+                      <RoleBadge role={(article.author as any)?.primaryRole || article.author?.roles} className="text-[10px] px-1 py-0" />
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />

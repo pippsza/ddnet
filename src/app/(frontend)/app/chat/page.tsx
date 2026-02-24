@@ -93,6 +93,7 @@ function ChatContent() {
       userId: string
       ingameNick: string
       roles: string
+      primaryRole: any
       lastSeenAt: string | null
       skin: any
       lastMessage: string | null
@@ -108,6 +109,7 @@ function ChatContent() {
         userId: conv.otherUser?.id || '',
         ingameNick: conv.otherUser?.ingameNick || 'Unknown',
         roles: conv.otherUser?.roles || 'player',
+        primaryRole: (conv.otherUser as any)?.primaryRole || null,
         lastSeenAt: conv.otherUser?.lastSeenAt || null,
         skin: conv.otherUser?.skin || null,
         lastMessage: conv.lastMessage || null,
@@ -125,6 +127,7 @@ function ChatContent() {
         userId: friend.userId,
         ingameNick: friend.username || friend.nickname || 'Unknown',
         roles: friend.roles || 'player',
+        primaryRole: (friend as any).primaryRole || null,
         lastSeenAt: null,
         skin: friend.skin || null,
         lastMessage: null,
@@ -355,7 +358,7 @@ function ChatContent() {
                               <span className="text-sm font-medium truncate">
                                 {entry.ingameNick}
                               </span>
-                              <RoleBadge role={entry.roles} className="text-[10px] px-1 py-0" />
+                              <RoleBadge role={entry.primaryRole || entry.roles} className="text-[10px] px-1 py-0" />
                             </span>
                             {entry.unreadCount > 0 && (
                               <Badge className="text-[10px] h-5 min-w-[20px] justify-center">
@@ -440,7 +443,7 @@ function ChatContent() {
                     <span className="font-medium">
                       {activeOtherUser?.ingameNick || 'Unknown'}
                     </span>
-                    <RoleBadge role={activeOtherUser?.roles} className="text-[10px] px-1.5 py-0" />
+                    <RoleBadge role={(activeOtherUser as any)?.primaryRole || activeOtherUser?.roles} className="text-[10px] px-1.5 py-0" />
                   </Link>
                 </div>
               </CardHeader>

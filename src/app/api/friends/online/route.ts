@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
         userId: friendUser?.id || f.user,
         username: friendUser?.ingameNick,
         roles: friendUser?.roles || 'player',
+        primaryRole: (friendUser as any)?.primaryRole || null,
         nickname: f.nickname || nickname,
         addedAt: f.addedAt,
         online: onlineStatus?.online || false,

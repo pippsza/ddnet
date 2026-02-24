@@ -215,7 +215,7 @@ export default function AdminNotificationsPage() {
                             size="xs"
                           />
                           <span className="text-sm font-medium">{player.name}</span>
-                          <RoleBadge role={player.roles} className="text-[10px] px-1.5 py-0" />
+                          <RoleBadge role={(player as any).primaryRole || player.roles} className="text-[10px] px-1.5 py-0" />
                         </button>
                       ))}
                   </div>

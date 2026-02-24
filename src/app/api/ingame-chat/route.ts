@@ -4,6 +4,7 @@ import type { Payload } from 'payload'
 import config from '@/payload.config'
 import { getBotManager } from '@/services/verification/BotManager'
 import { findPlayerOnline } from '@/lib/ddnet-helpers'
+import { hasAnyAdminAccess } from '@/lib/permissions'
 import {
   createSession,
   getSession,
@@ -72,8 +73,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Must be verified (admins and moderators are exempt)
-    const isStaff = user.roles === 'admin' || user.roles === 'moderator'
+    // Must be verified (staff with any admin access are exempt)
+    const payloadReq = { user, payload, headers: req.headers } as any
+    const isStaff = await hasAnyAdminAccess(payloadReq)
     if (!user.isSystemVerified && !isStaff) {
       return NextResponse.json(
         { error: 'You must verify your DDNet account first' },
@@ -283,6 +285,7 @@ export async function GET(req: NextRequest) {
       targetNick: session.targetNick,
       serverName: session.serverName,
       whisperParticipants: session.whisperParticipants,
+      serverPlayers: session.serverPlayers,
     })
   } catch (error) {
     console.error('[InGameChat] GET error:', error)

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requireAdminPage } from '@/lib/api-auth'
 import { getBotManager } from '@/services/verification/BotManager'
 import {
   createSession,
@@ -15,11 +14,9 @@ import { randomUUID } from 'crypto'
 /** POST — start a test bot */
 export async function POST(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-    if (!user || user.roles !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'container_test')
+    if (result instanceof NextResponse) return result
+    const { payload } = result
 
     // Only one test session at a time
     const existing = getActiveSession()
@@ -70,11 +67,8 @@ export async function POST(req: NextRequest) {
 /** GET — get session status + messages */
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-    if (!user || user.roles !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'container_test')
+    if (result instanceof NextResponse) return result
 
     const sessionId = req.nextUrl.searchParams.get('sessionId')
 
@@ -126,11 +120,8 @@ export async function GET(req: NextRequest) {
 /** DELETE — stop test bot (by sessionId or containerId) */
 export async function DELETE(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-    if (!user || user.roles !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'container_test')
+    if (result instanceof NextResponse) return result
 
     const sessionId = req.nextUrl.searchParams.get('sessionId')
     const containerId = req.nextUrl.searchParams.get('containerId')

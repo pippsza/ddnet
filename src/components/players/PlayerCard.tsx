@@ -13,7 +13,7 @@ interface PlayerCardProps {
   href?: string | false
   points?: number
   rank?: number
-  role?: string
+  role?: string | { name?: string; displayName: string; badgeColor: string; textColor: string } | null
   isVerified?: boolean
   skin?: { name?: string; colorBody?: number; colorFeet?: number }
   // Online status
@@ -120,7 +120,7 @@ export function PlayerCard({
                 className="text-[10px] px-1.5 py-0"
               />
             )}
-            {role && role !== 'player' ? (
+            {role && (typeof role === 'object' || role !== 'player') ? (
               <RoleBadge
                 role={role}
                 className="text-[10px] px-1.5 py-0 shrink-0"

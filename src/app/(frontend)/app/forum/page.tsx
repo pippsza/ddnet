@@ -161,7 +161,7 @@ function ForumContent() {
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                       <span>{post.author?.ingameNick || 'Unknown'}</span>
-                      <RoleBadge role={post.author?.roles} className="text-[10px] px-1.5 py-0" />
+                      <RoleBadge role={(post.author as any)?.primaryRole || post.author?.roles} className="text-[10px] px-1.5 py-0" />
                       <span>&middot;</span>
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CATEGORY_COLORS[post.category] || ''}`}>
                         {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}

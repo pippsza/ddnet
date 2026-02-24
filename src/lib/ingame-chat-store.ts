@@ -19,6 +19,14 @@ export interface OutboxItem {
   message: string
 }
 
+export interface ServerPlayer {
+  name: string
+  skin: string
+  colorBody: number
+  colorFeet: number
+  useCustomColor: boolean
+}
+
 export interface InGameChatSession {
   id: string
   dbId: string // Payload ChatSessions document ID
@@ -35,6 +43,7 @@ export interface InGameChatSession {
   outbox: OutboxItem[]
   deliveries: string[]
   whisperParticipants: string[]
+  serverPlayers: ServerPlayer[]
   startedAt: string
   lastActivityAt: string
 }
@@ -77,6 +86,7 @@ export function createSession(
     outbox: [],
     deliveries: [],
     whisperParticipants: [targetNick],
+    serverPlayers: [],
     startedAt: now,
     lastActivityAt: now,
   }
@@ -108,7 +118,7 @@ export function addMessages(id: string, messages: InGameChatMessage[]): void {
 export function addOutboxMessage(id: string, message: string, recipient?: string): void {
   const session = sessions.get(id)
   if (!session) return
-  const target = recipient || session.targetNick
+  const target = recipient ?? ''
   session.outbox.push({ recipient: target, message })
   session.lastActivityAt = new Date().toISOString()
   // Record as own message in chat
@@ -141,6 +151,12 @@ export function popDeliveries(id: string): string[] {
   const deliveries = [...session.deliveries]
   session.deliveries = []
   return deliveries
+}
+
+export function updateServerPlayers(id: string, players: ServerPlayer[]): void {
+  const session = sessions.get(id)
+  if (!session) return
+  session.serverPlayers = players
 }
 
 export function addWhisperParticipant(id: string, nick: string): void {

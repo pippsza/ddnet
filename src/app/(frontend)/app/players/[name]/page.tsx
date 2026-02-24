@@ -10,11 +10,23 @@ import { StatusBadge, RoleBadge } from '@/components/ui/status-badge'
 import { Button } from '@/components/ui/button'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { PlayerDetailSkeleton } from '@/components/ui/page-skeleton'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useDDStats } from '@/hooks/use-ddstats'
 import { useGameStats } from '@/hooks/use-game-stats'
 import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils'
 import { Input } from '@/components/ui/input'
-import { UserPlus, MessageCircle, Copy, Map, UserCheck, Clock, ArrowLeft, Gamepad2, Lock, ShieldCheck } from 'lucide-react'
+import {
+  UserPlus,
+  MessageCircle,
+  Copy,
+  Map,
+  UserCheck,
+  Clock,
+  ArrowLeft,
+  Gamepad2,
+  Lock,
+  ShieldCheck,
+} from 'lucide-react'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { toast } from 'sonner'
 
@@ -33,7 +45,11 @@ function PlayerDetailContent({ name }: { name: string }) {
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'service'
 
-  const { data, isLoading, error } = useSWR(`/api/players/${encodeURIComponent(decodedName)}`, fetcher, { refreshInterval: 30000 })
+  const { data, isLoading, error } = useSWR(
+    `/api/players/${encodeURIComponent(decodedName)}`,
+    fetcher,
+    { refreshInterval: 30000 },
+  )
   const { data: meData } = useSWR('/api/users/me', fetcher)
   const { data: pendingData } = useSWR('/api/friends/pending', fetcher)
 
@@ -44,13 +60,13 @@ function PlayerDetailContent({ name }: { name: string }) {
 
   const { ddstats, ddstatsLoading } = useDDStats(playerName)
   const gameStats = useGameStats(reg?.id)
+  const { isAdmin, permissions } = usePermissions()
 
   const [friendSent, setFriendSent] = useState(false)
   const [friendSending, setFriendSending] = useState(false)
   const [chatStarting, setChatStarting] = useState(false)
   const [passwordPrompt, setPasswordPrompt] = useState(false)
   const [serverPassword, setServerPassword] = useState('')
-
 
   const isOwnProfile = meData?.user?.id && reg?.id && meData.user.id === reg.id
 
@@ -102,23 +118,29 @@ function PlayerDetailContent({ name }: { name: string }) {
   }
 
   const startChatWithPassword = async (password?: string) => {
-    if (!reg?.id) return
+    if (!reg?.id && !playerName) return
     setChatStarting(true)
     try {
+      const body = reg?.id
+        ? { targetUserId: reg.id, serverPassword: password || undefined }
+        : { targetNickname: playerName, serverPassword: password || undefined }
       const res = await fetch('/api/ingame-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUserId: reg.id, serverPassword: password || undefined }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
         // Save containerId for orphan recovery
         if (data.containerId) {
           try {
-            localStorage.setItem('ingame-chat-state', JSON.stringify({
-              sessionId: data.sessionId,
-              containerId: data.containerId,
-            }))
+            localStorage.setItem(
+              'ingame-chat-state',
+              JSON.stringify({
+                sessionId: data.sessionId,
+                containerId: data.containerId,
+              }),
+            )
           } catch {}
         }
         setPasswordPrompt(false)
@@ -150,7 +172,10 @@ function PlayerDetailContent({ name }: { name: string }) {
   if (error || (!reg && !ddnet)) {
     return (
       <div className="space-y-4">
-        <Link href="/app/players" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/app/players"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to Players
         </Link>
         <Card>
@@ -192,7 +217,10 @@ function PlayerDetailContent({ name }: { name: string }) {
 
   return (
     <div className="space-y-6">
-      <Link href="/app/players" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/app/players"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeft className="h-4 w-4" /> Back to Players
       </Link>
 
@@ -205,7 +233,9 @@ function PlayerDetailContent({ name }: { name: string }) {
               src={mapThumbnailUrl}
               alt=""
               className="w-full h-full object-cover blur-[2px] scale-110 opacity-30"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-card/90 via-card/75 to-card/60" />
           </div>
@@ -214,7 +244,7 @@ function PlayerDetailContent({ name }: { name: string }) {
           <OnlineStatusIndicator
             status={{
               platformOnline: reg?.lastSeenAt
-                ? (Date.now() - new Date(reg.lastSeenAt).getTime()) < 2 * 60_000
+                ? Date.now() - new Date(reg.lastSeenAt).getTime() < 2 * 60_000
                 : false,
               inGameOnline: !!online,
               serverName: online?.server?.name,
@@ -236,11 +266,14 @@ function PlayerDetailContent({ name }: { name: string }) {
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
               <h1 className="text-3xl font-bold truncate">{playerName}</h1>
               {reg?.isVerified && <StatusBadge status="verified" />}
-              {reg && (
-                reg.roles && reg.roles !== 'player'
-                  ? <RoleBadge role={reg.roles} />
-                  : <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Member</span>
-              )}
+              {reg &&
+                ((reg as any).primaryRole || (reg.roles && reg.roles !== 'player') ? (
+                  <RoleBadge role={(reg as any).primaryRole || reg.roles} />
+                ) : (
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                    Member
+                  </span>
+                ))}
               {ddstats?.is_mapper && (
                 <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-medium">
                   Mapper
@@ -265,7 +298,8 @@ function PlayerDetailContent({ name }: { name: string }) {
             )}
             {!playingSince && ddnet?.firstFinish && (
               <p className="text-sm text-muted-foreground mt-1">
-                First finish: {new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString()} on {ddnet.firstFinish.map}
+                First finish: {new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString()} on{' '}
+                {ddnet.firstFinish.map}
               </p>
             )}
 
@@ -278,9 +312,13 @@ function PlayerDetailContent({ name }: { name: string }) {
                 </span>
                 <span className="text-muted-foreground truncate">{online.server.name}</span>
                 <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <code className="text-xs font-mono">{online.server.ip}:{online.server.port}</code>
+                  <code className="text-xs font-mono">
+                    {online.server.ip}:{online.server.port}
+                  </code>
                   <button
-                    onClick={() => navigator.clipboard.writeText(`${online.server.ip}:${online.server.port}`)}
+                    onClick={() =>
+                      navigator.clipboard.writeText(`${online.server.ip}:${online.server.port}`)
+                    }
                     className="text-muted-foreground hover:text-foreground transition-colors"
                     title="Copy address"
                   >
@@ -311,36 +349,31 @@ function PlayerDetailContent({ name }: { name: string }) {
                       </Link>
                     </Button>
                   ) : (
-                    <Button
-                      size="sm"
-                      disabled={friendSending}
-                      onClick={handleAddFriend}
-                    >
+                    <Button size="sm" disabled={friendSending} onClick={handleAddFriend}>
                       <UserPlus className="h-4 w-4 mr-1" />
                       {friendSending ? 'Sending...' : 'Add Friend'}
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSendMessage}
-                  >
+                  <Button size="sm" variant="outline" onClick={handleSendMessage}>
                     <MessageCircle className="h-4 w-4 mr-1" />
                     Message
                   </Button>
-                  {friendStatus === 'friends' && (meData?.user?.isSystemVerified || meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator') && online && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleChatInGame}
-                      disabled={chatStarting}
-                    >
-                      <Gamepad2 className="h-4 w-4 mr-1" />
-                      {chatStarting ? 'Connecting...' : 'Chat In-Game'}
-                    </Button>
-                  )}
                 </>
               )}
+              {(meData?.user?.isSystemVerified ||
+                  isAdmin ||
+                  (permissions?.adminPages?.length ?? 0) > 0) &&
+                online && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleChatInGame}
+                    disabled={chatStarting}
+                  >
+                    <Gamepad2 className="h-4 w-4 mr-1" />
+                    {chatStarting ? 'Connecting...' : 'Chat In-Game'}
+                  </Button>
+                )}
               <Button variant="outline" size="sm" asChild>
                 <a
                   href={`https://ddnet.org/players/${encodeURIComponent(playerName)}`}
@@ -372,7 +405,10 @@ function PlayerDetailContent({ name }: { name: string }) {
                   This server is password-protected. Enter the server password to connect.
                 </p>
                 <form
-                  onSubmit={(e) => { e.preventDefault(); handlePasswordSubmit() }}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    handlePasswordSubmit()
+                  }}
                   className="flex gap-2"
                 >
                   <Input
@@ -386,13 +422,24 @@ function PlayerDetailContent({ name }: { name: string }) {
                   <Button size="sm" type="submit" disabled={chatStarting || !serverPassword.trim()}>
                     {chatStarting ? 'Connecting...' : 'Connect'}
                   </Button>
-                  <Button size="sm" variant="ghost" type="button" onClick={() => { setPasswordPrompt(false); setServerPassword('') }}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    type="button"
+                    onClick={() => {
+                      setPasswordPrompt(false)
+                      setServerPassword('')
+                    }}
+                  >
                     Cancel
                   </Button>
                 </form>
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0 text-green-500" />
-                  <span>Your password is sent securely and is not stored. It is only used to connect the bot to the server.</span>
+                  <span>
+                    Your password is sent securely and is not stored. It is only used to connect the
+                    bot to the server.
+                  </span>
                 </div>
               </div>
             )}
@@ -420,7 +467,9 @@ function PlayerDetailContent({ name }: { name: string }) {
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
                   <p className="text-lg font-medium mb-2">No service stats available</p>
-                  <p className="text-sm">This player hasn&apos;t participated in any bingo or race games yet.</p>
+                  <p className="text-sm">
+                    This player hasn&apos;t participated in any bingo or race games yet.
+                  </p>
                 </CardContent>
               </Card>
             )}

@@ -79,7 +79,7 @@ function PlayersContent() {
                     rank={player.rank}
                     isVerified={player.isVerified}
                     platformOnline={isPlatformOnline(player.lastSeenAt)}
-                    role={player.roles}
+                    role={(player as any).primaryRole || player.roles}
                     skin={player.skin}
                     variant="registered"
                   />

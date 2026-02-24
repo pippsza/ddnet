@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requireAdminPage } from '@/lib/api-auth'
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'notifications')
+    if (result instanceof NextResponse) return result
+    const { payload } = result
 
     const { title, message, actionUrl, target, userIds } = await req.json()
 

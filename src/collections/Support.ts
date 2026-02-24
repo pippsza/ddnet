@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 
 export const Support: CollectionConfig = {
   slug: 'support',
@@ -8,31 +9,19 @@ export const Support: CollectionConfig = {
     group: 'Support',
   },
   access: {
-    // Only admins and moderators can see all tickets
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
-
-      // Admins and moderators can see all tickets
-      if (req.user.roles === 'admin' || req.user.roles === 'moderator') {
-        return true
-      }
-
-      // Regular users can only see their own tickets
-      return {
-        createdBy: { equals: req.user.id },
-      }
+      if (await hasPermission(req, 'support', 'view_all')) return true
+      return { createdBy: { equals: req.user.id } }
     },
-    // Any authenticated user can create a ticket
     create: ({ req }) => !!req.user,
-    // Only admins and moderators can update tickets (to change status, add responses, etc)
-    update: ({ req }) => {
+    update: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'support', 'change_status')
     },
-    // Only admins can delete tickets
-    delete: ({ req }) => {
+    delete: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin'
+      return hasPermission(req, 'support', 'delete')
     },
   },
   fields: [
@@ -173,12 +162,10 @@ export const Support: CollectionConfig = {
           },
           hooks: {
             beforeChange: [
-              ({ req, value }) => {
-                // Automatically mark as staff response if admin/moderator
-                if (req.user && (req.user.roles === 'admin' || req.user.roles === 'moderator')) {
+              async ({ req, value }) => {
+                if (req.user && (await hasPermission(req, 'support', 'reply'))) {
                   return true
                 }
-                // Preserve explicitly set value (e.g. from API routes)
                 if (!req.user) return value
                 return false
               },
@@ -206,28 +193,14 @@ export const Support: CollectionConfig = {
         },
       ],
       access: {
-        // Users can read responses to their own tickets
-        read: ({ req, doc }) => {
+        read: async ({ req, doc }) => {
           if (!req.user) return false
-
-          // Admins and moderators can read all responses
-          if (req.user.roles === 'admin' || req.user.roles === 'moderator') {
-            return true
-          }
-
-          // Users can read responses to their own tickets
+          if (await hasPermission(req, 'support', 'view_all')) return true
           return doc?.createdBy === req.user.id
         },
-        // Users can add responses to their own tickets
-        create: ({ req, doc }) => {
+        create: async ({ req, doc }) => {
           if (!req.user) return false
-
-          // Admins and moderators can add responses to any ticket
-          if (req.user.roles === 'admin' || req.user.roles === 'moderator') {
-            return true
-          }
-
-          // Users can add responses to their own tickets
+          if (await hasPermission(req, 'support', 'reply')) return true
           return doc?.createdBy === req.user.id
         },
       },
@@ -314,33 +287,30 @@ export const Support: CollectionConfig = {
       admin: {
         description: 'Internal notes about how the ticket was resolved',
         condition: (data, siblingData, { user }) => {
-          // Only show to admins and moderators
-          return user?.roles === 'admin' || user?.roles === 'moderator'
+          return user?.roles === 'admin' || (Array.isArray((user as any)?.assignedRoles) && (user as any).assignedRoles.length > 0)
         },
       },
       access: {
-        read: ({ req }) => {
+        read: async ({ req }) => {
           if (!req.user) return false
-          return req.user.roles === 'admin' || req.user.roles === 'moderator'
+          return hasPermission(req, 'support', 'view_all')
         },
-        update: ({ req }) => {
+        update: async ({ req }) => {
           if (!req.user) return false
-          return req.user.roles === 'admin' || req.user.roles === 'moderator'
+          return hasPermission(req, 'support', 'change_status')
         },
       },
     },
   ],
   hooks: {
-    // Prevent users from modifying their own tickets (except adding responses)
     beforeChange: [
       async ({ req, operation, data, originalDoc }) => {
         if (operation === 'update' && req.user) {
-          // If user is not admin/moderator, prevent field changes except responses
-          if (req.user.roles !== 'admin' && req.user.roles !== 'moderator') {
-            // Preserve all original fields except responses
+          const canManage = await hasPermission(req, 'support', 'change_status')
+          if (!canManage) {
             return {
               ...originalDoc,
-              responses: data.responses, // Allow updating responses
+              responses: data.responses,
             }
           }
         }

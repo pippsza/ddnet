@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
               id: author.id,
               ingameNick: (author as any).ingameNick,
               roles: (author as any).roles || 'player',
+              primaryRole: (author as any).primaryRole || null,
               skin: (author as any).ingameStats?.skin?.name || null,
               lastSeenAt: (author as any).lastSeenAt || null,
             }

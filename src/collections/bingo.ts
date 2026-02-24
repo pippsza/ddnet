@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 import {
   DDNET_SUBCATEGORIES,
   BINGO_MODES,
@@ -36,16 +37,14 @@ export const Bingo: CollectionConfig = {
   },
   access: {
     read: () => true,
-    update: ({ req }) => {
+    update: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'games', 'edit_any')
     },
-    create: ({ req }) => {
-      return !!req.user
-    },
-    delete: ({ req }) => {
+    create: ({ req }) => !!req.user,
+    delete: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'games', 'delete_any')
     },
   },
   fields: [

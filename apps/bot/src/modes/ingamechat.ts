@@ -6,18 +6,14 @@ const POLL_INTERVAL_MS = 500
 const MAX_SESSION_DURATION_MS = 30 * 60 * 1000 // 30 minutes hard limit
 const WHISPER_INTERVAL_MS = 1100 // DDNet sv_spamprotection drops messages <1s apart
 
-interface OutboxItem {
-  recipient: string
-  message: string
-}
-
 /**
- * In-game chat mode — relays whispers between a web user and in-game players.
- * Captures messages from ALL players, sends via /whisper to the selected recipient.
+ * In-game chat mode — relays messages between a web user and in-game server.
+ * Default: public chat via say(). Optional: whisper to selected player.
+ * Captures messages from ALL players, reports server player list to backend.
  */
 export class InGameChatMode extends BaseBotMode {
   readonly name = 'ingamechat'
-  readonly description = 'In-game chat relay via whispers'
+  readonly description = 'In-game chat relay (public chat + whisper)'
   readonly requiredEnv = [
     'SERVER_IP',
     'SERVER_PORT',
@@ -33,10 +29,8 @@ export class InGameChatMode extends BaseBotMode {
   private backendSecret = ''
   private running = false
   private pollTimer: ReturnType<typeof setInterval> | null = null
-  // Track recently sent whispers per recipient to filter out server echoes
-  private recentlySent: Map<string, string[]> = new Map()
   // Rate limiting: queue messages and send one at a time with delay
-  private sendQueue: OutboxItem[] = []
+  private sendQueue: string[] = []
   private lastSendTime = 0
   private messageBuffer: Array<{
     author: string
@@ -48,7 +42,6 @@ export class InGameChatMode extends BaseBotMode {
     colorBody?: number
     colorFeet?: number
   }> = []
-  private deliveryBuffer: string[] = []
 
   init(config: Record<string, string>): void {
     super.init(config)
@@ -73,13 +66,26 @@ export class InGameChatMode extends BaseBotMode {
     }
   }
 
+  private getPlayerList(): Array<{ name: string; skin: string; colorBody: number; colorFeet: number; useCustomColor: boolean }> {
+    if (!this.client) return []
+    const botName = this.config.BOT_NAME || 'ChatBot'
+    return this.client.getPlayers()
+      .filter(p => p.name !== botName)
+      .map(p => ({
+        name: p.name,
+        skin: p.skin,
+        colorBody: p.colorBody,
+        colorFeet: p.colorFeet,
+        useCustomColor: p.useCustomColor,
+      }))
+  }
+
   private async flushMessageBuffer(): Promise<void> {
-    if (this.messageBuffer.length === 0 && this.deliveryBuffer.length === 0) return
+    const players = this.getPlayerList()
+    if (this.messageBuffer.length === 0 && players.length === 0) return
     const messages = [...this.messageBuffer]
-    const deliveries = [...this.deliveryBuffer]
     this.messageBuffer = []
-    this.deliveryBuffer = []
-    await this.reportToBackend({ type: 'messages', messages, deliveries })
+    await this.reportToBackend({ type: 'messages', messages, players })
   }
 
   private async pollOutbox(): Promise<void> {
@@ -92,14 +98,9 @@ export class InGameChatMode extends BaseBotMode {
       )
       const data = await res.json()
       if (data.messages && data.messages.length > 0) {
-        // Queue messages for rate-limited sending (now {recipient, message} objects)
         for (const item of data.messages) {
-          if (typeof item === 'string') {
-            // Backward compat: plain string → target nick
-            this.sendQueue.push({ recipient: this.targetNick, message: item })
-          } else {
-            this.sendQueue.push(item)
-          }
+          const msg = typeof item === 'string' ? item : item.message
+          if (msg) this.sendQueue.push(msg)
         }
       }
     } catch {
@@ -119,23 +120,11 @@ export class InGameChatMode extends BaseBotMode {
     const now = Date.now()
     if (now - this.lastSendTime < WHISPER_INTERVAL_MS) return
 
-    const item = this.sendQueue.shift()!
+    const message = this.sendQueue.shift()!
     this.lastSendTime = now
 
-    // Commands (e.g. /login) go to public chat, regular messages via whisper
-    if (item.message.startsWith('/')) {
-      console.log(`[InGameChat] Sending command: ${item.message}`)
-      this.client.say(item.message)
-    } else {
-      console.log(`[InGameChat] Whispering to ${item.recipient}: ${item.message}`)
-      // Track for echo detection per recipient
-      const recipientLower = item.recipient.toLowerCase()
-      if (!this.recentlySent.has(recipientLower)) {
-        this.recentlySent.set(recipientLower, [])
-      }
-      this.recentlySent.get(recipientLower)!.push(item.message)
-      this.client.whisper(item.recipient, item.message)
-    }
+    console.log(`[InGameChat] Sending: ${message}`)
+    this.client.say(message)
     this.client.flush()
   }
 
@@ -235,21 +224,6 @@ export class InGameChatMode extends BaseBotMode {
     client.onMessage(({ author, text, skin, colorBody, colorFeet, useCustomColor }) => {
       // Skip own messages (bot name)
       if (author === botName) return
-
-      // Check for whisper echoes: when we whisper someone, the server echoes
-      // the message back with author=recipient. Match against recentlySent per recipient.
-      const authorLower = author.toLowerCase()
-      const recentForAuthor = this.recentlySent.get(authorLower)
-      if (recentForAuthor) {
-        const echoIdx = recentForAuthor.indexOf(text)
-        if (echoIdx !== -1) {
-          recentForAuthor.splice(echoIdx, 1)
-          if (recentForAuthor.length === 0) this.recentlySent.delete(authorLower)
-          console.log(`[InGameChat] Whisper delivered to ${author}: ${text}`)
-          this.deliveryBuffer.push(text)
-          return
-        }
-      }
 
       console.log(`[InGameChat] ${author}: ${text}`)
       this.messageBuffer.push({

@@ -81,7 +81,7 @@ function DashboardContent() {
               {userData?.isSystemVerified && (
                 <StatusBadge status="verified" />
               )}
-              <RoleBadge role={userData?.roles} />
+              <RoleBadge role={(userData as any)?.primaryRole || userData?.roles} />
             </div>
             {userData?.ingameStats?.points !== undefined && (
               <div className="flex items-center gap-4 mt-2 justify-center sm:justify-start text-muted-foreground flex-wrap">

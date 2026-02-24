@@ -83,6 +83,8 @@ export interface Config {
     conversations: Conversation;
     messages: Message;
     'in-game-messages': InGameMessage;
+    roles: Role;
+    'watched-players': WatchedPlayer;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +108,8 @@ export interface Config {
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
     'in-game-messages': InGameMessagesSelect<false> | InGameMessagesSelect<true>;
+    roles: RolesSelect<false> | RolesSelect<true>;
+    'watched-players': WatchedPlayersSelect<false> | WatchedPlayersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -158,7 +162,11 @@ export interface User {
    * Case-sensitive DDNet nickname for verification and display
    */
   ingameNick: string;
-  roles: 'admin' | 'player' | 'moderator' | 'tester';
+  roles: 'admin' | 'player';
+  /**
+   * Dynamic roles assigned to this user. Permissions merge across all roles.
+   */
+  assignedRoles?: (string | Role)[] | null;
   isSystemVerified?: boolean | null;
   lastSeenAt?: string | null;
   avatar?: (string | null) | Media;
@@ -612,6 +620,44 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles".
+ */
+export interface Role {
+  id: string;
+  /**
+   * Unique identifier (e.g., "moderator", "tester", "editor")
+   */
+  name: string;
+  /**
+   * Human-readable name shown in badges (e.g., "Moderator", "Tester")
+   */
+  displayName: string;
+  /**
+   * Higher = more important. Highest priority role is shown as the badge.
+   */
+  priority: number;
+  /**
+   * CSS hex color for badge background (e.g., "#3b82f6")
+   */
+  badgeColor: string;
+  /**
+   * CSS hex color for badge text (e.g., "#ffffff")
+   */
+  textColor: string;
+  permissions?: {
+    articles?: ('create' | 'edit' | 'delete' | 'view_drafts')[] | null;
+    support?: ('view_all' | 'reply' | 'change_status' | 'delete')[] | null;
+    forum?: ('view_hidden' | 'edit_any' | 'delete_any' | 'pin' | 'lock')[] | null;
+    games?: ('edit_any' | 'delete_any' | 'manage_categories')[] | null;
+    adminPages?:
+      | ('bots' | 'container_test' | 'notifications' | 'debug' | 'categories' | 'tickets' | 'stats' | 'roles')[]
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -857,7 +903,8 @@ export interface Notification {
     | 'game_ended'
     | 'round_won'
     | 'achievement'
-    | 'system';
+    | 'system'
+    | 'player_online';
   title: string;
   message: string;
   isRead?: boolean | null;
@@ -1014,7 +1061,7 @@ export interface ForumPost {
    */
   status: 'published' | 'hidden' | 'locked';
   /**
-   * Only admins/moderators can pin posts
+   * Only staff with forum.pin permission can pin posts
    */
   isPinned?: boolean | null;
   views?: number | null;
@@ -1283,6 +1330,34 @@ export interface InGameMessage {
   createdAt: string;
 }
 /**
+ * Player watchlist for online status tracking
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "watched-players".
+ */
+export interface WatchedPlayer {
+  id: string;
+  /**
+   * The user who is watching this player
+   */
+  user: string | User;
+  /**
+   * The in-game nickname to watch (case-sensitive)
+   */
+  nickname: string;
+  /**
+   * Send push notification when this player comes online
+   */
+  notifyOnline?: boolean | null;
+  /**
+   * Used internally for offline→online transition detection
+   */
+  lastKnownOnline?: boolean | null;
+  addedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1369,6 +1444,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'in-game-messages';
         value: string | InGameMessage;
+      } | null)
+    | ({
+        relationTo: 'roles';
+        value: string | Role;
+      } | null)
+    | ({
+        relationTo: 'watched-players';
+        value: string | WatchedPlayer;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1419,6 +1502,7 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   ingameNick?: T;
   roles?: T;
+  assignedRoles?: T;
   isSystemVerified?: T;
   lastSeenAt?: T;
   avatar?: T;
@@ -2248,6 +2332,41 @@ export interface InGameMessagesSelect<T extends boolean = true> {
   sender?: T;
   content?: T;
   timestamp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles_select".
+ */
+export interface RolesSelect<T extends boolean = true> {
+  name?: T;
+  displayName?: T;
+  priority?: T;
+  badgeColor?: T;
+  textColor?: T;
+  permissions?:
+    | T
+    | {
+        articles?: T;
+        support?: T;
+        forum?: T;
+        games?: T;
+        adminPages?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "watched-players_select".
+ */
+export interface WatchedPlayersSelect<T extends boolean = true> {
+  user?: T;
+  nickname?: T;
+  notifyOnline?: T;
+  lastKnownOnline?: T;
+  addedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

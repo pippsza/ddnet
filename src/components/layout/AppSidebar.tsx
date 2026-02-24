@@ -45,6 +45,7 @@ import {
   Bug,
   Megaphone,
   BarChart3,
+  Eye,
 } from 'lucide-react'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
@@ -55,6 +56,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { APP_NAME } from '@/lib/constants'
+import type { ResolvedPermissions } from '@/lib/permissions'
+import { Shield } from 'lucide-react'
 
 const mainItems = [{ title: 'Dashboard', url: '/app/dashboard', icon: LayoutDashboard }]
 
@@ -67,6 +70,7 @@ const gameItems = [
 const socialItems = [
   { title: 'Players', url: '/app/players', icon: Users },
   { title: 'Friends', url: '/app/friends', icon: UserPlus },
+  { title: 'Online Players', url: '/app/online-players', icon: Eye },
   { title: 'Chat', url: '/app/chat', icon: MessageCircle },
   { title: 'Forum', url: '/app/forum', icon: MessageSquare },
   { title: 'Articles', url: '/app/articles', icon: FileText },
@@ -79,14 +83,14 @@ const otherItems = [
 ]
 
 const adminItems = [
-  { title: 'Bot Management', url: '/app/admin/bots', icon: Bot, adminOnly: true },
-  { title: 'Container Test', url: '/app/admin/container-test', icon: Container, adminOnly: true },
-  { title: 'Notifications', url: '/app/admin/notifications', icon: Megaphone },
-  { title: 'Debug', url: '/app/admin/debug', icon: Bug },
-  { title: 'Categories', url: '/app/admin/categories', icon: FolderOpen },
-  { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket },
-
-  { title: 'Stats', url: '/app/admin/stats', icon: BarChart3 },
+  { title: 'Bot Management', url: '/app/admin/bots', icon: Bot, requiredPage: 'bots' },
+  { title: 'Container Test', url: '/app/admin/container-test', icon: Container, requiredPage: 'container_test' },
+  { title: 'Notifications', url: '/app/admin/notifications', icon: Megaphone, requiredPage: 'notifications' },
+  { title: 'Debug', url: '/app/admin/debug', icon: Bug, requiredPage: 'debug' },
+  { title: 'Categories', url: '/app/admin/categories', icon: FolderOpen, requiredPage: 'categories' },
+  { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket, requiredPage: 'tickets' },
+  { title: 'Stats', url: '/app/admin/stats', icon: BarChart3, requiredPage: 'stats' },
+  { title: 'Roles', url: '/app/admin/roles', icon: Shield, requiredPage: 'roles' },
 ]
 
 const devItems = [{ title: 'Dev Tools', url: '/app/dev', icon: Wrench }]
@@ -96,7 +100,7 @@ const isDev = process.env.NODE_ENV === 'development'
 interface AppSidebarProps {
   user: {
     ingameNick?: string
-    roles?: string
+    permissions: ResolvedPermissions
     skin?: { name?: string; color_body?: number; color_feet?: number }
   }
 }
@@ -213,13 +217,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {(user.roles === 'admin' || user.roles === 'moderator') && (
+        {(user.permissions.isAdmin || user.permissions.adminPages.length > 0) && (
           <SidebarGroup>
             <SidebarGroupLabel>Admin</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems
-                  .filter((item) => !item.adminOnly || user.roles === 'admin')
+                  .filter((item) => user.permissions.isAdmin || user.permissions.adminPages.includes(item.requiredPage))
                   .map((item) => (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
@@ -291,7 +295,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   </OnlineStatusIndicator>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="font-medium truncate my-0 text-sm">{user.ingameNick}</p>
-                    <RoleBadge role={user.roles} className="text-[10px] px-1 py-0" />
+                    <RoleBadge role={user.permissions.primaryRole} className="text-[10px] px-1 py-0" />
                   </div>
                   <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                 </SidebarMenuButton>

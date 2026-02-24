@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 </OnlineStatusIndicator>
                 <div>
                   <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username}</p>
-                  <RoleBadge role={user?.user?.roles} />
+                  <RoleBadge role={(user?.user as any)?.primaryRole || user?.user?.roles} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -460,7 +460,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Account not verified</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    If you haven't verified your account, the real owner of this nickname can claim it
+                    If you haven&apos;t verified your account, the real owner of this nickname can claim it
                     by verifying their identity through our bot. Verify now to protect your account.
                   </p>
                 </div>

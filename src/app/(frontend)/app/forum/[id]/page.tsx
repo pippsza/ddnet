@@ -42,7 +42,7 @@ function MessageAvatar({ user, mirrored }: { user: any; mirrored?: boolean }) {
 function MessageHeader({ user, timestamp, isOwn }: { user: any; timestamp: string; isOwn: boolean }) {
   const name = user?.ingameNick || 'Unknown'
   const time = <span className="text-xs text-muted-foreground">{new Date(timestamp).toLocaleString()}</span>
-  const role = <RoleBadge role={user?.roles} className="text-[10px] px-1.5 py-0" />
+  const role = <RoleBadge role={(user as any)?.primaryRole || user?.roles} className="text-[10px] px-1.5 py-0" />
   const nameEl = <span className="text-sm font-medium">{name}</span>
 
   return isOwn

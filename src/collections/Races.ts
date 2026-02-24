@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 import { GAME_STATUSES } from '@/lib/ddnet-constants'
 import { validateCategory } from '@/lib/category-helpers'
 
@@ -13,17 +14,14 @@ export const Races: CollectionConfig = {
   access: {
     read: () => true,
     create: ({ req }) => !!req.user,
-    update: ({ req }) => {
+    update: async ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin' || req.user.roles === 'moderator') return true
-      // Allow creator to update their own game
-      return {
-        createdBy: { equals: req.user.id },
-      }
+      if (await hasPermission(req, 'games', 'edit_any')) return true
+      return { createdBy: { equals: req.user.id } }
     },
-    delete: ({ req }) => {
+    delete: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin'
+      return hasPermission(req, 'games', 'delete_any')
     },
   },
   fields: [

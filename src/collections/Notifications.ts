@@ -58,6 +58,7 @@ export const Notifications: CollectionConfig = {
         { label: 'Round Won', value: 'round_won' },
         { label: 'Achievement', value: 'achievement' },
         { label: 'System', value: 'system' },
+        { label: 'Player Online', value: 'player_online' },
       ],
       admin: {
         description: 'Type of notification',

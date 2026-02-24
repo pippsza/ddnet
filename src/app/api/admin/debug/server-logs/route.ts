@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requireAdminPage } from '@/lib/api-auth'
 import { getServerLogs, getLatestLogId } from '@/lib/server-log-store'
 
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'debug')
+    if (result instanceof NextResponse) return result
 
     const { searchParams } = req.nextUrl
     const since = parseInt(searchParams.get('since') || '0', 10)

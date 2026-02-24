@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requireAdminPage } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const result = await requireAdminPage(req, 'stats')
+    if (result instanceof NextResponse) return result
+    const { payload } = result
 
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -20,8 +16,7 @@ export async function GET(req: NextRequest) {
       usersTotal,
       usersVerified,
       usersAdmin,
-      usersModerator,
-      usersTester,
+      allRoles,
       recentUsers,
       bingoTotal,
       bingoWaiting,
@@ -70,8 +65,7 @@ export async function GET(req: NextRequest) {
       payload.count({ collection: 'users' }),
       payload.count({ collection: 'users', where: { isSystemVerified: { equals: true } } }),
       payload.count({ collection: 'users', where: { roles: { equals: 'admin' } } }),
-      payload.count({ collection: 'users', where: { roles: { equals: 'moderator' } } }),
-      payload.count({ collection: 'users', where: { roles: { equals: 'tester' } } }),
+      payload.find({ collection: 'roles', limit: 100, depth: 0 }),
       payload.find({
         collection: 'users',
         where: { createdAt: { greater_than: thirtyDaysAgoISO } },
@@ -219,11 +213,12 @@ export async function GET(req: NextRequest) {
       forumByCategory[cat] = (forumByCategory[cat] || 0) + 1
     }
 
-    const playersCount =
-      usersTotal.totalDocs -
-      usersAdmin.totalDocs -
-      usersModerator.totalDocs -
-      usersTester.totalDocs
+    const roleNames: Record<string, string> = { admin: 'Admin' }
+    for (const role of allRoles.docs) {
+      roleNames[(role as any).name] = (role as any).displayName || (role as any).name
+    }
+    const playersCount = usersTotal.totalDocs - usersAdmin.totalDocs
+    const totalRoles = allRoles.totalDocs
 
     return NextResponse.json({
       users: {
@@ -232,10 +227,9 @@ export async function GET(req: NextRequest) {
         unverified: usersTotal.totalDocs - usersVerified.totalDocs,
         byRole: {
           admin: usersAdmin.totalDocs,
-          moderator: usersModerator.totalDocs,
           player: playersCount,
-          tester: usersTester.totalDocs,
         },
+        totalDynamicRoles: totalRoles,
         recentRegistrations,
       },
       games: {

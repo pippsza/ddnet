@@ -6,6 +6,7 @@ import type {
   Field,
 } from 'payload'
 import { APIError } from 'payload'
+import { getRoleCacheEntry, isRoleCachePopulated, ensureRoleCachePopulated } from '@/lib/permissions'
 // DDNET_CATEGORIES import removed — favoriteCategory fields changed from select to text
 
 // ── Helper functions to reduce field repetition ──
@@ -258,6 +259,61 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeChange: [hardResetHook],
     afterChange: [syncDDNetOnCreate],
+    afterRead: [
+      async ({ doc, req }) => {
+        // Compute primaryRole for badge display
+        if (doc.roles === 'admin') {
+          doc.primaryRole = {
+            name: 'admin',
+            displayName: 'Admin',
+            badgeColor: '#dc2626',
+            textColor: '#ffffff',
+          }
+          return doc
+        }
+
+        if (Array.isArray(doc.assignedRoles) && doc.assignedRoles.length > 0) {
+          // Try populated objects first (depth >= 1 from user query)
+          const populated = doc.assignedRoles
+            .filter((r: any) => typeof r === 'object' && r !== null)
+            .sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0))
+
+          if (populated.length > 0) {
+            doc.primaryRole = {
+              name: populated[0].name,
+              displayName: populated[0].displayName,
+              badgeColor: populated[0].badgeColor,
+              textColor: populated[0].textColor,
+            }
+          } else {
+            // Fallback: resolve from in-memory cache when roles are ID strings
+            // (happens when user is a nested relationship at insufficient depth)
+            if (!isRoleCachePopulated()) {
+              await ensureRoleCachePopulated(req)
+            }
+            let best: { priority: number; name: string; displayName: string; badgeColor: string; textColor: string } | null = null
+            for (const ref of doc.assignedRoles) {
+              const roleId = typeof ref === 'string' ? ref : null
+              if (!roleId) continue
+              const cached = getRoleCacheEntry(roleId)
+              if (cached && (!best || cached.priority > best.priority)) {
+                best = cached
+              }
+            }
+            if (best) {
+              doc.primaryRole = {
+                name: best.name,
+                displayName: best.displayName,
+                badgeColor: best.badgeColor,
+                textColor: best.textColor,
+              }
+            }
+          }
+        }
+
+        return doc
+      },
+    ],
   },
 
   fields: [
@@ -286,8 +342,19 @@ export const Users: CollectionConfig = {
       name: 'roles',
       type: 'select',
       required: true,
-      options: ['admin', 'player', 'moderator', 'tester'],
+      options: ['admin', 'player'],
       defaultValue: 'player',
+      access: adminOnlyFieldAccess,
+    },
+    {
+      name: 'assignedRoles',
+      type: 'relationship',
+      relationTo: 'roles',
+      hasMany: true,
+      label: 'Assigned Roles',
+      admin: {
+        description: 'Dynamic roles assigned to this user. Permissions merge across all roles.',
+      },
       access: adminOnlyFieldAccess,
     },
     {

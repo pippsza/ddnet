@@ -205,7 +205,78 @@ export async function POST() {
     log.push('  5 verification servers')
 
     // =========================================================================
-    // 1. Create 100 Users (1 admin + 2 moderators + 97 players)
+    // 1a. Create Dynamic Roles
+    // =========================================================================
+    log.push('Creating dynamic roles...')
+
+    let moderatorRole: any
+    let testerRole: any
+
+    try {
+      moderatorRole = await payload.create({
+        collection: 'roles',
+        overrideAccess: true,
+        data: {
+          name: 'moderator',
+          displayName: 'Moderator',
+          priority: 10,
+          badgeColor: '#7c3aed',
+          textColor: '#ffffff',
+          permissions: {
+            articles: ['create', 'edit', 'view_drafts'],
+            support: ['view_all', 'reply', 'change_status'],
+            forum: ['view_hidden', 'edit_any', 'delete_any', 'pin', 'lock'],
+            games: ['edit_any'],
+            adminPages: ['tickets', 'stats', 'notifications'],
+          },
+        },
+      })
+    } catch {
+      const existing = await payload.find({
+        collection: 'roles',
+        where: { name: { equals: 'moderator' } },
+        limit: 1,
+        overrideAccess: true,
+      })
+      moderatorRole = existing.docs[0]
+      log.push('  Moderator role already exists, reusing')
+    }
+
+    try {
+      testerRole = await payload.create({
+        collection: 'roles',
+        overrideAccess: true,
+        data: {
+          name: 'tester',
+          displayName: 'Tester',
+          priority: 5,
+          badgeColor: '#0891b2',
+          textColor: '#ffffff',
+          permissions: {
+            articles: ['create', 'view_drafts'],
+            support: ['view_all'],
+            forum: ['view_hidden'],
+            games: ['edit_any', 'delete_any'],
+            adminPages: ['categories', 'container_test'],
+          },
+        },
+      })
+    } catch {
+      const existing = await payload.find({
+        collection: 'roles',
+        where: { name: { equals: 'tester' } },
+        limit: 1,
+        overrideAccess: true,
+      })
+      testerRole = existing.docs[0]
+      log.push('  Tester role already exists, reusing')
+    }
+
+    log.push(`  Moderator role: ${moderatorRole?.id}`)
+    log.push(`  Tester role: ${testerRole?.id}`)
+
+    // =========================================================================
+    // 1b. Create 100 Users (1 admin + 2 moderators + 2 testers + 95 players)
     // =========================================================================
     log.push('Creating 100 users...')
 
@@ -256,7 +327,11 @@ export async function POST() {
     for (let i = 0; i < 99; i++) {
       const nick = generateNickname(i)
       try {
-        const role = i < 2 ? 'moderator' : 'player'
+        const assignedRoles = i < 2
+          ? [moderatorRole.id]
+          : i < 4
+            ? [testerRole.id]
+            : []
         const gamesPlayed = randomInt(5, 80)
         const gamesWon = randomInt(1, Math.floor(gamesPlayed * 0.6))
         const skin = pick(SKINS)
@@ -269,7 +344,8 @@ export async function POST() {
             username: nick,
             ingameNick: nick,
             password: 'test1234',
-            roles: role,
+            roles: 'player',
+            assignedRoles,
             isSystemVerified: Math.random() > 0.25,
             ingameStats: {
               points: randomInt(100, 30000),
@@ -663,7 +739,8 @@ export async function POST() {
     log.push('Seed complete!')
     log.push(`  Users: ${userIds.length}`)
     log.push(`  Admin login: admin / admin123`)
-    log.push(`  Moderator login: ${userNicks[1]} / test1234`)
+    log.push(`  Moderator login: ${userNicks[1]} / test1234 (role: moderator)`)
+    log.push(`  Tester login: ${userNicks[3]} / test1234 (role: tester)`)
     log.push(`  Player login: (any nick) / test1234`)
 
     return NextResponse.json({ success: true, log })

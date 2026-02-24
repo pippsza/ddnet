@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 
 /**
  * Forum Posts Collection
@@ -12,47 +13,22 @@ export const ForumPosts: CollectionConfig = {
     group: 'Community',
   },
   access: {
-    // Anyone can read published posts
-    read: ({ req }) => {
-      // If user is admin or moderator, show all posts
-      if (req.user && (req.user.roles === 'admin' || req.user.roles === 'moderator')) {
+    read: async ({ req }) => {
+      if (req.user && (await hasPermission(req, 'forum', 'view_hidden'))) {
         return true
       }
-      // Otherwise only show published posts
-      return {
-        status: {
-          equals: 'published',
-        },
-      }
+      return { status: { equals: 'published' } }
     },
-    // Any authenticated user can create
-    create: ({ req }) => {
-      return !!req.user
-    },
-    // Users can update their own posts, admins/moderators can update any
-    update: ({ req }) => {
+    create: ({ req }) => !!req.user,
+    update: async ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin' || req.user.roles === 'moderator') {
-        return true
-      }
-      // Users can only update their own posts
-      return {
-        author: {
-          equals: req.user.id,
-        },
-      }
+      if (await hasPermission(req, 'forum', 'edit_any')) return true
+      return { author: { equals: req.user.id } }
     },
-    // Users can delete their own posts, admins can delete any
-    delete: ({ req }) => {
+    delete: async ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin' || req.user.roles === 'moderator') {
-        return true
-      }
-      return {
-        author: {
-          equals: req.user.id,
-        },
-      }
+      if (await hasPermission(req, 'forum', 'delete_any')) return true
+      return { author: { equals: req.user.id } }
     },
   },
 
@@ -137,9 +113,9 @@ export const ForumPosts: CollectionConfig = {
       defaultValue: false,
       label: 'Pinned Post',
       admin: {
-        description: 'Only admins/moderators can pin posts',
+        description: 'Only staff with forum.pin permission can pin posts',
         condition: (data, siblingData, { user }) =>
-          user?.roles === 'admin' || user?.roles === 'moderator',
+          user?.roles === 'admin' || (Array.isArray((user as any)?.assignedRoles) && (user as any).assignedRoles.length > 0),
       },
     },
     {

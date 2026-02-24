@@ -1,4 +1,5 @@
 import type { GlobalConfig } from 'payload'
+import { hasPermission } from '@/lib/permissions'
 
 export const CustomCategories: GlobalConfig = {
   slug: 'custom-categories',
@@ -8,9 +9,9 @@ export const CustomCategories: GlobalConfig = {
   },
   access: {
     read: () => true,
-    update: ({ req }) => {
+    update: async ({ req }) => {
       if (!req.user) return false
-      return req.user.roles === 'admin' || req.user.roles === 'moderator'
+      return hasPermission(req, 'games', 'manage_categories')
     },
   },
   fields: [

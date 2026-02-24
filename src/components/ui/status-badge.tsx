@@ -84,7 +84,28 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   )
 }
 
-export function RoleBadge({ role, className }: { role?: string; className?: string }) {
-  if (!role || role === 'player') return null
+export function RoleBadge({
+  role,
+  className,
+}: {
+  role?: string | { name?: string; displayName: string; badgeColor: string; textColor: string } | null
+  className?: string
+}) {
+  if (!role) return null
+
+  // Dynamic role object from permissions system
+  if (typeof role === 'object') {
+    return (
+      <Badge
+        className={cn(className)}
+        style={{ backgroundColor: role.badgeColor, color: role.textColor }}
+      >
+        {role.displayName}
+      </Badge>
+    )
+  }
+
+  // Legacy string-based fallback
+  if (role === 'player') return null
   return <StatusBadge status={role} className={className} />
 }

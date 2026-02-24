@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { requirePermission } from '@/lib/api-auth'
 
 function textToLexical(text: string) {
   return {
@@ -28,12 +27,9 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: req.headers })
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const result = await requirePermission(req, 'support', 'reply')
+    if (result instanceof NextResponse) return result
+    const { user, payload } = result
 
     const body = await req.json()
     const { message } = body
@@ -52,12 +48,7 @@ export async function POST(
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
     }
 
-    const ticketAuthor = typeof ticket.createdBy === 'string' ? ticket.createdBy : ticket.createdBy?.id
-    if (ticketAuthor !== user.id && user.roles !== 'admin' && user.roles !== 'moderator') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const isStaff = user.roles === 'admin' || user.roles === 'moderator'
+    const isStaff = true // User passed requirePermission('support', 'reply')
     const responses = ticket.responses || []
     responses.push({
       message: textToLexical(message.trim()),

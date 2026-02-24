@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
       limit,
       page,
       sort: '-createdAt',
+      depth: 1,
     })
 
     const registered = registeredUsers.map((u) => {
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
         id: u.id,
         name: u.ingameNick,
         roles: u.roles || 'player',
+        primaryRole: (u as any).primaryRole || null,
         points: u.ingameStats?.points || 0,
         rank: u.ingameStats?.rank || undefined,
         isVerified: u.isSystemVerified || false,

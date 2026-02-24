@@ -13,6 +13,7 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
+import { usePermissions } from '@/hooks/use-permissions'
 import { CheckCircle } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -31,7 +32,8 @@ function SupportContent() {
   const { page, setPage, buildUrl } = usePagination({ defaultLimit: 20 })
   const { data: meData } = useSWR('/api/users/me', fetcher)
   const isLoggedIn = !!meData?.user
-  const isStaff = meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator'
+  const { hasPermission: hasPerm } = usePermissions()
+  const isStaff = hasPerm('support', 'view_all')
 
   const { data, isLoading, mutate } = useSWR(
     isLoggedIn ? buildUrl('/api/support?sort=-createdAt') : null,

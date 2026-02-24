@@ -44,7 +44,7 @@ async function getBingoLeaderboard(
   const { docs: users } = await payload.find({
     collection: 'users',
     limit: 500,
-    depth: 0,
+    depth: 1,
   })
 
   type Entry = {
@@ -53,6 +53,7 @@ async function getBingoLeaderboard(
       ingameNick: string
       isSystemVerified: boolean
       roles: string
+      primaryRole: any
       lastSeenAt: string | null
       skin: { name?: string; color_body?: number; color_feet?: number } | null
     }
@@ -116,6 +117,7 @@ async function getBingoLeaderboard(
         ingameNick: u.ingameNick || '',
         isSystemVerified: u.isSystemVerified || false,
         roles: (u.roles as string) || 'player',
+        primaryRole: (u as any).primaryRole || null,
         lastSeenAt: (u.lastSeenAt as string) || null,
         skin: u.ingameStats?.skin
           ? {
@@ -201,7 +203,7 @@ async function getRaceLeaderboard(
     collection: 'users',
     where: { id: { in: userIds } },
     limit: userIds.length,
-    depth: 0,
+    depth: 1,
   })
 
   const userLookup = new Map(users.map((u) => [u.id, u]))
@@ -212,6 +214,7 @@ async function getRaceLeaderboard(
       ingameNick: string
       isSystemVerified: boolean
       roles: string
+      primaryRole: any
       lastSeenAt: string | null
       skin: { name?: string; color_body?: number; color_feet?: number } | null
     }
@@ -235,6 +238,7 @@ async function getRaceLeaderboard(
         ingameNick: u.ingameNick || '',
         isSystemVerified: u.isSystemVerified || false,
         roles: (u.roles as string) || 'player',
+        primaryRole: (u as any).primaryRole || null,
         lastSeenAt: (u.lastSeenAt as string) || null,
         skin: u.ingameStats?.skin
           ? {

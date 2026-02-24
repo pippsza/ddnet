@@ -23,6 +23,8 @@ import { PushSubscriptions } from './collections/PushSubscriptions'
 import { Conversations } from './collections/Conversations'
 import { Messages } from './collections/Messages'
 import { InGameMessages } from './collections/InGameMessages'
+import { Roles } from './collections/Roles'
+import { WatchedPlayers } from './collections/WatchedPlayers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -51,6 +53,8 @@ export default buildConfig({
     Conversations,
     Messages,
     InGameMessages,
+    Roles,
+    WatchedPlayers,
   ],
   globals: [VerificationSettings, CustomCategories],
   editor: lexicalEditor(),

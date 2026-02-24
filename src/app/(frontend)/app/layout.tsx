@@ -7,6 +7,10 @@ import { AdminDebugMenu } from '@/components/admin/AdminDebugMenu'
 import { auth } from '@/lib/auth'
 import { getUserLocale } from '@/services/locale'
 import { redirect } from 'next/navigation'
+import { getPayload } from 'payload'
+import payloadConfig from '@payload-config'
+import { resolvePermissions } from '@/lib/permissions'
+import type { PayloadRequest } from 'payload'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -15,7 +19,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  const isAdmin = session.user.roles === 'admin'
+  const payload = await getPayload({ config: payloadConfig })
+  const payloadReq = { user: session.user, payload } as unknown as PayloadRequest
+  const permissions = await resolvePermissions(session.user as any, payloadReq)
   const locale = await getUserLocale()
 
   return (
@@ -23,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <AppSidebar
         user={{
           ingameNick: session.user.ingameNick ?? undefined,
-          roles: session.user.roles ?? undefined,
+          permissions,
           skin: session.user.ingameStats?.skin as
             | { name?: string; color_body?: number; color_feet?: number }
             | undefined,
@@ -40,7 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
         <div className="flex-1 p-6  overflow-hidden justify-center">{children}</div>
       </main>
-      {isAdmin && <AdminDebugMenu />}
+      {permissions.isAdmin && <AdminDebugMenu />}
     </SidebarProvider>
   )
 }

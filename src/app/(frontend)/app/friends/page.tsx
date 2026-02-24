@@ -228,7 +228,7 @@ function FriendsContent() {
               <PlayerCard
                 key={req.id}
                 name={req.otherUser?.ingameNick || 'Unknown'}
-                role={req.otherUser?.roles}
+                role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
                   name: req.otherUser?.skin?.name,
                   colorBody: req.otherUser?.skin?.color_body,
@@ -270,7 +270,7 @@ function FriendsContent() {
               <PlayerCard
                 key={req.id}
                 name={req.otherUser?.ingameNick || 'Unknown'}
-                role={req.otherUser?.roles}
+                role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
                   name: req.otherUser?.skin?.name,
                   colorBody: req.otherUser?.skin?.color_body,
@@ -408,7 +408,7 @@ function FriendsList({
         <PlayerCard
           key={friend.userId}
           name={friend.username || friend.nickname}
-          role={friend.roles}
+          role={(friend as any).primaryRole || friend.roles}
           skin={friend.skin}
           platformOnline={friend.platformOnline ?? false}
           inGameOnline={friend.online ?? false}

@@ -114,9 +114,28 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
   const { unreadCount } = useNotifications()
   const [mounted, setMounted] = useState(false)
+  const [chatMentions, setChatMentions] = useState(0)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  // Listen for ingame chat mention events
+  useEffect(() => {
+    const sync = () => {
+      const val = localStorage.getItem('ingame-chat-mentions')
+      setChatMentions(val ? parseInt(val, 10) || 0 : 0)
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'ingame-chat-mentions') sync()
+    }
+    sync()
+    window.addEventListener('ingame-chat-mentions', sync)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('ingame-chat-mentions', sync)
+      window.removeEventListener('storage', onStorage)
+    }
   }, [])
 
   // Poll for active ingame chat session
@@ -206,10 +225,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     </Link>
                   </SidebarMenuButton>
                   <SidebarMenuBadge>
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-                    </span>
+                    {chatMentions > 0 ? (
+                      <span className="bg-sky-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+                        {chatMentions > 9 ? '9+' : chatMentions}
+                      </span>
+                    ) : (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                      </span>
+                    )}
                   </SidebarMenuBadge>
                 </SidebarMenuItem>
               )}

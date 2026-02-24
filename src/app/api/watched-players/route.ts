@@ -31,10 +31,30 @@ export async function GET(req: NextRequest) {
     const nicknames = entries.map((e) => e.nickname)
     const onlineStatuses = await findPlayersOnline(nicknames)
 
+    // Look up registered users by ingameNick for role/verification badges
+    const { docs: registeredUsers } = await payload.find({
+      collection: 'users',
+      where: { ingameNick: { in: nicknames } },
+      limit: nicknames.length,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const regMap = new Map(
+      registeredUsers.map((u: any) => [u.ingameNick?.toLowerCase(), u]),
+    )
+
     const players = entries.map((entry) => {
       const status = onlineStatuses.find(
         (s) => s.name.toLowerCase() === entry.nickname.toLowerCase(),
       )
+      const regUser = regMap.get(entry.nickname.toLowerCase()) as any
+
+      // Prefer DB skin over live skin
+      const dbSkin = regUser?.ingameStats?.skin
+      const skin = dbSkin?.name
+        ? { name: dbSkin.name, colorBody: dbSkin.color_body || 0, colorFeet: dbSkin.color_feet || 0 }
+        : status?.skin ?? null
+
       return {
         id: entry.id,
         nickname: entry.nickname,
@@ -42,7 +62,9 @@ export async function GET(req: NextRequest) {
         addedAt: entry.addedAt,
         online: status?.online ?? false,
         server: status?.server ?? null,
-        skin: status?.skin ?? null,
+        skin,
+        isVerified: regUser?.isSystemVerified ?? false,
+        role: regUser?.primaryRole ?? null,
       }
     })
 

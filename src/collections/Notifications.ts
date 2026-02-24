@@ -59,6 +59,7 @@ export const Notifications: CollectionConfig = {
         { label: 'Achievement', value: 'achievement' },
         { label: 'System', value: 'system' },
         { label: 'Player Online', value: 'player_online' },
+        { label: 'Chat Mention', value: 'chat_mention' },
       ],
       admin: {
         description: 'Type of notification',

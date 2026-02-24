@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowLeft, Square, Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatMessages } from '@/components/chat/ChatMessages'
@@ -68,6 +69,11 @@ function InGameChatContent() {
   const [loginRequired, setLoginRequired] = useState(false)
   const [loginToken, setLoginToken] = useState('')
   const [loginSending, setLoginSending] = useState(false)
+  const [saveToken, setSaveToken] = useState(false)
+  const [hasSavedToken, setHasSavedToken] = useState(false)
+  const autoLoginAttempted = useRef(false)
+  const pendingTokenToSave = useRef<string | null>(null)
+  const [mentionCount, setMentionCount] = useState(0)
   const [targetNick, setTargetNick] = useState<string | null>(null)
   const [serverName, setServerName] = useState<string | null>(null)
   const [containerId, setContainerId] = useState<string | null>(() =>
@@ -102,23 +108,90 @@ function InGameChatContent() {
       const incoming = chatData.messages.filter((m: ChatMessage) => !m.isOwn)
       if (incoming.length > 0) {
         setMessages((prev) => [...prev, ...incoming])
+
+        // Detect mentions of user's nick
+        const myNick = meData?.user?.ingameNick
+        if (myNick) {
+          const nickLower = myNick.toLowerCase()
+          const mentions = incoming.filter(
+            (m: ChatMessage) => !m.isServer && m.text.toLowerCase().includes(nickLower),
+          )
+          if (mentions.length > 0) {
+            setMentionCount((prev) => prev + mentions.length)
+
+            // Send push notification when tab is not focused
+            if (document.hidden && meData?.user?.id) {
+              const lastMention = mentions[mentions.length - 1]
+              fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  recipient: meData.user.id,
+                  type: 'chat_mention',
+                  title: `${lastMention.author} mentioned you`,
+                  message: lastMention.text.length > 100
+                    ? lastMention.text.slice(0, 100) + '...'
+                    : lastMention.text,
+                  actionUrl: `/app/ingame-chat?sessionId=${sessionId}`,
+                }),
+              }).catch(() => {})
+            }
+          }
+        }
       }
       messagesSinceRef.current = chatData.totalMessages
     }
 
-    // Handle login required
+    // Handle login required — try auto-login with saved token first
     if (chatData.status === 'login_required') {
-      setLoginRequired(true)
+      if (!autoLoginAttempted.current && !loginRequired) {
+        autoLoginAttempted.current = true
+        // Try auto-login with saved token
+        fetch('/api/ingame-chat/token')
+          .then((r) => r.json())
+          .then((data) => {
+            setHasSavedToken(data.hasSavedToken)
+            if (data.hasSavedToken && sessionId) {
+              setLoginSending(true)
+              fetch('/api/ingame-chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId, message: '/login-saved' }),
+              }).catch(() => {
+                setLoginSending(false)
+                setLoginRequired(true)
+              })
+            } else {
+              setLoginRequired(true)
+            }
+          })
+          .catch(() => setLoginRequired(true))
+      } else if (autoLoginAttempted.current && !loginSending) {
+        setLoginRequired(true)
+      }
     }
     // Clear login required when connected (successful login)
-    if (chatData.status === 'connected' && loginRequired) {
+    if (chatData.status === 'connected' && (loginRequired || loginSending)) {
       setLoginRequired(false)
       setLoginToken('')
       setLoginSending(false)
+      // Save token if user checked the save checkbox
+      if (pendingTokenToSave.current) {
+        const tokenToSave = pendingTokenToSave.current
+        pendingTokenToSave.current = null
+        fetch('/api/ingame-chat/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenToSave }),
+        })
+          .then(() => setHasSavedToken(true))
+          .catch(() => toast.error('Failed to save token'))
+      }
     }
     // Handle login failure — re-enable button so user can retry
     if (chatData.status === 'login_failed') {
       setLoginSending(false)
+      setLoginRequired(true)
       toast.error('Login failed. Check your credentials and try again.')
     }
 
@@ -131,6 +204,99 @@ function InGameChatContent() {
       }
     }
   }, [chatData])
+
+  // Sync mention count to localStorage for sidebar badge
+  useEffect(() => {
+    if (mentionCount > 0) {
+      localStorage.setItem('ingame-chat-mentions', String(mentionCount))
+    } else {
+      localStorage.removeItem('ingame-chat-mentions')
+    }
+    window.dispatchEvent(new Event('ingame-chat-mentions'))
+  }, [mentionCount])
+
+  // Tab title flash on mentions
+  useEffect(() => {
+    if (mentionCount === 0) return
+    const originalTitle = document.title
+    let flashing = true
+    const interval = setInterval(() => {
+      if (document.hidden) {
+        document.title = flashing ? `(${mentionCount}) Ping! — In-Game Chat` : originalTitle
+        flashing = !flashing
+      } else {
+        document.title = originalTitle
+      }
+    }, 1000)
+
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        document.title = originalTitle
+        setMentionCount(0)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      document.title = originalTitle
+    }
+  }, [mentionCount])
+
+  // Favicon badge on mentions
+  useEffect(() => {
+    const linkEl = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+    if (!linkEl) return
+    const originalHref = linkEl.href
+
+    if (mentionCount === 0) {
+      // Restore original favicon
+      if (linkEl.href !== originalHref) linkEl.href = originalHref
+      return
+    }
+
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = originalHref
+    img.onload = () => {
+      const size = 32
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      ctx.drawImage(img, 0, 0, size, size)
+
+      // Draw red circle badge
+      const r = 7
+      ctx.beginPath()
+      ctx.arc(size - r, r, r, 0, 2 * Math.PI)
+      ctx.fillStyle = '#ef4444'
+      ctx.fill()
+
+      // Draw count text
+      ctx.fillStyle = '#fff'
+      ctx.font = 'bold 9px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(mentionCount > 9 ? '9+' : String(mentionCount), size - r, r + 0.5)
+
+      linkEl.href = canvas.toDataURL('image/png')
+    }
+
+    return () => {
+      linkEl.href = originalHref
+    }
+  }, [mentionCount])
+
+  // Clear mentions when page is focused and visible
+  useEffect(() => {
+    if (!document.hidden && mentionCount > 0) {
+      setMentionCount(0)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch skin data for the primary target
   const { data: friendData } = useSWR(
@@ -189,6 +355,8 @@ function InGameChatContent() {
   const handleLoginSubmit = useCallback(async () => {
     if (!sessionId || !loginToken.trim()) return
     setLoginSending(true)
+    // Remember token if user wants to save it — will be saved after successful login
+    pendingTokenToSave.current = saveToken ? loginToken.trim() : null
     try {
       const res = await fetch('/api/ingame-chat/send', {
         method: 'POST',
@@ -202,9 +370,10 @@ function InGameChatContent() {
       // Keep loginSending=true — will be cleared when server responds
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to send login')
+      pendingTokenToSave.current = null
       setLoginSending(false)
     }
-  }, [sessionId, loginToken])
+  }, [sessionId, loginToken, saveToken])
 
   const handleDisconnect = useCallback(async () => {
     if (!sessionId && !containerId) return
@@ -338,12 +507,15 @@ function InGameChatContent() {
                 const isTarget = msg.author.toLowerCase() === targetNick?.toLowerCase()
                 const msgSkinUrl = msg.skin ? getDDNetSkinUrl(msg.skin) : undefined
                 const hasMessageColors = !!(msg.colorBody || msg.colorFeet)
+                const myNick = meData?.user?.ingameNick
+                const isMention = !msg.isOwn && myNick && msg.text.toLowerCase().includes(myNick.toLowerCase())
 
                 return (
                   <ChatBubble
                     key={i}
                     isOwn={msg.isOwn}
                     status={msg.isOwn ? msg.status : undefined}
+                    highlight={!!isMention}
                     avatar={
                       <TeeAvatarWithFallback
                         skinUrl={
@@ -440,6 +612,16 @@ function InGameChatContent() {
                     onChange={(e) => setLoginToken(e.target.value)}
                     autoFocus
                   />
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="save-token"
+                      checked={saveToken}
+                      onCheckedChange={(v) => setSaveToken(!!v)}
+                    />
+                    <label htmlFor="save-token" className="text-sm text-muted-foreground cursor-pointer select-none">
+                      Save for next sessions
+                    </label>
+                  </div>
                   <Button type="submit" className="w-full" disabled={loginSending || !loginToken.trim()}>
                     {loginSending ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -451,7 +633,12 @@ function InGameChatContent() {
                 </form>
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
-                  <p>Your credentials are sent directly to the game server and are not stored.</p>
+                  <p>
+                    Your credentials are sent directly to the game server.
+                    {saveToken
+                      ? ' The token will be encrypted and saved on the server for auto-login.'
+                      : ' Nothing is stored.'}
+                  </p>
                 </div>
               </div>
             </div>

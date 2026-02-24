@@ -565,5 +565,19 @@ export const Users: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'savedLoginToken',
+      type: 'text',
+      label: 'Saved In-Game Login Token',
+      hidden: true,
+      admin: {
+        description: 'Encrypted login token for auto-login on game servers',
+        readOnly: true,
+      },
+      access: {
+        read: () => false,
+        update: () => false,
+      },
+    },
   ],
 }

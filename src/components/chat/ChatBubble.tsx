@@ -10,6 +10,7 @@ interface ChatBubbleProps {
   avatar?: React.ReactNode
   isOptimistic?: boolean
   status?: 'pending' | 'delivered' | 'failed'
+  highlight?: boolean
   className?: string
 }
 
@@ -20,6 +21,7 @@ export function ChatBubble({
   avatar,
   isOptimistic,
   status,
+  highlight,
   className,
 }: ChatBubbleProps) {
   return (
@@ -48,7 +50,9 @@ export function ChatBubble({
             'rounded-lg px-4 py-3',
             isOwn
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted border',
+              : highlight
+                ? 'bg-sky-500/15 border border-sky-500/40'
+                : 'bg-muted border',
             isOptimistic && 'opacity-70',
           )}
         >

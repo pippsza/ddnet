@@ -593,6 +593,10 @@ export interface User {
      */
     favoriteCategory?: string | null;
   };
+  /**
+   * Encrypted login token for auto-login on game servers
+   */
+  savedLoginToken?: string | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -904,7 +908,8 @@ export interface Notification {
     | 'round_won'
     | 'achievement'
     | 'system'
-    | 'player_online';
+    | 'player_online'
+    | 'chat_mention';
   title: string;
   message: string;
   isRead?: boolean | null;
@@ -1942,6 +1947,7 @@ export interface UsersSelect<T extends boolean = true> {
         winRate?: T;
         favoriteCategory?: T;
       };
+  savedLoginToken?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;

@@ -126,6 +126,8 @@ function OnlinePlayersContent() {
               key={player.id}
               name={player.nickname}
               skin={player.skin}
+              role={player.role}
+              isVerified={player.isVerified}
               inGameOnline={player.online}
               serverName={player.server?.name}
               mapName={player.server?.map}

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getSession, addOutboxMessage } from '@/lib/ingame-chat-store'
+import { decrypt } from '@/lib/encryption'
 
-/** POST — queue a whisper message for the bot to send */
+/** POST — queue a message for the bot to send */
 export async function POST(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
@@ -26,8 +27,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Session is no longer active' }, { status: 400 })
     }
 
+    let finalMessage = message.trim()
+
+    // Handle auto-login with saved token
+    if (finalMessage === '/login-saved') {
+      const fullUser = await payload.findByID({
+        collection: 'users',
+        id: user.id,
+        overrideAccess: true,
+      })
+      if (!fullUser.savedLoginToken) {
+        return NextResponse.json({ error: 'No saved token' }, { status: 400 })
+      }
+      try {
+        const decryptedToken = decrypt(fullUser.savedLoginToken)
+        finalMessage = `/login ${decryptedToken}`
+      } catch {
+        return NextResponse.json({ error: 'Failed to decrypt saved token' }, { status: 500 })
+      }
+    }
+
     // recipient is optional — defaults to session.targetNick in the store
-    addOutboxMessage(sessionId, message.trim(), recipient || undefined)
+    addOutboxMessage(sessionId, finalMessage, recipient || undefined)
 
     return NextResponse.json({ ok: true })
   } catch (error) {

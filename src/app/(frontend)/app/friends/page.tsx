@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useMemo, Suspense } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,9 +43,13 @@ function FriendsContent() {
   const [sending, setSending] = useState(false)
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
-  const [activeTab, setActiveTab] = useState('all')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const { page, limit, setPage, resetPage } = usePagination({ defaultLimit: 12, pageParam: 'p' })
+  const activeTab = searchParams.get('tab') || 'all'
+
+  const { page, limit, setPage } = usePagination({ defaultLimit: 12, pageParam: 'p' })
 
   const friends = onlineData?.friends || []
   const incoming = pendingData?.incoming || []
@@ -60,8 +65,15 @@ function FriendsContent() {
   )
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab)
-    resetPage()
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === 'all') {
+      params.delete('tab')
+    } else {
+      params.set('tab', tab)
+    }
+    params.delete('p')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
 
   const handleSendRequest = async (e: React.FormEvent) => {

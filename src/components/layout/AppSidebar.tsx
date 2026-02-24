@@ -41,17 +41,22 @@ import {
   Medal,
   FolderOpen,
   Container,
+  Gamepad2,
+  Bug,
+  Megaphone,
+  BarChart3,
 } from 'lucide-react'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { useNotifications } from '@/hooks/use-notifications'
+import useSWR from 'swr'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { APP_NAME } from '@/lib/constants'
 
-const mainItems = [
-  { title: 'Dashboard', url: '/app/dashboard', icon: LayoutDashboard },
-]
+const mainItems = [{ title: 'Dashboard', url: '/app/dashboard', icon: LayoutDashboard }]
 
 const gameItems = [
   { title: 'Bingo', url: '/app/bingo', icon: Grid3X3 },
@@ -76,13 +81,15 @@ const otherItems = [
 const adminItems = [
   { title: 'Bot Management', url: '/app/admin/bots', icon: Bot, adminOnly: true },
   { title: 'Container Test', url: '/app/admin/container-test', icon: Container, adminOnly: true },
+  { title: 'Notifications', url: '/app/admin/notifications', icon: Megaphone },
+  { title: 'Debug', url: '/app/admin/debug', icon: Bug },
   { title: 'Categories', url: '/app/admin/categories', icon: FolderOpen },
   { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket },
+
+  { title: 'Stats', url: '/app/admin/stats', icon: BarChart3 },
 ]
 
-const devItems = [
-  { title: 'Dev Tools', url: '/app/dev', icon: Wrench },
-]
+const devItems = [{ title: 'Dev Tools', url: '/app/dev', icon: Wrench }]
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -94,11 +101,26 @@ interface AppSidebarProps {
   }
 }
 
+const chatFetcher = (url: string) =>
+  fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))
+
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { isMobile, setOpenMobile } = useSidebar()
   const { unreadCount } = useNotifications()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Poll for active ingame chat session
+  const { data: activeChatData } = useSWR('/api/ingame-chat', chatFetcher, {
+    refreshInterval: 10000,
+    revalidateOnFocus: true,
+  })
+  const activeChat = mounted && activeChatData?.sessionId ? activeChatData : null
 
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false)
@@ -114,7 +136,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/app" className="flex items-center gap-2">
-          <span className="text-xl font-bold">DDNet Bingo</span>
+          <span className="text-xl font-bold">{APP_NAME}</span>
         </Link>
       </SidebarHeader>
 
@@ -168,6 +190,25 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {activeChat && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith('/app/ingame-chat')}>
+                    <Link
+                      href={`/app/ingame-chat?sessionId=${activeChat.sessionId}`}
+                      onClick={handleNavClick}
+                    >
+                      <Gamepad2 className="h-4 w-4" />
+                      <span>Ingame Chat</span>
+                    </Link>
+                  </SidebarMenuButton>
+                  <SidebarMenuBadge>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                  </SidebarMenuBadge>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -180,15 +221,15 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 {adminItems
                   .filter((item) => !item.adminOnly || user.roles === 'admin')
                   .map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
-                      <Link href={item.url} onClick={handleNavClick}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
+                        <Link href={item.url} onClick={handleNavClick}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -225,7 +266,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>
-              {item.url === '/app/notifications' && unreadCount > 0 && (
+              {item.url === '/app/notifications' && mounted && unreadCount > 0 && (
                 <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </SidebarMenuBadge>

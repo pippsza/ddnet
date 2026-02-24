@@ -1,10 +1,10 @@
 'use client'
 
-import { use } from 'react'
+import { use, useState, useCallback } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DetailPageSkeleton } from '@/components/ui/page-skeleton'
@@ -40,12 +40,34 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
-  const { data, isLoading } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     `/api/articles?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
     fetcher,
   )
   const { data: meData } = useSWR('/api/users/me', fetcher)
   const isStaff = meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator'
+
+  const [liking, setLiking] = useState(false)
+  const [liked, setLiked] = useState(false)
+
+  const handleLike = useCallback(async () => {
+    const article = data?.docs?.[0]
+    if (!article || liking || liked) return
+
+    setLiking(true)
+    try {
+      const res = await fetch(`/api/articles/${article.id}/like`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (res.ok) {
+        setLiked(true)
+        mutate()
+      }
+    } finally {
+      setLiking(false)
+    }
+  }, [data, liking, liked, mutate])
 
   if (isLoading) return <DetailPageSkeleton />
 
@@ -53,7 +75,10 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
   if (!article) {
     return (
       <div className="space-y-4">
-        <Link href="/app/articles" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/app/articles"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to Articles
         </Link>
         <Card>
@@ -68,7 +93,10 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/app/articles" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/app/articles"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to Articles
         </Link>
         {isStaff && (
@@ -97,7 +125,11 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
       {/* Article Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}>
+          <Badge
+            className={
+              CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'
+            }
+          >
             {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
           </Badge>
           {article.tags?.map((t: any) => {
@@ -108,9 +140,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
               </Badge>
             )
           })}
-          {article.featured && (
-            <Badge className="bg-amber-500/10 text-amber-500">Featured</Badge>
-          )}
+          {article.featured && <Badge className="bg-amber-500/10 text-amber-500">Featured</Badge>}
         </div>
 
         <h1 className="text-3xl font-bold wrap-break-word">{article.title}</h1>
@@ -119,18 +149,29 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
           <p className="text-lg text-muted-foreground wrap-break-word">{article.excerpt}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
           <div className="flex items-center gap-1.5">
             <OnlineStatusIndicator
-              status={{ platformOnline: isPlatformOnline(article.author?.lastSeenAt), inGameOnline: false }}
+              status={{
+                platformOnline: isPlatformOnline(article.author?.lastSeenAt),
+                inGameOnline: false,
+              }}
               size="xs"
             >
               <TeeAvatarWithFallback
-                skinUrl={article.author?.ingameStats?.skin?.name
-                  ? getDDNetSkinUrl(article.author.ingameStats.skin.name) : undefined}
+                skinUrl={
+                  article.author?.ingameStats?.skin?.name
+                    ? getDDNetSkinUrl(article.author.ingameStats.skin.name)
+                    : undefined
+                }
                 bodyColor={article.author?.ingameStats?.skin?.color_body}
                 feetColor={article.author?.ingameStats?.skin?.color_feet}
-                useCustomColors={!!(article.author?.ingameStats?.skin?.color_body || article.author?.ingameStats?.skin?.color_feet)}
+                useCustomColors={
+                  !!(
+                    article.author?.ingameStats?.skin?.color_body ||
+                    article.author?.ingameStats?.skin?.color_feet
+                  )
+                }
                 size="xs"
               />
             </OnlineStatusIndicator>
@@ -145,10 +186,16 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
             <Eye className="h-4 w-4" />
             <span>{article.views || 0} views</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Heart className="h-4 w-4" />
+          <button
+            onClick={handleLike}
+            disabled={liking || liked}
+            className="flex items-center gap-1.5 transition-colors hover:text-red-400 disabled:opacity-60 disabled:cursor-default"
+          >
+            <Heart
+              className={`h-4 w-4 transition-colors ${liked ? 'fill-red-500 text-red-500' : ''}`}
+            />
             <span>{article.likes || 0} likes</span>
-          </div>
+          </button>
         </div>
       </div>
 

@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <ThemeToggleButton />
           </div>
         </header>
-        <div className="flex-1 p-6  overflow-hidden">{children}</div>
+        <div className="flex-1 p-6  overflow-hidden justify-center">{children}</div>
       </main>
       {isAdmin && <AdminDebugMenu />}
     </SidebarProvider>

@@ -91,46 +91,36 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { targetUserId, serverPassword } = body
-    if (!targetUserId) {
-      return NextResponse.json({ error: 'targetUserId required' }, { status: 400 })
-    }
+    const { targetUserId, targetNickname, serverPassword } = body
 
-    // Fetch full user to check friends
-    const fullUser = await payload.findByID({
-      collection: 'users',
-      id: user.id,
-      depth: 0,
-    })
+    let targetNick: string
 
-    // Check friendship
-    const friends: Array<{ user: string | { id: string } }> = (fullUser.friend as any) || []
-    const isFriend = friends.some((f) => {
-      const friendId = typeof f.user === 'string' ? f.user : f.user?.id
-      return friendId === targetUserId
-    })
-    if (!isFriend) {
-      return NextResponse.json({ error: 'You can only chat with friends' }, { status: 403 })
-    }
-
-    // Get target user's ingameNick
-    const targetUser = await payload.findByID({
-      collection: 'users',
-      id: targetUserId,
-      depth: 0,
-    })
-    if (!targetUser.ingameNick) {
-      return NextResponse.json(
-        { error: 'Friend does not have an in-game nickname' },
-        { status: 400 },
-      )
+    if (targetUserId) {
+      // Chat with a registered user — look up their ingameNick
+      const targetUser = await payload.findByID({
+        collection: 'users',
+        id: targetUserId,
+        depth: 0,
+      })
+      if (!targetUser.ingameNick) {
+        return NextResponse.json(
+          { error: 'Player does not have an in-game nickname' },
+          { status: 400 },
+        )
+      }
+      targetNick = targetUser.ingameNick
+    } else if (targetNickname) {
+      // Chat with any online player by nickname
+      targetNick = targetNickname
+    } else {
+      return NextResponse.json({ error: 'targetUserId or targetNickname required' }, { status: 400 })
     }
 
     // Check if target is online
-    const onlineStatus = await findPlayerOnline(targetUser.ingameNick)
+    const onlineStatus = await findPlayerOnline(targetNick)
     if (!onlineStatus.online || !onlineStatus.server) {
       return NextResponse.json(
-        { error: `${targetUser.ingameNick} is not online in-game` },
+        { error: `${targetNick} is not online in-game` },
         { status: 400 },
       )
     }
@@ -140,7 +130,7 @@ export async function POST(req: NextRequest) {
     // If server is passworded and no password provided, tell frontend to ask
     if (passworded && !serverPassword) {
       return NextResponse.json(
-        { error: 'passwordRequired', passworded: true, targetNick: targetUser.ingameNick, serverName },
+        { error: 'passwordRequired', passworded: true, targetNick, serverName },
         { status: 428 },
       )
     }
@@ -148,8 +138,18 @@ export async function POST(req: NextRequest) {
     const sessionId = randomUUID()
     const botName = `${user.ingameNick || 'Chat'} - BOT`
 
+    // Get user's skin for the bot avatar
+    const userSkin = user.ingameStats?.skin as
+      | { name?: string; colorBody?: number; colorFeet?: number; color_body?: number; color_feet?: number }
+      | undefined
+    const botSkin = userSkin ? {
+      name: userSkin.name,
+      colorBody: userSkin.colorBody ?? userSkin.color_body,
+      colorFeet: userSkin.colorFeet ?? userSkin.color_feet,
+    } : undefined
+
     console.log(
-      `[InGameChat] Starting: user=${user.ingameNick}, target=${targetUser.ingameNick}, server=${ip}:${port}`,
+      `[InGameChat] Starting: user=${user.ingameNick}, target=${targetNick}, server=${ip}:${port}`,
     )
 
     // Create ChatSessions doc in DB
@@ -157,8 +157,8 @@ export async function POST(req: NextRequest) {
       collection: 'chat-sessions',
       data: {
         initiator: user.id,
-        target: targetUserId,
-        targetNickname: targetUser.ingameNick,
+        target: targetUserId || user.id,
+        targetNickname: targetNick,
         status: 'connecting',
         server: { ip, port, name: serverName },
         startedAt: new Date().toISOString(),
@@ -175,8 +175,9 @@ export async function POST(req: NextRequest) {
         ip,
         port,
         botName,
-        targetUser.ingameNick,
+        targetNick,
         serverPassword || undefined,
+        botSkin,
       )
     } catch (error) {
       console.error('[InGameChat] Failed to start bot:', error)
@@ -206,8 +207,8 @@ export async function POST(req: NextRequest) {
       chatSessionDoc.id,
       containerId,
       user.id,
-      targetUserId,
-      targetUser.ingameNick,
+      targetUserId || '',
+      targetNick,
       ip,
       port,
       serverName,
@@ -220,7 +221,7 @@ export async function POST(req: NextRequest) {
       sessionId,
       containerId,
       server: { ip, port, name: serverName },
-      targetNick: targetUser.ingameNick,
+      targetNick,
     })
   } catch (error) {
     console.error('[InGameChat] Start error:', error)
@@ -281,6 +282,7 @@ export async function GET(req: NextRequest) {
       deliveries,
       targetNick: session.targetNick,
       serverName: session.serverName,
+      whisperParticipants: session.whisperParticipants,
     })
   } catch (error) {
     console.error('[InGameChat] GET error:', error)

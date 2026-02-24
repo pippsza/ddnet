@@ -27,6 +27,31 @@ export default function DevTestPage() {
   const [useCustomColors, setUseCustomColors] = useState(false)
   const [diagnostics, setDiagnostics] = useState<string[]>([])
 
+  // Seed state
+  const [seedStatus, setSeedStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle')
+  const [seedLog, setSeedLog] = useState<string[]>([])
+  const [seedError, setSeedError] = useState('')
+
+  const runSeed = async () => {
+    setSeedStatus('running')
+    setSeedLog([])
+    setSeedError('')
+    try {
+      const res = await fetch('/api/dev/seed', { method: 'POST' })
+      const data = await res.json()
+      if (data.log) setSeedLog(data.log)
+      if (!res.ok) {
+        setSeedStatus('error')
+        setSeedError(data.error || 'Seed failed')
+      } else {
+        setSeedStatus('done')
+      }
+    } catch (err) {
+      setSeedStatus('error')
+      setSeedError(err instanceof Error ? err.message : 'Network error')
+    }
+  }
+
   useEffect(() => {
     const logs: string[] = []
 
@@ -100,6 +125,35 @@ export default function DevTestPage() {
   return (
     <div className="p-6 space-y-8 max-w-4xl">
       <h1 className="text-2xl font-bold">Dev Test Page</h1>
+
+      {/* Database Seed */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Database Seed</h2>
+        <p className="text-sm text-muted-foreground">
+          Populate the database with 100 users, 100 bingo games, 100 races, 100 articles,
+          100 forum posts, 100 notifications, 100 support tickets, 100 conversations, and friend data.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={runSeed}
+            disabled={seedStatus === 'running'}
+            className="px-4 py-2 rounded bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {seedStatus === 'running' ? 'Seeding...' : 'Run Seed'}
+          </button>
+          {seedStatus === 'done' && (
+            <span className="text-sm text-green-500 font-medium">Done!</span>
+          )}
+          {seedStatus === 'error' && (
+            <span className="text-sm text-red-500 font-medium">{seedError}</span>
+          )}
+        </div>
+        {seedLog.length > 0 && (
+          <pre className="bg-muted p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-64 overflow-y-auto">
+            {seedLog.join('\n')}
+          </pre>
+        )}
+      </section>
 
       {/* Diagnostics */}
       <section className="space-y-2">

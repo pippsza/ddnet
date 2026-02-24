@@ -6,6 +6,21 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 // Types
 // ============================================================================
 
+export type TeeEyeType = 'default' | 'angry' | 'blink' | 'happy' | 'cross' | 'surprised'
+
+/**
+ * Background-position values for each eye type from the skin spritesheet.
+ * Matches TeeAssembler.skin.elements: each eye is 32x32 at y=96.
+ */
+const EYE_POSITIONS: Record<TeeEyeType, string> = {
+  default: '-64em -96em',
+  angry: '-96em -96em',
+  blink: '-128em -96em',
+  happy: '-160em -96em',
+  cross: '-192em -96em',
+  surprised: '-224em -96em',
+}
+
 interface TeeAvatarProps {
   skinUrl?: string
   bodyColor?: number
@@ -16,6 +31,7 @@ interface TeeAvatarProps {
   className?: string
   useCustomColors?: boolean
   mirrored?: boolean
+  eyeType?: TeeEyeType
 }
 
 interface TeeOptions {
@@ -159,9 +175,12 @@ export function TeeAvatar({
   className = '',
   useCustomColors = true,
   mirrored = false,
+  eyeType,
 }: TeeAvatarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const teeRef = useRef<TeeInstance | null>(null)
+  const eyeTypeRef = useRef(eyeType)
+  eyeTypeRef.current = eyeType
   const [ready, setReady] = useState(false)
   const [validatedUrl, setValidatedUrl] = useState<string | null>(null)
 
@@ -208,6 +227,22 @@ export function TeeAvatar({
       cancelled = true
     }
   }, [skinUrl, fallbackSkin])
+
+  /** Apply eye type by setting background-position on eye DOM elements */
+  const applyEyeType = useCallback(() => {
+    if (!containerRef.current) return
+    const type = eyeTypeRef.current
+    const eyes = containerRef.current.querySelectorAll<HTMLElement>(
+      '.teeassembler-left_eye, .teeassembler-right_eye',
+    )
+    if (eyes.length === 0) return
+    if (!type || type === 'default') {
+      // Reset to CSS default
+      eyes.forEach((eye) => (eye.style.backgroundPosition = ''))
+    } else {
+      eyes.forEach((eye) => (eye.style.backgroundPosition = EYE_POSITIONS[type]))
+    }
+  }, [])
 
   const createTee = useCallback(
     async (imageLink: string) => {
@@ -269,6 +304,9 @@ export function TeeAvatar({
             tee.api.functions.lookAtCursor()
           }
         }
+
+        // Apply eye type after tee is fully initialized
+        applyEyeType()
       } catch (e) {
         // Suppress "Cannot read properties of null" from TeeAssembler when
         // the container is unmounted during async initialization
@@ -299,6 +337,11 @@ export function TeeAvatar({
       }
     }
   }, [ready, validatedUrl, createTee])
+
+  // Update eye type without recreating the tee
+  useEffect(() => {
+    applyEyeType()
+  }, [eyeType, applyEyeType])
 
   return (
     <div

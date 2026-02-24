@@ -28,14 +28,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
-    // Check ownership
-    const userId =
-      typeof verificationRequest.user === 'string'
-        ? verificationRequest.user
-        : verificationRequest.user.id
+    // Check ownership (user may be null for claim-mode requests)
+    if (verificationRequest.user) {
+      const userId =
+        typeof verificationRequest.user === 'string'
+          ? verificationRequest.user
+          : verificationRequest.user.id
 
-    if (userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      if (userId !== session.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
     }
 
     // Check expiration

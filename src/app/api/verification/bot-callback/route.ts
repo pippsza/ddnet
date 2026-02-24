@@ -47,28 +47,61 @@ export async function POST(request: NextRequest) {
 
     switch (result) {
       case 'verified': {
-        // Mark user as verified
-        const userId =
-          typeof verificationRequest.user === 'string'
-            ? verificationRequest.user
-            : verificationRequest.user.id
+        if (verificationRequest.mode === 'claim') {
+          // Claim mode: delete the existing user with this nickname
+          const claimNick = verificationRequest.claimNick || verificationRequest.nickname
+          const existingUsers = await payload.find({
+            collection: 'users',
+            where: { ingameNick: { equals: claimNick } },
+            limit: 1,
+            overrideAccess: true,
+          })
 
-        await payload.update({
-          collection: 'users',
-          id: userId,
-          data: { isSystemVerified: true },
-        })
+          if (existingUsers.docs.length > 0) {
+            await payload.delete({
+              collection: 'users',
+              id: existingUsers.docs[0].id,
+              overrideAccess: true,
+            })
+            console.log(`[Bot Callback] Claim: deleted user with nick "${claimNick}"`)
+          }
 
-        await payload.update({
-          collection: 'verification-requests',
-          id: requestId,
-          data: {
-            status: 'success',
-            currentServer: serverStr,
-          },
-        })
+          await payload.update({
+            collection: 'verification-requests',
+            id: requestId,
+            data: {
+              status: 'success',
+              currentServer: serverStr,
+            },
+          })
 
-        console.log(`[Bot Callback] Player ${nickname} VERIFIED on ${serverStr}`)
+          console.log(`[Bot Callback] Claim: player ${nickname} VERIFIED on ${serverStr}, account freed`)
+        } else {
+          // Normal verify mode: mark user as verified
+          const userId =
+            typeof verificationRequest.user === 'string'
+              ? verificationRequest.user
+              : (verificationRequest.user as { id: string })?.id
+
+          if (userId) {
+            await payload.update({
+              collection: 'users',
+              id: userId,
+              data: { isSystemVerified: true },
+            })
+          }
+
+          await payload.update({
+            collection: 'verification-requests',
+            id: requestId,
+            data: {
+              status: 'success',
+              currentServer: serverStr,
+            },
+          })
+
+          console.log(`[Bot Callback] Player ${nickname} VERIFIED on ${serverStr}`)
+        }
         break
       }
 

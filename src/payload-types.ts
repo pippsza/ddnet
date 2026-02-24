@@ -1167,6 +1167,10 @@ export interface VerificationRequest {
    * The in-game nickname to verify
    */
   nickname: string;
+  /**
+   * verify = normal verification, claim = force steal nickname
+   */
+  mode: 'verify' | 'claim';
   status: 'pending' | 'success' | 'expired' | 'failed';
   /**
    * Reason for failure (not_logged_in, not_found, error details)
@@ -1180,7 +1184,18 @@ export interface VerificationRequest {
    * Docker container ID running the bot
    */
   containerId?: string | null;
-  user: string | User;
+  /**
+   * Linked user (empty for claim mode — user does not exist yet)
+   */
+  user?: (string | null) | User;
+  /**
+   * The nickname being claimed (only for claim mode)
+   */
+  claimNick?: string | null;
+  /**
+   * Whether this claim has been used to create a verified account
+   */
+  consumed?: boolean | null;
   expiresAt: string;
   updatedAt: string;
   createdAt: string;
@@ -2149,11 +2164,14 @@ export interface SupportSelect<T extends boolean = true> {
  */
 export interface VerificationRequestsSelect<T extends boolean = true> {
   nickname?: T;
+  mode?: T;
   status?: T;
   message?: T;
   currentServer?: T;
   containerId?: T;
   user?: T;
+  claimNick?: T;
+  consumed?: T;
   expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;

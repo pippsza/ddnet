@@ -5,6 +5,7 @@ import type {
   PayloadRequest,
   Field,
 } from 'payload'
+import { APIError } from 'payload'
 // DDNET_CATEGORIES import removed — favoriteCategory fields changed from select to text
 
 // ── Helper functions to reduce field repetition ──
@@ -107,35 +108,58 @@ const adminOnlyFieldAccess = {
 
 /**
  * Hard Reset Hook for nickname protection
- * Checks both platform username and in-game nickname:
- * - If unverified user exists with same username or ingameNick -> delete (allows re-registration)
- * - If verified user exists with same username or ingameNick -> throw error
+ *
+ * ingameNick conflicts:
+ * - Verified owner exists → "already protected" (owner proved identity)
+ * - Unverified user exists → "already taken, use /claim" (real owner must prove via bot)
+ *
+ * username conflicts (login name only, no ingameNick overlap):
+ * - Unverified → delete and allow re-registration (password reset scenario)
+ * - Verified → block
  */
 const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
   if (operation !== 'create' || !data.username) return data
 
   const payload = req.payload
 
-  // Check both username and ingameNick conflicts
-  const existingUsers = await payload.find({
+  // 1. Check ingameNick conflicts first — these always block
+  if (data.ingameNick) {
+    const nickConflicts = await payload.find({
+      collection: 'users',
+      where: { ingameNick: { equals: data.ingameNick } },
+      limit: 1,
+    })
+
+    if (nickConflicts.docs.length > 0) {
+      const existing = nickConflicts.docs[0]
+      if (existing.isSystemVerified) {
+        throw new APIError(
+          'This nickname is already protected. The owner has verified their identity.',
+          400,
+        )
+      }
+      throw new APIError(
+        'This nickname is already taken.',
+        400,
+      )
+    }
+  }
+
+  // 2. Check username conflicts (only if no ingameNick overlap)
+  const usernameConflicts = await payload.find({
     collection: 'users',
-    where: {
-      or: [
-        { username: { equals: data.username } },
-        ...(data.ingameNick ? [{ ingameNick: { equals: data.ingameNick } }] : []),
-      ],
-    },
+    where: { username: { equals: data.username } },
     limit: 10,
   })
 
-  for (const existingUser of existingUsers.docs) {
+  for (const existingUser of usernameConflicts.docs) {
     if (existingUser.isSystemVerified) {
-      throw new Error(
-        'This nickname is already protected. Please choose a different name or contact support.',
+      throw new APIError(
+        'This username is already protected. Please choose a different name.',
+        400,
       )
     }
-
-    // Hard Reset: Delete the unverified user to allow new registration
+    // Username-only conflict, unverified — delete to allow re-registration
     await payload.delete({
       collection: 'users',
       id: existingUser.id,

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useCallback, Suspense } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
@@ -41,20 +42,50 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function ForumContent() {
-  const [category, setCategory] = useState('all')
-  const [search, setSearch] = useState('')
-  const { page, setPage, resetPage } = usePagination({ defaultLimit: 20 })
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value)
-    resetPage()
-  }, [resetPage])
+  const search = searchParams.get('q') || ''
+  const category = searchParams.get('category') || 'all'
+  const { page, setPage } = usePagination({ defaultLimit: 20 })
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      for (const [key, value] of Object.entries(updates)) {
+        if (value) {
+          params.set(key, value)
+        } else {
+          params.delete(key)
+        }
+      }
+      params.delete('page')
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [searchParams, router, pathname],
+  )
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      updateParams({ q: value.trim() || null })
+    },
+    [updateParams],
+  )
+
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      updateParams({ category: value === 'all' ? null : value })
+    },
+    [updateParams],
+  )
 
   const queryParams = new URLSearchParams()
   if (category !== 'all') queryParams.set('category', category)
   if (search) queryParams.set('q', search)
   queryParams.set('page', String(page))
-  queryParams.set('limit', '20')
+  queryParams.set('limit', '18')
 
   const { data, isLoading } = useSWR(`/api/forum?${queryParams}`, fetcher)
 
@@ -78,13 +109,14 @@ function ForumContent() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
+          defaultValue={search}
           placeholder="Search posts..."
           className="pl-10"
         />
       </div>
 
       {/* Category Tabs */}
-      <Tabs value={category} onValueChange={(v) => { setCategory(v); resetPage() }}>
+      <Tabs value={category} onValueChange={handleCategoryChange}>
         <TabsList className="flex-wrap h-auto">
           {CATEGORIES.map((c) => (
             <TabsTrigger key={c.value} value={c.value}>
@@ -107,11 +139,11 @@ function ForumContent() {
                   <div className="shrink-0">
                     <OnlineStatusIndicator
                       status={{ platformOnline: isPlatformOnline(post.author?.lastSeenAt), inGameOnline: false }}
-                      size="sm"
+                      size="md"
                     >
                       <TeeAvatarWithFallback
                         skinUrl={post.author?.skin ? getDDNetSkinUrl(post.author.skin) : undefined}
-                        size="sm"
+                        size="md"
                       />
                     </OnlineStatusIndicator>
                   </div>
@@ -167,7 +199,7 @@ function ForumContent() {
       <PaginationControls
         page={page}
         totalPages={totalPages}
-        limit={20}
+        limit={18}
         onPageChange={setPage}
       />
     </div>

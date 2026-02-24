@@ -14,7 +14,24 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(find:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(magick /home/pippsza/code/ddnet/public/photo_2025-01-18_08-36-58.jpg -resize 192x192 -gravity center -extent 192x192 /home/pippsza/code/ddnet/public/icons/icon-192.png)",
+      "Bash(magick /home/pippsza/code/ddnet/public/photo_2025-01-18_08-36-58.jpg -resize 512x512 -gravity center -extent 512x512 /home/pippsza/code/ddnet/public/icons/icon-512.png)",
+      "Bash(magick /home/pippsza/code/ddnet/public/photo_2025-01-18_08-36-58.jpg -resize 32x32 -gravity center -extent 32x32 /home/pippsza/code/ddnet/public/favicon.ico)",
+      "Read(//home/pippsza/.npm/_logs/**)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/ingame-chat/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/api/players/[nickname]/route.ts)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/api/players/[name]/route.ts)",
+      "Bash(cat '/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/dev/page.tsx')",
+      "Bash(cat '/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/admin/bots/page.tsx')",
+      "Bash(cat '/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/admin/container-test/page.tsx')",
+      "Bash(cat '/home/pippsza/code/ddnet/src/app/\\(frontend\\)/layout.tsx')",
+      "Bash(cat '/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/layout.tsx')",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/notifications/page.tsx)",
+      "Bash(xargs cat)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/settings/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/layout.tsx)",
+      "Bash(head -100 /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/dashboard/page.tsx)"
     ],
     "additionalDirectories": [
       "/tmp",
@@ -25,7 +42,8 @@
       "/home/pippsza/code/ddnet/src/app/api/notifications/[id]",
       "/home/pippsza/code/ddnet/src/app/api/support/[id]",
       "/home/pippsza/code/ddnet/src/app/(frontend)/app/articles/[slug]",
-      "/home/pippsza/code/ddnet/src/app/(frontend)/support"
+      "/home/pippsza/code/ddnet/src/app/(frontend)/support",
+      "/home/pippsza/code/ddnet/src/app/api/articles/[id]"
     ]
   }
 }

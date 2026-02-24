@@ -1,12 +1,12 @@
 {
   "navigation": {
-    "title": "DDNet Bingo",
+    "title": "DDashBoard",
     "login": "Войти",
     "adminPanel": "Панель управления"
   },
   "hero": {
     "badge": "Новый игровой режим",
-    "title": "DDNet Bingo",
+    "title": "DDashBoard",
     "subtitle": "Соревнуйся в прохождении карт DDraceNetwork",
     "description": "Закрывай линии, диагонали или фул-хаус быстрее соперников. Каждая ячейка — это вызов!",
     "learnMore": "Узнать о Bingo",
@@ -72,13 +72,13 @@
   "cta": {
     "badge": "Присоединяйся сейчас",
     "title": "Готов принять вызов?",
-    "description": "Стань частью DDNet Bingo сообщества и докажи свои навыки",
+    "description": "Стань частью DDashBoard сообщества и докажи свои навыки",
     "createAccount": "Создать аккаунт"
   },
   "footer": {
     "about": "О проекте",
     "rules": "Правила",
     "support": "Поддержка",
-    "copyright": "© 2026 DDraceNetwork Bingo Platform"
+    "copyright": "© 2026 DDashBoard"
   }
 }

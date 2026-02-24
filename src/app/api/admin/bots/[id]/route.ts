@@ -12,7 +12,7 @@ export async function GET(
     const payload = await getPayload({ config })
     const { user } = await payload.auth({ headers: req.headers })
 
-    if (!user || user.roles !== 'admin') {
+    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -49,7 +49,7 @@ export async function DELETE(
     const payload = await getPayload({ config })
     const { user } = await payload.auth({ headers: req.headers })
 
-    if (!user || user.roles !== 'admin') {
+    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

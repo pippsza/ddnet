@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { sessionId, message } = await req.json()
+    const { sessionId, message, recipient } = await req.json()
     if (!sessionId || !message?.trim()) {
       return NextResponse.json({ error: 'sessionId and message required' }, { status: 400 })
     }
@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Session is no longer active' }, { status: 400 })
     }
 
-    addOutboxMessage(sessionId, message.trim())
+    // recipient is optional — defaults to session.targetNick in the store
+    addOutboxMessage(sessionId, message.trim(), recipient || undefined)
 
     return NextResponse.json({ ok: true })
   } catch (error) {

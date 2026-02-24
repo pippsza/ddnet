@@ -9,7 +9,14 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Square, Loader2, Lock, ShieldCheck } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ArrowLeft, Square, Loader2, Lock, ShieldCheck, Users } from 'lucide-react'
 import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatMessages } from '@/components/chat/ChatMessages'
 import { ChatInput } from '@/components/chat/ChatInput'
@@ -25,6 +32,9 @@ interface ChatMessage {
   isOwn: boolean
   timestamp: string
   status?: 'pending' | 'delivered' | 'failed'
+  skin?: string
+  colorBody?: number
+  colorFeet?: number
 }
 
 const STORAGE_KEY = 'ingame-chat-state'
@@ -70,6 +80,9 @@ function InGameChatContent() {
   const [containerId, setContainerId] = useState<string | null>(() =>
     sessionId ? loadContainerId(sessionId) : null,
   )
+  // Multi-whisper: track participants and selected recipient
+  const [whisperParticipants, setWhisperParticipants] = useState<string[]>([])
+  const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null)
 
   // Current user data
   const { data: meData } = useSWR('/api/users/me', fetcher)
@@ -90,9 +103,18 @@ function InGameChatContent() {
     // Persist target nick and server name from first poll
     if (chatData.targetNick && !targetNick) {
       setTargetNick(chatData.targetNick)
+      // Set default recipient to target nick
+      if (!selectedRecipient) {
+        setSelectedRecipient(chatData.targetNick)
+      }
     }
     if (chatData.serverName && !serverName) {
       setServerName(chatData.serverName)
+    }
+
+    // Update whisper participants from poll
+    if (chatData.whisperParticipants) {
+      setWhisperParticipants(chatData.whisperParticipants)
     }
 
     if (chatData.messages?.length > 0) {
@@ -143,6 +165,8 @@ function InGameChatContent() {
       }
     }
   }, [chatData])
+
+  // Fetch skin data for the primary target
   const { data: friendData } = useSWR(
     targetNick ? `/api/players/${encodeURIComponent(targetNick)}` : null,
     fetcher,
@@ -178,7 +202,11 @@ function InGameChatContent() {
         const res = await fetch('/api/ingame-chat/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, message: trimmed }),
+          body: JSON.stringify({
+            sessionId,
+            message: trimmed,
+            recipient: selectedRecipient || undefined,
+          }),
         })
         if (!res.ok) {
           const data = await res.json()
@@ -194,7 +222,7 @@ function InGameChatContent() {
         setSending(false)
       }
     },
-    [sessionId, meData?.user?.ingameNick],
+    [sessionId, meData?.user?.ingameNick, selectedRecipient],
   )
 
   const handleLoginSubmit = useCallback(async () => {
@@ -211,7 +239,6 @@ function InGameChatContent() {
         throw new Error(data.error || 'Failed')
       }
       // Keep loginSending=true — will be cleared when server responds
-      // (status changes to 'connected' or 'login_failed')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to send login')
       setLoginSending(false)
@@ -258,6 +285,8 @@ function InGameChatContent() {
       </div>
     )
   }
+
+  const showRecipientSelector = whisperParticipants.length > 1
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -346,6 +375,11 @@ function InGameChatContent() {
                   )
                 }
 
+                // Use per-message skin data, fall back to API data for target
+                const isTarget = msg.author.toLowerCase() === targetNick?.toLowerCase()
+                const msgSkinUrl = msg.skin ? getDDNetSkinUrl(msg.skin) : undefined
+                const hasMessageColors = !!(msg.colorBody || msg.colorFeet)
+
                 return (
                   <ChatBubble
                     key={i}
@@ -353,19 +387,39 @@ function InGameChatContent() {
                     status={msg.isOwn ? msg.status : undefined}
                     avatar={
                       <TeeAvatarWithFallback
-                        skinUrl={msg.isOwn ? mySkinUrl : friendSkinUrl}
+                        skinUrl={
+                          msg.isOwn
+                            ? mySkinUrl
+                            : msgSkinUrl || (isTarget ? friendSkinUrl : undefined)
+                        }
                         bodyColor={
-                          msg.isOwn ? mySkin?.color_body : (friendSkin?.colorBody ?? friendSkin?.color_body)
+                          msg.isOwn
+                            ? mySkin?.color_body
+                            : hasMessageColors
+                              ? msg.colorBody
+                              : isTarget
+                                ? (friendSkin?.colorBody ?? friendSkin?.color_body)
+                                : undefined
                         }
                         feetColor={
-                          msg.isOwn ? mySkin?.color_feet : (friendSkin?.colorFeet ?? friendSkin?.color_feet)
+                          msg.isOwn
+                            ? mySkin?.color_feet
+                            : hasMessageColors
+                              ? msg.colorFeet
+                              : isTarget
+                                ? (friendSkin?.colorFeet ?? friendSkin?.color_feet)
+                                : undefined
                         }
                         size="sm"
                         mirrored={msg.isOwn}
                         useCustomColors={
                           msg.isOwn
                             ? !!(mySkin?.color_body || mySkin?.color_feet)
-                            : !!(friendSkin?.colorBody || friendSkin?.color_body || friendSkin?.colorFeet || friendSkin?.color_feet)
+                            : hasMessageColors
+                              ? true
+                              : isTarget
+                                ? !!(friendSkin?.colorBody || friendSkin?.color_body || friendSkin?.colorFeet || friendSkin?.color_feet)
+                                : false
                         }
                       />
                     }
@@ -387,9 +441,32 @@ function InGameChatContent() {
               })}
             </ChatMessages>
 
+            {/* Recipient selector — shown when multiple players message the bot */}
+            {showRecipientSelector && !chatEnded && (
+              <div className="shrink-0 flex items-center gap-2 pt-2 pb-1">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-xs text-muted-foreground shrink-0">Whisper to:</span>
+                <Select
+                  value={selectedRecipient || ''}
+                  onValueChange={setSelectedRecipient}
+                >
+                  <SelectTrigger className="h-7 text-xs w-auto min-w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {whisperParticipants.map((nick) => (
+                      <SelectItem key={nick} value={nick} className="text-xs">
+                        {nick}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <ChatInput
               onSend={handleSend}
-              placeholder={chatEnded ? '' : 'Type a message...'}
+              placeholder={chatEnded ? '' : `Whisper to ${selectedRecipient || targetNick || '...'}...`}
               disabled={chatEnded || botStatus !== 'connected'}
               sending={sending}
               disabledMessage={

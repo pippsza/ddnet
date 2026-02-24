@@ -1,16 +1,16 @@
 import useSWR from 'swr'
 import type { DDStatsPlayerData } from '@/lib/ddstats-types'
 
-const ddstatsFetcher = async (url: string): Promise<DDStatsPlayerData> => {
+const ddstatsFetcher = async (url: string): Promise<DDStatsPlayerData | null> => {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`DDStats error: ${res.status}`)
+  if (!res.ok) return null
   return res.json()
 }
 
 export function useDDStats(playerName: string | null | undefined) {
-  const { data, error, isLoading } = useSWR<DDStatsPlayerData>(
+  const { data, error, isLoading } = useSWR<DDStatsPlayerData | null>(
     playerName
-      ? `https://ddstats.tw/player/json?player=${encodeURIComponent(playerName)}`
+      ? `/api/players/${encodeURIComponent(playerName)}/ddstats`
       : null,
     ddstatsFetcher,
     {

@@ -1,15 +1,23 @@
-import { AuthCard } from '@/components/auth/AuthCard'
-import { LoginForm } from '@/components/auth/LoginForm'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
+'use client'
 
-export default async function LoginPage() {
-  const t = await getTranslations('auth')
+import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
+import { LoginForm } from '@/components/auth/LoginForm'
+
+export default function LoginPage() {
+  const t = useTranslations('auth')
+  const [passwordVisible, setPasswordVisible] = useState(false)
 
   return (
-    <AuthCard
+    <AuthPageLayout
       title={t('login')}
       description={t('loginDescription')}
+      leftTitle={t('welcomeBack')}
+      leftDescription={t('loginInfo')}
+      passwordVisible={passwordVisible}
       footer={
         <p className="text-center text-sm text-muted-foreground">
           {t('noAccount')}{' '}
@@ -19,7 +27,13 @@ export default async function LoginPage() {
         </p>
       }
     >
-      <LoginForm />
-    </AuthCard>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut', delay: 0.2 }}
+      >
+        <LoginForm onPasswordVisibilityChange={setPasswordVisible} />
+      </motion.div>
+    </AuthPageLayout>
   )
 }

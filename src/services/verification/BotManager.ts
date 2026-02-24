@@ -225,6 +225,7 @@ export class BotManager implements BotDriverInterface {
     botName: string,
     targetNick: string,
     serverPassword?: string,
+    botSkin?: { name?: string; colorBody?: number; colorFeet?: number },
   ): Promise<string> {
     if (!this.mockDriver && !this.dockerInitialized) {
       await this.initDocker()
@@ -256,6 +257,9 @@ export class BotManager implements BotDriverInterface {
       `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
     ]
     if (serverPassword) env.push(`SERVER_PASSWORD=${serverPassword}`)
+    if (botSkin?.name) env.push(`BOT_SKIN=${botSkin.name}`)
+    if (botSkin?.colorBody) env.push(`BOT_COLOR_BODY=${botSkin.colorBody}`)
+    if (botSkin?.colorFeet) env.push(`BOT_COLOR_FEET=${botSkin.colorFeet}`)
 
     const container = await docker.createContainer({
       Image: process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest',

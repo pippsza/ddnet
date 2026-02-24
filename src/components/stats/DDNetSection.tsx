@@ -8,6 +8,7 @@ import { PointsProgressionChart } from '@/components/stats/PointsProgressionChar
 import { CompletionProgressCard } from '@/components/stats/CompletionProgressCard'
 import { PlaytimeByMonthChart } from '@/components/stats/PlaytimeByMonthChart'
 import { PlaytimeByCategoryChart } from '@/components/stats/PlaytimeByCategoryChart'
+import { PlaytimeByGametypeChart } from '@/components/stats/PlaytimeByGametypeChart'
 import { MostPlayedMapsTable } from '@/components/stats/MostPlayedMapsTable'
 import { RecentFinishesTable } from '@/components/stats/RecentFinishesTable'
 import { FavoritePartnersCard } from '@/components/stats/FavoritePartnersCard'
@@ -127,6 +128,11 @@ export function DDNetSection({
           <PlaytimeByCategoryChart data={ddstats.most_played_categories} />
         </div>
 
+        {/* Gametype breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PlaytimeByGametypeChart data={ddstats.most_played_gametypes} />
+        </div>
+
         {/* Most Played Maps */}
         {showMostPlayedMaps && <MostPlayedMapsTable data={ddstats.most_played_maps} />}
 
@@ -139,41 +145,110 @@ export function DDNetSection({
     )
   }
 
-  if (ddnet?.lastFinishes && ddnet.lastFinishes.length > 0) {
+  if (ddnet) {
+    const partners = ddnet.favoritePartners || []
+    const finishes = ddnet.lastFinishes || []
+
     return (
       <>
-        {/* Fallback basic stats from ddnet.org */}
+        {/* Fallback stats from ddnet.org */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Points" value={totalPoints.toLocaleString()} />
-          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} />
+          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} />
+          <StatCard title="Playtime" value={ddnet.hoursPlayed ? `${ddnet.hoursPlayed}h (last year)` : '—'} />
           <StatCard
-            title="Playtime"
-            value={ddnet?.hoursPlayed ? `${ddnet.hoursPlayed}h` : '—'}
+            title="First Finish"
+            value={ddnet.firstFinish ? new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString() : '—'}
+            subtitle={ddnet.firstFinish?.map}
           />
+          <StatCard title="Partners" value={partners.length || '—'} />
+        </div>
+
+        {/* Category breakdown */}
+        {ddnet.types && Object.keys(ddnet.types).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Points by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Object.entries(ddnet.types).map(([category, data]: [string, any]) => (
+                  <div key={category} className="flex flex-col gap-1 p-3 rounded-lg bg-muted/50">
+                    <span className="text-xs text-muted-foreground">{category}</span>
+                    <span className="text-sm font-semibold">{data.points?.total || 0} pts</span>
+                    <span className="text-xs text-muted-foreground">
+                      Rank #{data.points?.rank || '—'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Favorite Partners */}
+        {partners.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Favorite Partners</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {partners.map((p: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                    <span className="text-sm font-medium truncate">{p.name}</span>
+                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{p.finishes}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recent Finishes */}
+        {finishes.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recent Finishes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                {finishes.map((finish: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium">{finish.map}</span>
+                      <span className="text-xs text-muted-foreground">{finish.type}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>
+                        {Math.floor(finish.time / 60)}:{(finish.time % 60).toFixed(2).padStart(5, '0')}
+                      </span>
+                      <span>{new Date(finish.timestamp * 1000).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </>
+    )
+  }
+
+  if (totalPoints > 0 || rank) {
+    return (
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} />
+          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} />
+          <StatCard title="Playtime" value="—" />
           <StatCard title="Partners" value="—" />
         </div>
         <Card>
-          <CardContent className="p-6">
-            <h3 className="text-base font-semibold mb-3">Recent Finishes</h3>
-            <div className="space-y-1">
-              {ddnet.lastFinishes.map((finish: any, i: number) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">{finish.map}</span>
-                    <span className="text-xs text-muted-foreground">{finish.type}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span>
-                      {Math.floor(finish.time / 60)}:{(finish.time % 60).toFixed(2).padStart(5, '0')}
-                    </span>
-                    <span>{new Date(finish.timestamp * 1000).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="p-6 text-center text-muted-foreground text-sm">
+            Detailed statistics from DDStats and DDNet are currently unavailable for this player.
           </CardContent>
         </Card>
       </>
@@ -183,7 +258,7 @@ export function DDNetSection({
   return (
     <Card>
       <CardContent className="p-8 text-center text-muted-foreground">
-        DDNet statistics are loading or unavailable.
+        No DDNet statistics found for this player.
       </CardContent>
     </Card>
   )

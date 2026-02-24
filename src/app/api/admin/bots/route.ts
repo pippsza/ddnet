@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const payload = await getPayload({ config })
     const { user } = await payload.auth({ headers: req.headers })
 
-    if (!user || user.roles !== 'admin') {
+    if (!user || (user.roles !== 'admin' && user.roles !== 'moderator')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

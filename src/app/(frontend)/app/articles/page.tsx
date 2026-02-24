@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useCallback, Suspense } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -40,14 +41,44 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function ArticlesContent() {
-  const [category, setCategory] = useState('all')
-  const [search, setSearch] = useState('')
-  const { page, setPage, resetPage, buildUrl } = usePagination({ defaultLimit: 12 })
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value)
-    resetPage()
-  }, [resetPage])
+  const search = searchParams.get('q') || ''
+  const category = searchParams.get('category') || 'all'
+  const { page, setPage, buildUrl } = usePagination({ defaultLimit: 12 })
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      for (const [key, value] of Object.entries(updates)) {
+        if (value) {
+          params.set(key, value)
+        } else {
+          params.delete(key)
+        }
+      }
+      params.delete('page')
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [searchParams, router, pathname],
+  )
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      updateParams({ q: value.trim() || null })
+    },
+    [updateParams],
+  )
+
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      updateParams({ category: value === 'all' ? null : value })
+    },
+    [updateParams],
+  )
 
   const baseParams = new URLSearchParams()
   if (category !== 'all') baseParams.set('where[category][equals]', category)
@@ -91,16 +122,17 @@ function ArticlesContent() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
+          defaultValue={search}
           placeholder="Search articles..."
           className="pl-10"
         />
       </div>
 
       {/* Category Tabs */}
-      <Tabs value={category} onValueChange={(v) => { setCategory(v); resetPage() }}>
-        <TabsList className="flex-wrap h-auto">
+      <Tabs value={category} onValueChange={handleCategoryChange}>
+        <TabsList className="flex-wrap gap-1 h-auto">
           {CATEGORIES.map((c) => (
-            <TabsTrigger key={c.value} value={c.value}>
+            <TabsTrigger className="" key={c.value} value={c.value}>
               {c.label}
             </TabsTrigger>
           ))}
@@ -126,12 +158,18 @@ function ArticlesContent() {
                     </div>
                   )}
                   <CardContent className="p-4 space-y-2">
-                    <Badge className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}>
+                    <Badge
+                      className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}
+                    >
                       {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
                     </Badge>
-                    <h3 className="font-semibold text-sm line-clamp-2 wrap-break-word">{article.title}</h3>
+                    <h3 className="font-semibold text-sm line-clamp-2 wrap-break-word">
+                      {article.title}
+                    </h3>
                     {article.excerpt && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word">{article.excerpt}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word">
+                        {article.excerpt}
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -167,7 +205,9 @@ function ArticlesContent() {
                 )}
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}>
+                    <Badge
+                      className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}
+                    >
                       {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
                     </Badge>
                     {article.tags?.map((t: any) => {
@@ -183,18 +223,29 @@ function ArticlesContent() {
                   {article.excerpt && (
                     <p className="text-xs text-muted-foreground line-clamp-2">{article.excerpt}</p>
                   )}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <OnlineStatusIndicator
-                        status={{ platformOnline: isPlatformOnline(article.author?.lastSeenAt), inGameOnline: false }}
+                        status={{
+                          platformOnline: isPlatformOnline(article.author?.lastSeenAt),
+                          inGameOnline: false,
+                        }}
                         size="xs"
                       >
                         <TeeAvatarWithFallback
-                          skinUrl={article.author?.ingameStats?.skin?.name
-                            ? getDDNetSkinUrl(article.author.ingameStats.skin.name) : undefined}
+                          skinUrl={
+                            article.author?.ingameStats?.skin?.name
+                              ? getDDNetSkinUrl(article.author.ingameStats.skin.name)
+                              : undefined
+                          }
                           bodyColor={article.author?.ingameStats?.skin?.color_body}
                           feetColor={article.author?.ingameStats?.skin?.color_feet}
-                          useCustomColors={!!(article.author?.ingameStats?.skin?.color_body || article.author?.ingameStats?.skin?.color_feet)}
+                          useCustomColors={
+                            !!(
+                              article.author?.ingameStats?.skin?.color_body ||
+                              article.author?.ingameStats?.skin?.color_feet
+                            )
+                          }
                           size="xs"
                         />
                       </OnlineStatusIndicator>

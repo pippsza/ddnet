@@ -24,6 +24,19 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Race: '#f97316',
   Fun: '#fbbf24',
   Event: '#14b8a6',
+  // Gametypes
+  DDNet: '#38bdf8',
+  TestDDNet: '#7dd3fc',
+  'DDNet++': '#0ea5e9',
+  Vanilla: '#a3e635',
+  zCatch: '#f472b6',
+  iFreeze: '#22d3ee',
+  iCTF: '#fb923c',
+  TeeWare: '#c084fc',
+  Infection: '#f87171',
+  City: '#fbbf24',
+  BlockWorlds: '#34d399',
+  FNG: '#e879f9',
 }
 
 export function getCategoryColor(category: string, index: number): string {

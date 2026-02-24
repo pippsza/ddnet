@@ -9,7 +9,17 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Play, Square, Send, Terminal, MessageSquare, Loader2, Trash2, Lock, ShieldCheck } from 'lucide-react'
+import {
+  Play,
+  Square,
+  Send,
+  Terminal,
+  MessageSquare,
+  Loader2,
+  Trash2,
+  Lock,
+  ShieldCheck,
+} from 'lucide-react'
 import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatMessages } from '@/components/chat/ChatMessages'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
@@ -47,7 +57,15 @@ export default function ContainerTestPage() {
   const [sending, setSending] = useState(false)
   const [messagesSince, setMessagesSince] = useState(0)
   const [allMessages, setAllMessages] = useState<
-    Array<{ author: string; text: string; isServer: boolean; isOwn: boolean; timestamp: string; skin?: string; delivered?: boolean }>
+    Array<{
+      author: string
+      text: string
+      isServer: boolean
+      isOwn: boolean
+      timestamp: string
+      skin?: string
+      delivered?: boolean
+    }>
   >([])
   const [loginRequired, setLoginRequired] = useState(false)
   const [loginToken, setLoginToken] = useState('')
@@ -388,10 +406,17 @@ export default function ContainerTestPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col p-3 overflow-hidden relative">
-            <div className={cn('flex-1 flex flex-col overflow-hidden', loginRequired && 'blur-sm pointer-events-none select-none')}>
+            <div
+              className={cn(
+                'flex-1 flex flex-col overflow-hidden',
+                loginRequired && 'blur-sm pointer-events-none select-none',
+              )}
+            >
               <ChatMessages
                 scrollKey={allMessages.length}
-                emptyText={isRunning ? 'Waiting for messages...' : 'Connect to a server to see chat'}
+                emptyText={
+                  isRunning ? 'Waiting for messages...' : 'Connect to a server to see chat'
+                }
               >
                 {allMessages.map((msg, i) => {
                   if (msg.isServer) {
@@ -485,7 +510,8 @@ export default function ContainerTestPage() {
                     <h3 className="font-semibold">Server Login Required</h3>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    This server requires authentication before you can chat. Enter your login token below.
+                    This server requires authentication before you can chat. Enter your login token
+                    below.
                   </p>
                   <form
                     onSubmit={(e) => {
@@ -501,7 +527,11 @@ export default function ContainerTestPage() {
                       onChange={(e) => setLoginToken(e.target.value)}
                       autoFocus
                     />
-                    <Button type="submit" className="w-full" disabled={loginSending || !loginToken.trim()}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={loginSending || !loginToken.trim()}
+                    >
                       {loginSending ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-1" />
                       ) : (

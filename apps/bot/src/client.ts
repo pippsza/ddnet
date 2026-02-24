@@ -6,12 +6,18 @@ export interface PlayerInfo {
   clan: string
   skin: string
   country: number
+  useCustomColor: boolean
+  colorBody: number
+  colorFeet: number
 }
 
 export interface ClientOptions {
   name: string
   clan?: string
   skin?: string
+  useCustomColor?: boolean
+  colorBody?: number
+  colorFeet?: number
   timeout?: number
   password?: string
 }
@@ -53,12 +59,18 @@ export class TeeworldsClient {
         reject(new Error('Connection timeout'))
       }, this.options.timeout || 10000)
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const identity: any = {
+        name: this.options.name,
+        clan: this.options.clan || 'DDNet',
+        skin: this.options.skin || 'default',
+        use_custom_color: this.options.useCustomColor ? 1 : 0,
+        color_body: this.options.colorBody ?? 0,
+        color_feet: this.options.colorFeet ?? 0,
+      }
+
       this.client = new Client(ip, port, this.options.name, {
-        identity: {
-          name: this.options.name,
-          clan: this.options.clan || 'DDNet',
-          skin: this.options.skin || 'default',
-        },
+        identity,
         ...(this.options.password ? { password: this.options.password } : {}),
       })
 
@@ -127,12 +139,18 @@ export class TeeworldsClient {
       this.players.clear()
 
       for (const info of clientInfos) {
+        // Runtime snapshot uses snake_case but TS types may declare camelCase — handle both
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const raw = info as any
         this.players.set(info.clientId, {
           clientId: info.clientId,
           name: info.name,
           clan: info.clan,
           skin: info.skin,
           country: info.country,
+          useCustomColor: !!(raw.use_custom_color ?? raw.useCustomColor),
+          colorBody: raw.color_body ?? raw.colorBody ?? 0,
+          colorFeet: raw.color_feet ?? raw.colorFeet ?? 0,
         })
       }
     } catch {
@@ -250,7 +268,15 @@ export class TeeworldsClient {
   /**
    * Subscribe to chat messages (from players only, client_id >= 0)
    */
-  onMessage(handler: (message: { author: string; text: string; team: boolean; skin: string }) => void): void {
+  onMessage(handler: (message: {
+    author: string
+    text: string
+    team: boolean
+    skin: string
+    colorBody: number
+    colorFeet: number
+    useCustomColor: boolean
+  }) => void): void {
     if (!this.client) return
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -258,11 +284,17 @@ export class TeeworldsClient {
       // Skip server messages (client_id === -1, no author)
       if (msg.client_id === -1 || !msg.author?.ClientInfo) return
 
+      // Look up full player info from snapshot for color data
+      const player = this.players.get(msg.client_id)
+
       handler({
         author: msg.author.ClientInfo.name,
         text: msg.message,
         team: !!msg.team,
         skin: msg.author.ClientInfo.skin,
+        colorBody: player?.colorBody ?? 0,
+        colorFeet: player?.colorFeet ?? 0,
+        useCustomColor: player?.useCustomColor ?? false,
       })
     })
   }

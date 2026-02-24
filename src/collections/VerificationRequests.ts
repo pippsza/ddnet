@@ -14,7 +14,7 @@ export const VerificationRequests: CollectionConfig = {
       if (req.user.roles === 'admin') return true
       return { user: { equals: req.user.id } }
     },
-    create: ({ req }) => !!req.user,
+    create: () => true, // Claim mode doesn't require auth
     update: ({ req }) => req.user?.roles === 'admin',
     delete: ({ req }) => req.user?.roles === 'admin',
   },
@@ -37,6 +37,20 @@ export const VerificationRequests: CollectionConfig = {
       label: 'Nickname',
       admin: {
         description: 'The in-game nickname to verify',
+      },
+    },
+    {
+      name: 'mode',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Verify', value: 'verify' },
+        { label: 'Claim', value: 'claim' },
+      ],
+      defaultValue: 'verify',
+      label: 'Mode',
+      admin: {
+        description: 'verify = normal verification, claim = force steal nickname',
       },
     },
     {
@@ -75,8 +89,27 @@ export const VerificationRequests: CollectionConfig = {
       name: 'user',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
       label: 'User',
+      admin: {
+        description: 'Linked user (empty for claim mode — user does not exist yet)',
+      },
+    },
+    {
+      name: 'claimNick',
+      type: 'text',
+      label: 'Claim Nickname',
+      admin: {
+        description: 'The nickname being claimed (only for claim mode)',
+      },
+    },
+    {
+      name: 'consumed',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Consumed',
+      admin: {
+        description: 'Whether this claim has been used to create a verified account',
+      },
     },
     {
       name: 'expiresAt',

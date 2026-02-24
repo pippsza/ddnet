@@ -10,16 +10,27 @@ import { Badge } from '@/components/ui/badge'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
-import { cn } from '@/lib/utils'
-import { Server } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2 } from 'lucide-react'
+import {
+  StepIndicator,
+  StepConnector,
+  ServerListItem,
+  Spinner,
+  type VerificationServer,
+} from '@/components/auth/VerificationShared'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-interface VerificationServer {
-  name: string
-  ip: string
-  port: number
-  region?: string | null
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
 }
 
 type VerificationStep = 'idle' | 'starting' | 'pending' | 'success' | 'failed' | 'expired'
@@ -30,6 +41,7 @@ export default function SettingsPage() {
   const [message, setMessage] = useState('')
   const [pushSupported, setPushSupported] = useState(false)
   const [pushSubscribed, setPushSubscribed] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
 
   // Verification state
   const [verifyStep, setVerifyStep] = useState<VerificationStep>('idle')
@@ -95,9 +107,21 @@ export default function SettingsPage() {
   }, [requestId, verifyStep, mutate])
 
   const handlePushToggle = async () => {
-    if (!pushSupported) return
+    if (!pushSupported || pushLoading) return
+    setPushLoading(true)
+    setMessage('')
     try {
+      // 1. Check SW registration
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      console.log('[Push] SW registrations:', registrations.length, registrations.map((r) => r.scope))
+
+      if (registrations.length === 0) {
+        console.log('[Push] No SW registered, registering now...')
+        await navigator.serviceWorker.register('/sw.js')
+      }
+
       const reg = await navigator.serviceWorker.ready
+      console.log('[Push] SW ready, scope:', reg.scope, 'active:', !!reg.active)
 
       if (pushSubscribed) {
         const sub = await reg.pushManager.getSubscription()
@@ -106,23 +130,54 @@ export default function SettingsPage() {
         return
       }
 
-      const keyRes = await fetch('/api/push/subscribe')
-      const { vapidPublicKey } = await keyRes.json()
+      // 2. Check permission
+      const permission = await Notification.requestPermission()
+      console.log('[Push] Permission:', permission)
+      if (permission !== 'granted') {
+        setMessage('Notification permission denied')
+        return
+      }
 
+      // 3. Get VAPID key
+      const keyRes = await fetch('/api/push/subscribe')
+      const keyData = await keyRes.json()
+      console.log('[Push] VAPID key response:', keyRes.status, 'key length:', keyData.vapidPublicKey?.length)
+
+      if (!keyData.vapidPublicKey) {
+        setMessage('Push not configured on server (no VAPID key)')
+        return
+      }
+
+      // 4. Subscribe
+      const convertedKey = urlBase64ToUint8Array(keyData.vapidPublicKey)
+      console.log('[Push] Subscribing with key (converted to Uint8Array, length:', convertedKey.length, ')')
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: vapidPublicKey,
+        applicationServerKey: convertedKey,
       })
+      console.log('[Push] Subscribed, endpoint:', sub.endpoint.slice(0, 60) + '...')
 
-      await fetch('/api/push/subscribe', {
+      // 5. Save to server
+      const saveRes = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sub.toJSON()),
       })
+      console.log('[Push] Save response:', saveRes.status)
 
       setPushSubscribed(true)
-    } catch {
-      setMessage('Failed to toggle push notifications')
+    } catch (err) {
+      console.error('[Settings] Push toggle error:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('push service')) {
+        setMessage(
+          'Push service unavailable. Check: 1) Internet connection 2) Browser push is enabled in settings 3) No firewall/VPN blocking push services. Try: chrome://settings/content/notifications or about:preferences#privacy',
+        )
+      } else {
+        setMessage(`Push error: ${msg}`)
+      }
+    } finally {
+      setPushLoading(false)
     }
   }
 
@@ -168,9 +223,20 @@ export default function SettingsPage() {
     setVerifyMessage(null)
   }
 
+  const isLoading = !user
+
   const skinUrl = user?.user?.ingameStats?.skin?.name
     ? getDDNetSkinUrl(user.user.ingameStats.skin.name)
     : undefined
+
+  const isVerified = user?.user?.isSystemVerified
+
+  // Step progress for the 3 circles
+  const step1Complete = verifyStep === 'pending' || verifyStep === 'success'
+  const step1Active = verifyStep === 'starting'
+  const step2Complete = verifyStep === 'pending' || verifyStep === 'success'
+  const step3Complete = verifyStep === 'success'
+  const step3Active = verifyStep === 'pending'
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -182,31 +248,55 @@ export default function SettingsPage() {
           <CardTitle>Profile</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <OnlineStatusIndicator status={{ platformOnline: true, inGameOnline: false }} size="lg">
-              <TeeAvatarWithFallback
-                skinUrl={skinUrl}
-                bodyColor={user?.user?.ingameStats?.skin?.colorBody}
-                feetColor={user?.user?.ingameStats?.skin?.colorFeet}
-                size="lg"
-                useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
-              />
-            </OnlineStatusIndicator>
-            <div>
-              <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username || 'Loading...'}</p>
-              <RoleBadge role={user?.user?.roles} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Platform Login</Label>
-              <Input value={user?.user?.username || ''} disabled />
-            </div>
-            <div>
-              <Label>In-Game Nickname</Label>
-              <Input value={user?.user?.ingameNick || ''} disabled />
-            </div>
-          </div>
+          {isLoading ? (
+            <>
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-9 w-full rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-9 w-full rounded-md" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-4">
+                <OnlineStatusIndicator status={{ platformOnline: true, inGameOnline: false }} size="lg">
+                  <TeeAvatarWithFallback
+                    skinUrl={skinUrl}
+                    bodyColor={user?.user?.ingameStats?.skin?.colorBody}
+                    feetColor={user?.user?.ingameStats?.skin?.colorFeet}
+                    size="lg"
+                    useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
+                  />
+                </OnlineStatusIndicator>
+                <div>
+                  <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username}</p>
+                  <RoleBadge role={user?.user?.roles} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Platform Login</Label>
+                  <Input value={user?.user?.username || ''} disabled />
+                </div>
+                <div>
+                  <Label>In-Game Nickname</Label>
+                  <Input value={user?.user?.ingameNick || ''} disabled />
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -214,50 +304,91 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Nickname Verification
-            {user?.user?.isSystemVerified && (
-              <Badge variant="default" className="bg-green-600">Verified</Badge>
-            )}
+            Account Verification
+            {isLoading ? (
+              <Skeleton className="h-5 w-20 rounded-full" />
+            ) : isVerified ? (
+              <Badge variant="default" className="bg-green-600">
+                <ShieldCheck className="h-3 w-3 mr-1" />
+                Verified
+              </Badge>
+            ) : null}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {user?.user?.isSystemVerified ? (
+          {isLoading ? (
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+            </div>
+          ) : isVerified ? (
             <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-400">Your nickname is verified</p>
+                <p className="font-medium text-green-700 dark:text-green-400">Your account is verified and protected</p>
                 <p className="text-sm text-muted-foreground">You have full access to all features.</p>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* 3-Step Progress */}
+              {verifyStep !== 'idle' && (
+                <div className="flex items-start px-4">
+                  <StepIndicator
+                    step={1}
+                    label="Join Server"
+                    description="Connect to a verification server"
+                    active={step1Active}
+                    completed={step1Complete}
+                  />
+                  <StepConnector completed={step1Complete && step2Complete} />
+                  <StepIndicator
+                    step={2}
+                    label="Login"
+                    description="Use /login on the server"
+                    active={false}
+                    completed={step2Complete}
+                  />
+                  <StepConnector completed={step3Complete} />
+                  <StepIndicator
+                    step={3}
+                    label="Verify"
+                    description="Bot confirms your identity"
+                    active={step3Active}
+                    completed={step3Complete}
+                  />
+                </div>
+              )}
+
               {verifyStep === 'idle' && (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    Verify your DDNet nickname to unlock all features. Join one of the servers below,
-                    log in with <code className="text-xs bg-muted px-1 py-0.5 rounded">/login</code>, then click the button.
-                  </p>
-                  {servers.length > 0 && (
-                    <div className="p-3 rounded-lg bg-muted/50 border space-y-1.5">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verification Servers</p>
-                      {servers.map((s, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm">
-                          <Server className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <span className="font-medium">{s.name}</span>
-                          <span className="font-mono text-xs text-muted-foreground">{s.ip}:{s.port}</span>
-                          {s.region && <Badge variant="outline" className="text-xs py-0">{s.region}</Badge>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <Button onClick={startVerification}>
-                    Verify Nickname
-                  </Button>
-                </>
+                <p className="text-sm text-muted-foreground">
+                  Verify your DDNet nickname to unlock all features. Join one of the servers below,
+                  log in with <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">/login</code>, then click the button.
+                </p>
+              )}
+
+              {/* Server List */}
+              {(verifyStep === 'idle' || verifyStep === 'failed' || verifyStep === 'expired') && servers.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verification Servers</p>
+                  <div className="space-y-1.5">
+                    {servers.map((s, i) => (
+                      <ServerListItem key={i} server={s} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {verifyStep === 'idle' && (
+                <Button onClick={startVerification} className="w-full sm:w-auto">
+                  <ShieldCheck className="h-4 w-4 mr-2" />
+                  Verify Nickname
+                </Button>
               )}
 
               {verifyStep === 'starting' && (
@@ -282,7 +413,6 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </div>
-
                   <Button variant="outline" size="sm" onClick={resetVerification}>
                     Cancel
                   </Button>
@@ -292,14 +422,12 @@ export default function SettingsPage() {
               {verifyStep === 'success' && (
                 <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-green-500" />
                     </div>
                     <div>
                       <p className="font-medium text-green-700 dark:text-green-400">Verification successful!</p>
-                      <p className="text-sm text-muted-foreground">Your nickname has been verified.</p>
+                      <p className="text-sm text-muted-foreground">Your nickname has been verified. Welcome!</p>
                     </div>
                   </div>
                 </div>
@@ -309,10 +437,8 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                      <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+                        <ShieldAlert className="w-5 h-5 text-red-500" />
                       </div>
                       <div>
                         <p className="font-medium text-red-700 dark:text-red-400">
@@ -327,6 +453,18 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               )}
+
+              {/* Warning for unverified accounts */}
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-yellow-500" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Account not verified</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If you haven't verified your account, the real owner of this nickname can claim it
+                    by verifying their identity through our bot. Verify now to protect your account.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -346,7 +484,8 @@ export default function SettingsPage() {
                   Receive notifications about game invites and friend requests
                 </p>
               </div>
-              <Button variant={pushSubscribed ? 'secondary' : 'default'} onClick={handlePushToggle}>
+              <Button variant={pushSubscribed ? 'secondary' : 'default'} onClick={handlePushToggle} disabled={pushLoading}>
+                {pushLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {pushSubscribed ? 'Disable' : 'Enable'}
               </Button>
             </div>
@@ -365,15 +504,3 @@ export default function SettingsPage() {
   )
 }
 
-function Spinner({ className }: { className?: string }) {
-  return (
-    <svg
-      className={cn('w-5 h-5 animate-spin', className)}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
-  )
-}

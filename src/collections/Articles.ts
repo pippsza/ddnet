@@ -40,6 +40,65 @@ export const Articles: CollectionConfig = {
     },
   },
 
+  hooks: {
+    afterChange: [
+      async ({ doc, previousDoc, req }) => {
+        const isNowPublished = doc._status === 'published'
+        const wasPreviouslyPublished = previousDoc?._status === 'published'
+
+        // Only notify when article first becomes published
+        if (!isNowPublished || wasPreviouslyPublished) return
+
+        try {
+          const payload = req.payload
+          const { sendPushToUser } = await import('@/lib/push-notifications')
+
+          // Get all users in batches
+          let page = 1
+          let hasMore = true
+          while (hasMore) {
+            const { docs: users, hasNextPage } = await payload.find({
+              collection: 'users',
+              limit: 100,
+              page,
+              select: { username: true },
+              overrideAccess: true,
+            })
+
+            const authorId = typeof doc.author === 'string' ? doc.author : doc.author?.id
+
+            await Promise.allSettled(
+              users
+                .filter((u) => u.id !== authorId)
+                .map((user) =>
+                  payload.create({
+                    collection: 'notifications',
+                    data: {
+                      recipient: user.id,
+                      type: 'system',
+                      title: 'New Article',
+                      message: doc.title,
+                      actionUrl: `/app/articles/${doc.slug}`,
+                    },
+                    overrideAccess: true,
+                  }).then(() => sendPushToUser(user.id, {
+                    title: 'New Article',
+                    body: doc.title,
+                    url: `/app/articles/${doc.slug}`,
+                  })),
+                ),
+            )
+
+            hasMore = hasNextPage
+            page++
+          }
+        } catch (error) {
+          console.error('[Articles] Error sending notifications:', error)
+        }
+      },
+    ],
+  },
+
   fields: [
     {
       name: 'title',

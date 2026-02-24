@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 
 interface DebouncedInputProps extends Omit<React.ComponentProps<typeof Input>, 'onChange'> {
@@ -16,6 +16,8 @@ export function DebouncedInput({
 }: DebouncedInputProps) {
   const [value, setValue] = useState(String(defaultValue))
   const isFirstRender = useRef(true)
+  const callbackRef = useRef(onDebouncedChange)
+  callbackRef.current = onDebouncedChange
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -23,10 +25,10 @@ export function DebouncedInput({
       return
     }
     const timeout = setTimeout(() => {
-      onDebouncedChange(value)
+      callbackRef.current(value)
     }, debounce)
     return () => clearTimeout(timeout)
-  }, [value, debounce, onDebouncedChange])
+  }, [value, debounce])
 
   return (
     <Input

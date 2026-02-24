@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useCallback, Suspense } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { DebouncedInput } from '@/components/ui/debounced-input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,13 +15,25 @@ import { Search } from 'lucide-react'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function PlayersContent() {
-  const [search, setSearch] = useState('')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const search = searchParams.get('q') || ''
   const { page, setPage, resetPage, buildUrl } = usePagination({ defaultLimit: 12 })
 
   const handleSearchChange = useCallback((value: string) => {
-    setSearch(value.trim())
-    resetPage()
-  }, [resetPage])
+    const trimmed = value.trim()
+    const params = new URLSearchParams(searchParams.toString())
+    if (trimmed) {
+      params.set('q', trimmed)
+    } else {
+      params.delete('q')
+    }
+    params.delete('page')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }, [searchParams, router, pathname])
 
   const baseUrl = search
     ? `/api/players/search?q=${encodeURIComponent(search)}`
@@ -41,6 +54,7 @@ function PlayersContent() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
+          defaultValue={search}
           placeholder="Search players..."
           className="pl-10"
         />

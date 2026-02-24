@@ -10,6 +10,13 @@ export interface InGameChatMessage {
   isOwn: boolean
   timestamp: string
   skin?: string
+  colorBody?: number
+  colorFeet?: number
+}
+
+export interface OutboxItem {
+  recipient: string
+  message: string
 }
 
 export interface InGameChatSession {
@@ -23,10 +30,11 @@ export interface InGameChatSession {
   serverPort: number
   serverName: string
   botName: string
-  status: 'starting' | 'connected' | 'disconnected' | 'stopped' | 'login_required'
+  status: 'starting' | 'connected' | 'disconnected' | 'stopped' | 'login_required' | 'login_failed'
   messages: InGameChatMessage[]
-  outbox: string[]
+  outbox: OutboxItem[]
   deliveries: string[]
+  whisperParticipants: string[]
   startedAt: string
   lastActivityAt: string
 }
@@ -68,6 +76,7 @@ export function createSession(
     messages: [],
     outbox: [],
     deliveries: [],
+    whisperParticipants: [targetNick],
     startedAt: now,
     lastActivityAt: now,
   }
@@ -96,10 +105,11 @@ export function addMessages(id: string, messages: InGameChatMessage[]): void {
   session.messages.push(...messages)
 }
 
-export function addOutboxMessage(id: string, message: string): void {
+export function addOutboxMessage(id: string, message: string, recipient?: string): void {
   const session = sessions.get(id)
   if (!session) return
-  session.outbox.push(message)
+  const target = recipient || session.targetNick
+  session.outbox.push({ recipient: target, message })
   session.lastActivityAt = new Date().toISOString()
   // Record as own message in chat
   session.messages.push({
@@ -111,12 +121,12 @@ export function addOutboxMessage(id: string, message: string): void {
   })
 }
 
-export function popOutbox(id: string): string[] {
+export function popOutbox(id: string): OutboxItem[] {
   const session = sessions.get(id)
   if (!session) return []
-  const messages = [...session.outbox]
+  const items = [...session.outbox]
   session.outbox = []
-  return messages
+  return items
 }
 
 export function addDeliveries(id: string, texts: string[]): void {
@@ -131,6 +141,14 @@ export function popDeliveries(id: string): string[] {
   const deliveries = [...session.deliveries]
   session.deliveries = []
   return deliveries
+}
+
+export function addWhisperParticipant(id: string, nick: string): void {
+  const session = sessions.get(id)
+  if (!session) return
+  if (!session.whisperParticipants.includes(nick)) {
+    session.whisperParticipants.push(nick)
+  }
 }
 
 export function updateStatus(id: string, status: InGameChatSession['status']): void {

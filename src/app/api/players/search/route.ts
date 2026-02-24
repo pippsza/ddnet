@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     const registered = registeredUsers.map((u) => {
       const rawSkin = u.ingameStats?.skin
       return {
+        id: u.id,
         name: u.ingameNick,
         roles: u.roles || 'player',
         points: u.ingameStats?.points || 0,

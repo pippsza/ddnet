@@ -368,6 +368,24 @@ svg {
   background-color: var(--muted-foreground);
 }
 
+/* Floating background balls */
+@keyframes float-ball {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+.floating-ball {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: float-ball var(--duration, 5s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
 /* ============================================================================
    TeeAssembler 2.0 — Required CSS for tee character rendering
    https://github.com/AlexIsTheGuy/TeeAssembler-2.0

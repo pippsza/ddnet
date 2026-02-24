@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession, addMessages, addDeliveries, popOutbox, updateStatus } from '@/lib/ingame-chat-store'
+import {
+  getSession,
+  addMessages,
+  addDeliveries,
+  addWhisperParticipant,
+  popOutbox,
+  updateStatus,
+} from '@/lib/ingame-chat-store'
+import type { InGameChatMessage } from '@/lib/ingame-chat-store'
 
 /**
  * Bot ↔ Backend communication for in-game chat.
@@ -34,6 +42,12 @@ export async function POST(req: NextRequest) {
       const { messages, deliveries } = body
       if (Array.isArray(messages) && messages.length > 0) {
         addMessages(sessionId, messages)
+        // Track unique message authors as whisper participants
+        for (const msg of messages as InGameChatMessage[]) {
+          if (!msg.isServer && !msg.isOwn && msg.author) {
+            addWhisperParticipant(sessionId, msg.author)
+          }
+        }
       }
       if (Array.isArray(deliveries) && deliveries.length > 0) {
         addDeliveries(sessionId, deliveries)
@@ -65,6 +79,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'sessionId required' }, { status: 400 })
     }
 
+    // Returns Array<{ recipient, message }>
     const messages = popOutbox(sessionId)
     return NextResponse.json({ messages })
   } catch (error) {

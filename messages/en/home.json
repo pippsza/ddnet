@@ -1,12 +1,12 @@
 {
   "navigation": {
-    "title": "DDNet Bingo",
+    "title": "DDashBoard",
     "login": "Login",
     "adminPanel": "Admin Panel"
   },
   "hero": {
     "badge": "New Game Mode",
-    "title": "DDNet Bingo",
+    "title": "DDashBoard",
     "subtitle": "Compete in DDraceNetwork map completion",
     "description": "Complete lines, diagonals, or full house faster than your opponents. Each cell is a challenge!",
     "learnMore": "Learn About Bingo",
@@ -72,13 +72,13 @@
   "cta": {
     "badge": "Join Now",
     "title": "Ready to Take the Challenge?",
-    "description": "Become part of the DDNet Bingo community and prove your skills",
+    "description": "Become part of the DDashBoard community and prove your skills",
     "createAccount": "Create Account"
   },
   "footer": {
     "about": "About",
     "rules": "Rules",
     "support": "Support",
-    "copyright": "© 2026 DDraceNetwork Bingo Platform"
+    "copyright": "© 2026 DDashBoard"
   }
 }

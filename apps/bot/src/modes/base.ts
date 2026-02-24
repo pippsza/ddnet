@@ -46,12 +46,13 @@ export abstract class BaseBotMode implements BotMode {
     }
   }
 
-  protected createClient(name: string): TeeworldsClient {
+  protected createClient(name: string, password?: string): TeeworldsClient {
     this.client = new TeeworldsClient({
       name,
       clan: 'DDNet',
       skin: 'default',
       timeout: 15000,
+      ...(password ? { password } : {}),
     })
     return this.client
   }

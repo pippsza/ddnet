@@ -253,12 +253,15 @@ export function TeeAvatar({
           const tee = new window.TeeAssembler.Tee(options)
           teeRef.current = tee
           // Await the full init (image load + eye positioning) with no transforms
-          await tee.api.functions.setContainer(containerRef.current!)
+          // Guard: container may unmount before async setContainer completes
+          if (!containerRef.current) return
+          await tee.api.functions.setContainer(containerRef.current)
           // NOW safe to flip — all getBoundingClientRect calculations are done
           if (containerRef.current) {
             containerRef.current.style.transform = 'scaleX(-1)'
           }
         } else {
+          if (!containerRef.current) return
           options.container = containerRef.current
           const tee = new window.TeeAssembler.Tee(options)
           teeRef.current = tee
@@ -267,7 +270,13 @@ export function TeeAvatar({
           }
         }
       } catch (e) {
-        console.error('[TeeAvatar] Failed to initialize:', e, { imageLink })
+        // Suppress "Cannot read properties of null" from TeeAssembler when
+        // the container is unmounted during async initialization
+        if (e instanceof TypeError && String(e.message).includes('null')) {
+          if (isDev) console.warn('[TeeAvatar] Container unmounted during init')
+        } else {
+          console.error('[TeeAvatar] Failed to initialize:', e, { imageLink })
+        }
       }
     },
     [bodyColor, feetColor, lookAtCursor, mirrored, useCustomColors],

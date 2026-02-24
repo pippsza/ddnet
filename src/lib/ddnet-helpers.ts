@@ -26,6 +26,7 @@ export interface PlayerOnlineStatus {
     port: number
     name: string
     map: string
+    passworded?: boolean
   }
   skin?: {
     name: string
@@ -100,9 +101,10 @@ export async function findPlayersOnline(nicknames: string[]): Promise<PlayerOnli
         const ip = addressMatch?.[1] || ''
         const port = parseInt(addressMatch?.[2] || '8303')
 
-        // Get map name from server info
+        // Get map name and server flags from server info
         const serverInfo = player.server.self.info as any
         const mapName = serverInfo?.map?.name || ''
+        const passworded = serverInfo?.passworded === true
 
         return {
           name: player.name,
@@ -112,6 +114,7 @@ export async function findPlayersOnline(nicknames: string[]): Promise<PlayerOnli
             port,
             name: player.server.name,
             map: mapName,
+            passworded,
           },
           skin: player.self.skin
             ? {
@@ -213,7 +216,15 @@ export async function getPlayerData(name: string, bypassCache = false): Promise<
 
     return data
   } catch (error) {
-    console.error(`[DDNet] Failed to fetch player ${name}:`, error)
+    // ZodError means DDNet API returned empty/invalid data — player doesn't exist
+    const isZodError =
+      error instanceof Error &&
+      (error.name === 'ZodError' || (error.cause as any)?.name === 'ZodError')
+    if (isZodError) {
+      console.log(`[DDNet] Player "${name}" not found on DDNet (invalid API response)`)
+    } else {
+      console.error(`[DDNet] Failed to fetch player ${name}:`, error)
+    }
     return null
   }
 }

@@ -40,6 +40,7 @@ import {
   Bell,
   Medal,
   FolderOpen,
+  Container,
 } from 'lucide-react'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
@@ -74,6 +75,7 @@ const otherItems = [
 
 const adminItems = [
   { title: 'Bot Management', url: '/app/admin/bots', icon: Bot, adminOnly: true },
+  { title: 'Container Test', url: '/app/admin/container-test', icon: Container, adminOnly: true },
   { title: 'Categories', url: '/app/admin/categories', icon: FolderOpen },
   { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket },
 ]

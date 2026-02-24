@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { Check, X } from 'lucide-react'
 
 interface ChatBubbleProps {
   isOwn: boolean
@@ -8,6 +9,7 @@ interface ChatBubbleProps {
   header?: React.ReactNode
   avatar?: React.ReactNode
   isOptimistic?: boolean
+  status?: 'pending' | 'delivered' | 'failed'
   className?: string
 }
 
@@ -17,6 +19,7 @@ export function ChatBubble({
   header,
   avatar,
   isOptimistic,
+  status,
   className,
 }: ChatBubbleProps) {
   return (
@@ -51,6 +54,12 @@ export function ChatBubble({
         >
           {children}
         </div>
+        {isOwn && status && status !== 'pending' && (
+          <div className="flex justify-end mt-0.5 pr-1">
+            {status === 'delivered' && <Check className="h-3 w-3 text-green-500" />}
+            {status === 'failed' && <X className="h-3 w-3 text-destructive" />}
+          </div>
+        )}
       </div>
 
       {isOwn && avatar}

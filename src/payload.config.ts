@@ -22,6 +22,7 @@ import { ChatSessions } from './collections/ChatSessions'
 import { PushSubscriptions } from './collections/PushSubscriptions'
 import { Conversations } from './collections/Conversations'
 import { Messages } from './collections/Messages'
+import { InGameMessages } from './collections/InGameMessages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -49,6 +50,7 @@ export default buildConfig({
     PushSubscriptions,
     Conversations,
     Messages,
+    InGameMessages,
   ],
   globals: [VerificationSettings, CustomCategories],
   editor: lexicalEditor(),

@@ -13,8 +13,10 @@ import { PlayerDetailSkeleton } from '@/components/ui/page-skeleton'
 import { useDDStats } from '@/hooks/use-ddstats'
 import { useGameStats } from '@/hooks/use-game-stats'
 import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils'
-import { UserPlus, MessageCircle, Copy, Map, UserCheck, Clock, ArrowLeft } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { UserPlus, MessageCircle, Copy, Map, UserCheck, Clock, ArrowLeft, Gamepad2, Lock, ShieldCheck } from 'lucide-react'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
+import { toast } from 'sonner'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
 import { DDNetSection } from '@/components/stats/DDNetSection'
@@ -31,7 +33,7 @@ function PlayerDetailContent({ name }: { name: string }) {
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'service'
 
-  const { data, isLoading, error } = useSWR(`/api/players/${encodeURIComponent(decodedName)}`, fetcher)
+  const { data, isLoading, error } = useSWR(`/api/players/${encodeURIComponent(decodedName)}`, fetcher, { refreshInterval: 30000 })
   const { data: meData } = useSWR('/api/users/me', fetcher)
   const { data: pendingData } = useSWR('/api/friends/pending', fetcher)
 
@@ -45,6 +47,9 @@ function PlayerDetailContent({ name }: { name: string }) {
 
   const [friendSent, setFriendSent] = useState(false)
   const [friendSending, setFriendSending] = useState(false)
+  const [chatStarting, setChatStarting] = useState(false)
+  const [passwordPrompt, setPasswordPrompt] = useState(false)
+  const [serverPassword, setServerPassword] = useState('')
 
 
   const isOwnProfile = meData?.user?.id && reg?.id && meData.user.id === reg.id
@@ -94,6 +99,51 @@ function PlayerDetailContent({ name }: { name: string }) {
   const handleSendMessage = () => {
     if (!reg?.id) return
     router.push(`/app/chat?user=${reg.id}`)
+  }
+
+  const startChatWithPassword = async (password?: string) => {
+    if (!reg?.id) return
+    setChatStarting(true)
+    try {
+      const res = await fetch('/api/ingame-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: reg.id, serverPassword: password || undefined }),
+      })
+      const data = await res.json()
+      if (res.ok && data.sessionId) {
+        // Save containerId for orphan recovery
+        if (data.containerId) {
+          try {
+            localStorage.setItem('ingame-chat-state', JSON.stringify({
+              sessionId: data.sessionId,
+              containerId: data.containerId,
+            }))
+          } catch {}
+        }
+        setPasswordPrompt(false)
+        setServerPassword('')
+        router.push(`/app/ingame-chat?sessionId=${data.sessionId}`)
+      } else if (res.status === 428 && data.passworded) {
+        // Server requires password — show password dialog
+        setPasswordPrompt(true)
+      } else {
+        toast.error(data.error || 'Failed to start in-game chat')
+      }
+    } catch {
+      toast.error('Failed to start in-game chat')
+    } finally {
+      setChatStarting(false)
+    }
+  }
+
+  const handleChatInGame = async () => {
+    await startChatWithPassword()
+  }
+
+  const handlePasswordSubmit = async () => {
+    if (!serverPassword.trim()) return
+    await startChatWithPassword(serverPassword.trim())
   }
 
   if (isLoading) return <PlayerDetailSkeleton />
@@ -278,6 +328,17 @@ function PlayerDetailContent({ name }: { name: string }) {
                     <MessageCircle className="h-4 w-4 mr-1" />
                     Message
                   </Button>
+                  {friendStatus === 'friends' && (meData?.user?.isSystemVerified || meData?.user?.roles === 'admin' || meData?.user?.roles === 'moderator') && online && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleChatInGame}
+                      disabled={chatStarting}
+                    >
+                      <Gamepad2 className="h-4 w-4 mr-1" />
+                      {chatStarting ? 'Connecting...' : 'Chat In-Game'}
+                    </Button>
+                  )}
                 </>
               )}
               <Button variant="outline" size="sm" asChild>
@@ -299,6 +360,42 @@ function PlayerDetailContent({ name }: { name: string }) {
                 </a>
               </Button>
             </div>
+
+            {/* Password prompt for passworded servers */}
+            {passwordPrompt && (
+              <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 space-y-3">
+                <div className="flex items-center gap-2 text-yellow-500">
+                  <Lock className="h-4 w-4" />
+                  <span className="text-sm font-medium">Server requires a password</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This server is password-protected. Enter the server password to connect.
+                </p>
+                <form
+                  onSubmit={(e) => { e.preventDefault(); handlePasswordSubmit() }}
+                  className="flex gap-2"
+                >
+                  <Input
+                    type="password"
+                    placeholder="Server password"
+                    value={serverPassword}
+                    onChange={(e) => setServerPassword(e.target.value)}
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button size="sm" type="submit" disabled={chatStarting || !serverPassword.trim()}>
+                    {chatStarting ? 'Connecting...' : 'Connect'}
+                  </Button>
+                  <Button size="sm" variant="ghost" type="button" onClick={() => { setPasswordPrompt(false); setServerPassword('') }}>
+                    Cancel
+                  </Button>
+                </form>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0 text-green-500" />
+                  <span>Your password is sent securely and is not stored. It is only used to connect the bot to the server.</span>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

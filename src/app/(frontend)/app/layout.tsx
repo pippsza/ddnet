@@ -20,11 +20,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
-      <AppSidebar user={{
-        ingameNick: session.user.ingameNick ?? undefined,
-        roles: session.user.roles ?? undefined,
-        skin: session.user.ingameStats?.skin as { name?: string; color_body?: number; color_feet?: number } | undefined,
-      }} />
+      <AppSidebar
+        user={{
+          ingameNick: session.user.ingameNick ?? undefined,
+          roles: session.user.roles ?? undefined,
+          skin: session.user.ingameStats?.skin as
+            | { name?: string; color_body?: number; color_feet?: number }
+            | undefined,
+        }}
+      />
       <main className="flex-1 flex min-w-0 flex-col min-h-screen">
         <header className="flex items-center justify-between p-4 border-b sticky top-0  bg-background/95 backdrop-blur z-10">
           <SidebarTrigger />

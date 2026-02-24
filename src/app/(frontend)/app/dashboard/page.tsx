@@ -28,7 +28,7 @@ function DashboardContent() {
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'service'
 
-  const { data: user, isLoading } = useSWR('/api/users/me', fetcher)
+  const { data: user, isLoading } = useSWR('/api/users/me', fetcher, { refreshInterval: 30000 })
 
   const userData = user?.user
   const { ddstats, ddstatsLoading } = useDDStats(userData?.ingameNick)

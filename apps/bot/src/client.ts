@@ -13,6 +13,7 @@ export interface ClientOptions {
   clan?: string
   skin?: string
   timeout?: number
+  password?: string
 }
 
 interface RawMessage {
@@ -58,6 +59,7 @@ export class TeeworldsClient {
           clan: this.options.clan || 'DDNet',
           skin: this.options.skin || 'default',
         },
+        ...(this.options.password ? { password: this.options.password } : {}),
       })
 
       this.client.on('connected', () => {
@@ -248,7 +250,7 @@ export class TeeworldsClient {
   /**
    * Subscribe to chat messages (from players only, client_id >= 0)
    */
-  onMessage(handler: (message: { author: string; text: string; team: boolean }) => void): void {
+  onMessage(handler: (message: { author: string; text: string; team: boolean; skin: string }) => void): void {
     if (!this.client) return
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,6 +262,7 @@ export class TeeworldsClient {
         author: msg.author.ClientInfo.name,
         text: msg.message,
         team: !!msg.team,
+        skin: msg.author.ClientInfo.skin,
       })
     })
   }

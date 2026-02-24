@@ -82,6 +82,7 @@ export interface Config {
     'push-subscriptions': PushSubscription;
     conversations: Conversation;
     messages: Message;
+    'in-game-messages': InGameMessage;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +105,7 @@ export interface Config {
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
+    'in-game-messages': InGameMessagesSelect<false> | InGameMessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1251,6 +1253,21 @@ export interface Message {
   createdAt: string;
 }
 /**
+ * Archived messages from in-game chat sessions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "in-game-messages".
+ */
+export interface InGameMessage {
+  id: string;
+  session: string | ChatSession;
+  sender: 'user' | 'friend' | 'system';
+  content: string;
+  timestamp: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1333,6 +1350,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'messages';
         value: string | Message;
+      } | null)
+    | ({
+        relationTo: 'in-game-messages';
+        value: string | InGameMessage;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2197,6 +2218,18 @@ export interface MessagesSelect<T extends boolean = true> {
   sender?: T;
   content?: T;
   isRead?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "in-game-messages_select".
+ */
+export interface InGameMessagesSelect<T extends boolean = true> {
+  session?: T;
+  sender?: T;
+  content?: T;
+  timestamp?: T;
   updatedAt?: T;
   createdAt?: T;
 }

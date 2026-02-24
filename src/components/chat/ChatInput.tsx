@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
@@ -14,6 +14,7 @@ interface ChatInputProps {
   richText?: boolean
   disabledMessage?: string
   onTyping?: () => void
+  cooldownMs?: number
 }
 
 export function ChatInput({
@@ -24,6 +25,7 @@ export function ChatInput({
   richText,
   disabledMessage,
   onTyping,
+  cooldownMs,
 }: ChatInputProps) {
   if (disabled && disabledMessage) {
     return (
@@ -37,7 +39,7 @@ export function ChatInput({
     return <RichTextInput onSend={onSend} placeholder={placeholder} sending={sending} onTyping={onTyping} />
   }
 
-  return <PlainTextInput onSend={onSend} placeholder={placeholder} sending={sending} onTyping={onTyping} />
+  return <PlainTextInput onSend={onSend} placeholder={placeholder} sending={sending} onTyping={onTyping} cooldownMs={cooldownMs} />
 }
 
 function PlainTextInput({
@@ -45,20 +47,29 @@ function PlainTextInput({
   placeholder,
   sending,
   onTyping,
+  cooldownMs,
 }: {
   onSend: (content: string) => void | Promise<void>
   placeholder?: string
   sending?: boolean
   onTyping?: () => void
+  cooldownMs?: number
 }) {
   const [text, setText] = useState('')
+  const [cooldown, setCooldown] = useState(false)
+  const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault()
-    if (!text.trim() || sending) return
+    if (!text.trim() || sending || cooldown) return
     const value = text.trim()
     setText('')
     onSend(value)
+
+    if (cooldownMs && cooldownMs > 0) {
+      setCooldown(true)
+      cooldownTimer.current = setTimeout(() => setCooldown(false), cooldownMs)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -79,11 +90,12 @@ function PlainTextInput({
         value={text}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={cooldown ? 'Wait...' : placeholder}
         className="flex-1 min-h-[40px] max-h-[120px] resize-none"
         rows={1}
+        disabled={cooldown}
       />
-      <Button type="submit" size="icon" className="self-end shrink-0" disabled={sending || !text.trim()}>
+      <Button type="submit" size="icon" className="self-end shrink-0" disabled={sending || cooldown || !text.trim()}>
         <Send className="h-4 w-4" />
       </Button>
     </form>

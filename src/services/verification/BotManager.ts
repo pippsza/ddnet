@@ -160,9 +160,138 @@ export class BotManager implements BotDriverInterface {
     return container.id
   }
 
+  async startTestBot(
+    sessionId: string,
+    serverIp: string,
+    serverPort: number,
+    botName: string,
+    serverPassword?: string,
+  ): Promise<string> {
+    if (!this.mockDriver && !this.dockerInitialized) {
+      await this.initDocker()
+    }
+
+    if (this.mockDriver) {
+      console.log(`[BotManager] Mock test bot for session ${sessionId}`)
+      return `mock-test-${sessionId}`
+    }
+
+    if (!this.docker) {
+      throw new Error('Docker not available')
+    }
+
+    const docker = this.docker as import('dockerode')
+
+    console.log(`[BotManager] Creating test container: image=${process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest'}, server=${serverIp}:${serverPort}`)
+
+    const env = [
+      'BOT_MODE=test',
+      `SESSION_ID=${sessionId}`,
+      `SERVER_IP=${serverIp}`,
+      `SERVER_PORT=${serverPort}`,
+      `BOT_NAME=${botName}`,
+      `BACKEND_URL=${(process.env.NEXT_PUBLIC_SERVER_URL || 'http://127.0.0.1:3000').replace('localhost', '127.0.0.1')}`,
+      `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
+    ]
+    if (serverPassword) env.push(`SERVER_PASSWORD=${serverPassword}`)
+
+    const container = await docker.createContainer({
+      Image: process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest',
+      Tty: true,
+      OpenStdin: false,
+      Env: env,
+      HostConfig: {
+        AutoRemove: false,
+        NetworkMode: 'host',
+      },
+    })
+
+    await container.start()
+    this.activeContainers.add(container.id)
+    this.activeBotInfo.set(container.id, {
+      containerId: container.id,
+      mode: 'chat',
+      startedAt: new Date(),
+    })
+    console.log(`[BotManager] Started test bot: ${container.id} for session ${sessionId}`)
+
+    return container.id
+  }
+
+  async startIngameChatBot(
+    sessionId: string,
+    serverIp: string,
+    serverPort: number,
+    botName: string,
+    targetNick: string,
+    serverPassword?: string,
+  ): Promise<string> {
+    if (!this.mockDriver && !this.dockerInitialized) {
+      await this.initDocker()
+    }
+
+    if (this.mockDriver) {
+      console.log(`[BotManager] Mock ingame-chat bot for session ${sessionId}`)
+      return `mock-ingamechat-${sessionId}`
+    }
+
+    if (!this.docker) {
+      throw new Error('Docker not available')
+    }
+
+    const docker = this.docker as import('dockerode')
+
+    console.log(
+      `[BotManager] Creating ingame-chat container: server=${serverIp}:${serverPort}, target=${targetNick}`,
+    )
+
+    const env = [
+      'BOT_MODE=ingamechat',
+      `SESSION_ID=${sessionId}`,
+      `SERVER_IP=${serverIp}`,
+      `SERVER_PORT=${serverPort}`,
+      `BOT_NAME=${botName}`,
+      `TARGET_NICK=${targetNick}`,
+      `BACKEND_URL=${(process.env.NEXT_PUBLIC_SERVER_URL || 'http://127.0.0.1:3000').replace('localhost', '127.0.0.1')}`,
+      `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
+    ]
+    if (serverPassword) env.push(`SERVER_PASSWORD=${serverPassword}`)
+
+    const container = await docker.createContainer({
+      Image: process.env.BOT_DOCKER_IMAGE || 'bingo-bot:latest',
+      Tty: true,
+      OpenStdin: false,
+      Env: env,
+      HostConfig: {
+        AutoRemove: false,
+        NetworkMode: 'host',
+      },
+    })
+
+    await container.start()
+    this.activeContainers.add(container.id)
+    this.activeBotInfo.set(container.id, {
+      containerId: container.id,
+      mode: 'chat',
+      startedAt: new Date(),
+      linkedUser: targetNick,
+    })
+    console.log(`[BotManager] Started ingame-chat bot: ${container.id} for session ${sessionId}`)
+
+    return container.id
+  }
+
   async stopBot(containerId: string): Promise<void> {
     if (this.mockDriver) {
       return this.mockDriver.stopVerification(containerId)
+    }
+
+    if (!this.docker) {
+      await this.initDocker()
+    }
+    if (!this.docker) {
+      console.error(`[BotManager] Cannot stop ${containerId}: Docker not available`)
+      return
     }
 
     try {
@@ -170,12 +299,53 @@ export class BotManager implements BotDriverInterface {
       const container = docker.getContainer(containerId)
       await container.stop({ t: 5 })
       console.log(`[BotManager] Stopped container: ${containerId}`)
-    } catch (error) {
+    } catch {
       console.log(`[BotManager] Container ${containerId} already stopped or not found`)
-    } finally {
-      this.activeContainers.delete(containerId)
-      this.activeBotInfo.delete(containerId)
     }
+
+    // Also try to remove the container (it was created with AutoRemove: false)
+    try {
+      const docker = this.docker as import('dockerode')
+      const container = docker.getContainer(containerId)
+      await container.remove({ force: true })
+      console.log(`[BotManager] Removed container: ${containerId}`)
+    } catch {
+      // Already removed or doesn't exist
+    }
+
+    this.activeContainers.delete(containerId)
+    this.activeBotInfo.delete(containerId)
+  }
+
+  /**
+   * Stop a container directly by ID — used for orphaned containers
+   * when the session has been lost (e.g., due to HMR).
+   */
+  async forceStopContainer(containerId: string): Promise<void> {
+    if (this.mockDriver) return
+
+    if (!this.docker) {
+      await this.initDocker()
+    }
+    if (!this.docker) return
+
+    try {
+      const docker = this.docker as import('dockerode')
+      const container = docker.getContainer(containerId)
+      await container.stop({ t: 3 })
+    } catch {
+      // already stopped
+    }
+    try {
+      const docker = this.docker as import('dockerode')
+      const container = docker.getContainer(containerId)
+      await container.remove({ force: true })
+    } catch {
+      // already removed
+    }
+    this.activeContainers.delete(containerId)
+    this.activeBotInfo.delete(containerId)
+    console.log(`[BotManager] Force-stopped container: ${containerId}`)
   }
 
   getActiveCount(): number {
@@ -203,13 +373,35 @@ export class BotManager implements BotDriverInterface {
     try {
       const docker = this.docker as import('dockerode')
       const container = docker.getContainer(containerId)
+      const info = await container.inspect()
+      const isTty = info.Config?.Tty === true
+
       const logs = await container.logs({
         stdout: true,
         stderr: true,
         tail,
         timestamps: true,
       })
-      return logs.toString().split('\n').filter(Boolean)
+
+      const buf = Buffer.isBuffer(logs) ? logs : Buffer.from(logs as string)
+
+      if (isTty) {
+        // TTY mode: plain text, no multiplexed headers
+        return buf.toString('utf8').split('\n').filter(Boolean)
+      }
+
+      // Non-TTY: demux the 8-byte framed Docker stream format
+      const lines: string[] = []
+      let offset = 0
+      while (offset + 8 <= buf.length) {
+        const size = buf.readUInt32BE(offset + 4)
+        offset += 8
+        if (offset + size > buf.length) break
+        const chunk = buf.subarray(offset, offset + size).toString('utf8')
+        lines.push(...chunk.split('\n').filter(Boolean))
+        offset += size
+      }
+      return lines
     } catch {
       return []
     }
@@ -251,12 +443,14 @@ export class BotManager implements BotDriverInterface {
   }
 }
 
-// Singleton instance
-let botManager: BotManager | null = null
+// Singleton instance — use globalThis to survive Next.js HMR in development
+const globalBotManager = globalThis as typeof globalThis & {
+  __botManager?: BotManager
+}
 
 export function getBotManager(): BotManager {
-  if (!botManager) {
-    botManager = new BotManager()
+  if (!globalBotManager.__botManager || !(globalBotManager.__botManager instanceof BotManager)) {
+    globalBotManager.__botManager = new BotManager()
   }
-  return botManager
+  return globalBotManager.__botManager
 }

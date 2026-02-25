@@ -39,7 +39,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ inv
     const game = games[0]
 
     // Check if game is joinable
-    if (game.gameStatus !== 'waiting') {
+    if (game.gameStatus !== 'waiting' && game.gameStatus !== 'ready') {
       return NextResponse.json({ error: 'Game is not accepting new players' }, { status: 400 })
     }
 
@@ -67,30 +67,49 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ inv
         targetTeamIndex = body.teamIndex
       } else {
         // Find team with less players
-        targetTeamIndex = game.teams[0].players.length <= game.teams[1].players.length ? 0 : 1
+        targetTeamIndex = (game.teams[0].players ?? []).length <= (game.teams[1].players ?? []).length ? 0 : 1
       }
     }
 
     const targetTeam = game.teams[targetTeamIndex]
 
     // Check if team is full (max 2 players per team)
-    if (targetTeam.players.length >= 2) {
+    if ((targetTeam.players ?? []).length >= 2) {
       return NextResponse.json({ error: 'This team is full' }, { status: 400 })
     }
 
     // Add player to team
+    if (!targetTeam.players) {
+      targetTeam.players = []
+    }
     targetTeam.players.push({
       user: user.id,
       isReady: false,
     })
 
+    // Remove from pendingInvites if they were invited
+    targetTeam.pendingInvites = (targetTeam.pendingInvites ?? []).filter((p) => {
+      const pid = typeof p.user === 'string' ? p.user : p.user.id
+      return pid !== user.id
+    })
+
+    // If game was 'ready', reset to 'waiting' since team composition changed
+    const updateData: Record<string, any> = { teams: game.teams }
+    if (game.gameStatus === 'ready') {
+      updateData.gameStatus = 'waiting'
+      for (const t of game.teams) {
+        for (const p of t.players ?? []) {
+          ;(p as any).isReady = false
+        }
+        ;(t as any).teamStatus = 'not_ready'
+      }
+    }
+
     // Update game
     await payload.update({
       collection: 'bingo',
       id: game.id,
-      data: {
-        teams: game.teams,
-      },
+      data: updateData,
     })
 
     // Update user's active game

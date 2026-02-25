@@ -2,19 +2,29 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Swords } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { CategorySelect } from '@/components/CategorySelect'
+import { FriendInviteSearch } from '@/components/bingo/FriendInviteSearch'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 export default function CreateRacePage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [totalRounds, setTotalRounds] = useState(5)
   const [availableMapCount, setAvailableMapCount] = useState<number | null>(null)
+  const [invitedPlayer, setInvitedPlayer] = useState<{
+    id: string
+    name: string
+    skin?: { name: string; colorBody: number; colorFeet: number }
+  } | null>(null)
 
   const maxRounds = availableMapCount ?? 20
 
@@ -39,6 +49,7 @@ export default function CreateRacePage() {
             name: formData.get('serverName') || undefined,
           },
           isPublic: formData.get('isPublic') === 'on',
+          invitedPlayerId: invitedPlayer?.id || undefined,
         }),
       })
 
@@ -51,6 +62,31 @@ export default function CreateRacePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const activeGame = user?.activeGame as
+    | { relationTo: 'bingo' | 'races'; value: string | { id: string } }
+    | null
+    | undefined
+  const activeGameUrl = activeGame
+    ? `${activeGame.relationTo === 'bingo' ? '/app/bingo' : '/app/race'}/${typeof activeGame.value === 'object' ? activeGame.value.id : activeGame.value}`
+    : null
+
+  if (activeGame) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
+        <Swords className="h-12 w-12 text-muted-foreground" />
+        <div>
+          <h2 className="text-lg font-semibold">You already have an active game</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Finish or leave your current game before creating a new one.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href={activeGameUrl!}>Go to Current Game</Link>
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -125,6 +161,11 @@ export default function CreateRacePage() {
             <div className="flex items-center gap-2">
               <Switch id="isPublic" name="isPublic" />
               <Label htmlFor="isPublic" className="mb-0">Public Race (visible in lobby)</Label>
+            </div>
+
+            <div>
+              <Label>Invite Opponent</Label>
+              <FriendInviteSearch value={invitedPlayer} onChange={setInvitedPlayer} />
             </div>
 
             {error && <p className="text-sm text-red-500">{error}</p>}

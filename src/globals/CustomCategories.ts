@@ -51,6 +51,14 @@ export const CustomCategories: GlobalConfig = {
           label: 'Description',
         },
         {
+          name: 'icon',
+          type: 'text',
+          label: 'Icon',
+          admin: {
+            description: 'Lucide icon name (e.g., "Star", "Trophy")',
+          },
+        },
+        {
           name: 'createdBy',
           type: 'relationship',
           relationTo: 'users',

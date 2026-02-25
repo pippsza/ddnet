@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import useSWR from 'swr'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge'
 import { DebouncedInput } from '@/components/ui/debounced-input'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { RoleBadge } from '@/components/ui/status-badge'
+import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Send, Users, UserCheck, Search, X, Loader2, CheckCircle } from 'lucide-react'
+import { Send, Users, UserCheck, Search, X, Loader2, CheckCircle, Megaphone, Save } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -25,6 +26,47 @@ interface SelectedUser {
 }
 
 export default function AdminNotificationsPage() {
+  // Site announcement
+  const { data: announcement, mutate: mutateAnnouncement } = useSWR(
+    '/api/globals/site-announcement',
+    fetcher,
+  )
+  const [annEnabled, setAnnEnabled] = useState(false)
+  const [annMessage, setAnnMessage] = useState('')
+  const [annSaving, setAnnSaving] = useState(false)
+
+  // Sync local state from SWR cache
+  useEffect(() => {
+    if (announcement) {
+      setAnnEnabled(!!announcement.enabled)
+      setAnnMessage(announcement.message || '')
+    }
+  }, [announcement])
+
+  const annDirty =
+    !!announcement && (annEnabled !== !!announcement.enabled || annMessage !== (announcement.message || ''))
+
+  const handleAnnSave = async () => {
+    setAnnSaving(true)
+    const optimistic = { ...announcement, enabled: annEnabled, message: annMessage }
+    mutateAnnouncement(optimistic, { revalidate: false })
+    try {
+      const res = await fetch('/api/globals/site-announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: annEnabled, message: annMessage }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      toast.success(annEnabled ? 'Announcement is live' : 'Announcement disabled')
+      mutateAnnouncement()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save')
+      mutateAnnouncement()
+    } finally {
+      setAnnSaving(false)
+    }
+  }
+
   const [target, setTarget] = useState<'all' | 'selected'>('all')
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
@@ -110,6 +152,59 @@ export default function AdminNotificationsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Site Announcement */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Megaphone className="h-4 w-4" />
+              Site Announcement
+            </CardTitle>
+            <Badge variant={announcement?.enabled ? 'default' : 'secondary'}>
+              {announcement?.enabled ? 'Active' : 'Inactive'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <p className="text-sm font-medium">Show announcement</p>
+              <p className="text-xs text-muted-foreground">
+                Display a floating banner for all users
+              </p>
+            </div>
+            <Switch checked={annEnabled} onCheckedChange={setAnnEnabled} />
+          </div>
+          <div>
+            <Label>Message</Label>
+            <Textarea
+              value={annMessage}
+              onChange={(e) => setAnnMessage(e.target.value)}
+              placeholder="Write your announcement..."
+              rows={2}
+              className="resize-none"
+            />
+          </div>
+          <Button
+            onClick={handleAnnSave}
+            disabled={annSaving || !annDirty || (annEnabled && !annMessage.trim())}
+            className="w-full"
+          >
+            {annSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Announcement
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
       <h1 className="text-2xl font-bold">Send Notification</h1>
 
       {/* Success result */}

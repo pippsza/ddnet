@@ -57,6 +57,18 @@ export async function POST(
       },
     })
 
+    // Clear activeGame for all players in this race
+    const playerIds = (race.players ?? []).map((p) =>
+      typeof p.user === 'string' ? p.user : p.user.id,
+    )
+    for (const playerId of playerIds) {
+      await payload.update({
+        collection: 'users',
+        id: playerId,
+        data: { activeGame: null },
+      })
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('[API] Error cancelling race:', error)

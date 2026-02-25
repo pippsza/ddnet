@@ -122,10 +122,12 @@ export interface Config {
   globals: {
     'verification-settings': VerificationSetting;
     'custom-categories': CustomCategory;
+    'site-announcement': SiteAnnouncement;
   };
   globalsSelect: {
     'verification-settings': VerificationSettingsSelect<false> | VerificationSettingsSelect<true>;
     'custom-categories': CustomCategoriesSelect<false> | CustomCategoriesSelect<true>;
+    'site-announcement': SiteAnnouncementSelect<false> | SiteAnnouncementSelect<true>;
   };
   locale: null;
   user: User & {
@@ -641,6 +643,10 @@ export interface Role {
    */
   priority: number;
   /**
+   * Default role applied to all non-admin users. Only one role can be default.
+   */
+  isDefault?: boolean | null;
+  /**
    * CSS hex color for badge background (e.g., "#3b82f6")
    */
   badgeColor: string;
@@ -649,12 +655,39 @@ export interface Role {
    */
   textColor: string;
   permissions?: {
+    pages?:
+      | (
+          | 'app_access'
+          | 'bingo'
+          | 'race'
+          | 'leaderboard'
+          | 'players'
+          | 'friends'
+          | 'online_players'
+          | 'chat'
+          | 'forum'
+          | 'articles'
+          | 'notifications'
+          | 'support'
+          | 'ingame_chat'
+        )[]
+      | null;
     articles?: ('create' | 'edit' | 'delete' | 'view_drafts')[] | null;
     support?: ('view_all' | 'reply' | 'change_status' | 'delete')[] | null;
     forum?: ('view_hidden' | 'edit_any' | 'delete_any' | 'pin' | 'lock')[] | null;
     games?: ('edit_any' | 'delete_any' | 'manage_categories')[] | null;
     adminPages?:
-      | ('bots' | 'container_test' | 'notifications' | 'debug' | 'categories' | 'tickets' | 'stats' | 'roles')[]
+      | (
+          | 'bots'
+          | 'container_test'
+          | 'notifications'
+          | 'debug'
+          | 'categories'
+          | 'tickets'
+          | 'stats'
+          | 'roles'
+          | 'manage_users'
+        )[]
       | null;
   };
   updatedAt: string;
@@ -666,7 +699,7 @@ export interface Role {
  */
 export interface Media {
   id: string;
-  alt: string;
+  alt?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -719,13 +752,22 @@ export interface Bingo {
     teamName: string;
     color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
     /**
-     * Each team must have 1-2 players. Only players in team receive tokens.
+     * Each team can have 0-2 players. Validated at game start.
      */
-    players: {
-      user: string | User;
-      isReady?: boolean | null;
-      id?: string | null;
-    }[];
+    players?:
+      | {
+          user: string | User;
+          isReady?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    pendingInvites?:
+      | {
+          user: string | User;
+          invitedAt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
     /**
      * Array of cell positions that this team has completed
      */
@@ -750,6 +792,10 @@ export interface Bingo {
    * Calculated automatically
    */
   duration?: number | null;
+  /**
+   * Reference to the rematch game created from this one
+   */
+  rematchGame?: (string | null) | Bingo;
   updatedAt: string;
   createdAt: string;
 }
@@ -1090,6 +1136,12 @@ export interface ForumPost {
           [k: string]: unknown;
         };
         createdAt: string;
+        images?:
+          | {
+              image: string | Media;
+              id?: string | null;
+            }[]
+          | null;
         likes?: number | null;
         id?: string | null;
       }[]
@@ -1171,6 +1223,12 @@ export interface Support {
          * Response from admin or moderator
          */
         isStaffResponse?: boolean | null;
+        images?:
+          | {
+              image: string | Media;
+              id?: string | null;
+            }[]
+          | null;
         timestamp: string;
         id?: string | null;
       }[]
@@ -1315,6 +1373,12 @@ export interface Message {
   conversation: string | Conversation;
   sender: string | User;
   content: string;
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
   isRead?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -2026,6 +2090,13 @@ export interface BingoSelect<T extends boolean = true> {
               isReady?: T;
               id?: T;
             };
+        pendingInvites?:
+          | T
+          | {
+              user?: T;
+              invitedAt?: T;
+              id?: T;
+            };
         completedCells?:
           | T
           | {
@@ -2041,6 +2112,7 @@ export interface BingoSelect<T extends boolean = true> {
   startedAt?: T;
   completedAt?: T;
   duration?: T;
+  rematchGame?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2203,6 +2275,12 @@ export interface ForumPostsSelect<T extends boolean = true> {
         author?: T;
         content?: T;
         createdAt?: T;
+        images?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
         likes?: T;
         id?: T;
       };
@@ -2227,6 +2305,12 @@ export interface SupportSelect<T extends boolean = true> {
         message?: T;
         author?: T;
         isStaffResponse?: T;
+        images?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
         timestamp?: T;
         id?: T;
       };
@@ -2325,6 +2409,12 @@ export interface MessagesSelect<T extends boolean = true> {
   conversation?: T;
   sender?: T;
   content?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   isRead?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2349,11 +2439,13 @@ export interface RolesSelect<T extends boolean = true> {
   name?: T;
   displayName?: T;
   priority?: T;
+  isDefault?: T;
   badgeColor?: T;
   textColor?: T;
   permissions?:
     | T
     | {
+        pages?: T;
         articles?: T;
         support?: T;
         forum?: T;
@@ -2466,6 +2558,10 @@ export interface CustomCategory {
          */
         slug: string;
         description?: string | null;
+        /**
+         * Lucide icon name (e.g., "Star", "Trophy")
+         */
+        icon?: string | null;
         createdBy?: (string | null) | User;
         maps: {
           mapName: string;
@@ -2486,6 +2582,18 @@ export interface CustomCategory {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-announcement".
+ */
+export interface SiteAnnouncement {
+  id: string;
+  enabled?: boolean | null;
+  message?: string | null;
+  announcementId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2520,6 +2628,7 @@ export interface CustomCategoriesSelect<T extends boolean = true> {
         name?: T;
         slug?: T;
         description?: T;
+        icon?: T;
         createdBy?: T;
         maps?:
           | T
@@ -2532,6 +2641,18 @@ export interface CustomCategoriesSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-announcement_select".
+ */
+export interface SiteAnnouncementSelect<T extends boolean = true> {
+  enabled?: T;
+  message?: T;
+  announcementId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

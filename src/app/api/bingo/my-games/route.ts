@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,16 +12,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Find all games where user is a player (in any team)
+    // Find all games where user is a player or has a pending invite
     const { docs: allGames } = await payload.find({
       collection: 'bingo',
       where: {
-        'teams.players.user': { equals: user.id },
+        or: [
+          { 'teams.players.user': { equals: user.id } },
+          { 'teams.pendingInvites.user': { equals: user.id } },
+        ],
       },
       sort: '-createdAt',
       depth: 2,
       limit: 50,
     })
+
+    // Fetch custom categories once for icon lookup
+    const hasCustom = allGames.some((g) => g.category?.startsWith('custom_'))
+    let customCats: any[] = []
+    if (hasCustom) {
+      const customGlobal = await payload.findGlobal({ slug: 'custom-categories' })
+      customCats = (customGlobal as any)?.categories || []
+    }
 
     const games = allGames.map((game) => {
       const totalPlayers = game.teams.reduce(
@@ -29,6 +41,20 @@ export async function GET(req: NextRequest) {
       )
       const maxPlayers = game.mode === 'solo' ? 2 : 4
       const creator = typeof game.createdBy === 'object' ? game.createdBy : null
+
+      // Check if user is a pending invite (not yet a player)
+      const isPlayer = game.teams.some((team) =>
+        team.players?.some((p) => {
+          const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
+          return pUserId === user.id
+        }),
+      )
+      const isPendingInvite = !isPlayer && game.teams.some((team) =>
+        team.pendingInvites?.some((p) => {
+          const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
+          return pUserId === user.id
+        }),
+      )
 
       // Determine if current user won this game
       let isWinner: boolean | null = null
@@ -42,16 +68,23 @@ export async function GET(req: NextRequest) {
         isWinner = userTeamIndex === game.winnerTeam
       }
 
+      // Resolve category icon
+      const stdCat = DDNET_CATEGORIES.find((c) => c.value === game.category)
+      const categoryIcon = stdCat?.icon
+        ?? customCats.find((c: any) => c.slug === game.category)?.icon
+
       return {
         id: game.id,
         title: game.title,
         mode: game.mode,
         category: game.category,
+        categoryIcon,
         gridSize: game.gridSize,
         winCondition: game.winCondition,
         gameStatus: game.gameStatus,
         isPublic: game.isPublic,
         isWinner,
+        isPendingInvite,
         createdBy: creator ? { id: creator.id, username: creator.ingameNick } : null,
         players: totalPlayers,
         maxPlayers,

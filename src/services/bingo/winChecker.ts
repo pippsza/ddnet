@@ -136,31 +136,75 @@ function checkLine(size: number, cells: Set<number>): { won: boolean; cells?: nu
 }
 
 /**
- * Check for cross pattern (middle row + middle column)
+ * Check for cross pattern — two independent win conditions:
+ * 1. + cross: any complete row + any complete column
+ * 2. X cross: both diagonals complete
  */
 function checkCross(size: number, cells: Set<number>): { won: boolean; cells?: number[] } {
-  if (size % 2 === 0) {
-    // Cross pattern only works for odd grid sizes
-    return { won: false }
-  }
-
-  const center = Math.floor(size / 2)
-  const crossCells: number[] = []
-
-  // Middle row
-  for (let col = 0; col < size; col++) {
-    crossCells.push(center * size + col)
-  }
-
-  // Middle column (excluding center which is already added)
+  // Check + pattern: any full row + any full column
+  let winRow = -1
   for (let row = 0; row < size; row++) {
-    if (row !== center) {
-      crossCells.push(row * size + center)
+    let complete = true
+    for (let col = 0; col < size; col++) {
+      if (!cells.has(row * size + col)) { complete = false; break }
+    }
+    if (complete) { winRow = row; break }
+  }
+
+  if (winRow >= 0) {
+    let winCol = -1
+    for (let col = 0; col < size; col++) {
+      let complete = true
+      for (let row = 0; row < size; row++) {
+        if (!cells.has(row * size + col)) { complete = false; break }
+      }
+      if (complete) { winCol = col; break }
+    }
+
+    if (winCol >= 0) {
+      const winCells = new Set<number>()
+      for (let col = 0; col < size; col++) winCells.add(winRow * size + col)
+      for (let row = 0; row < size; row++) winCells.add(row * size + winCol)
+      return { won: true, cells: Array.from(winCells).sort((a, b) => a - b) }
     }
   }
 
-  const allHave = crossCells.every((pos) => cells.has(pos))
-  return { won: allHave, cells: allHave ? crossCells : undefined }
+  // Check X pattern: both diagonals
+  let diag1Ok = true
+  let diag2Ok = true
+  const xCells = new Set<number>()
+  for (let i = 0; i < size; i++) {
+    const p1 = i * size + i
+    const p2 = i * size + (size - 1 - i)
+    xCells.add(p1)
+    xCells.add(p2)
+    if (!cells.has(p1)) diag1Ok = false
+    if (!cells.has(p2)) diag2Ok = false
+  }
+
+  if (diag1Ok && diag2Ok) {
+    return { won: true, cells: Array.from(xCells).sort((a, b) => a - b) }
+  }
+
+  return { won: false }
+}
+
+/** Returns cells for a + pattern: given row + given column */
+export function getPlusCrossCells(size: number, row: number, col: number): number[] {
+  const cellSet = new Set<number>()
+  for (let c = 0; c < size; c++) cellSet.add(row * size + c)
+  for (let r = 0; r < size; r++) cellSet.add(r * size + col)
+  return Array.from(cellSet).sort((a, b) => a - b)
+}
+
+/** Returns cells for the X pattern (both diagonals) */
+export function getXCells(size: number): number[] {
+  const cellSet = new Set<number>()
+  for (let i = 0; i < size; i++) {
+    cellSet.add(i * size + i)
+    cellSet.add(i * size + (size - 1 - i))
+  }
+  return Array.from(cellSet).sort((a, b) => a - b)
 }
 
 /**
@@ -231,24 +275,15 @@ export function getWinningPatterns(gridSize: GridSize, winCondition: WinConditio
       break
 
     case 'cross':
-      if (size % 2 !== 0) {
+      // + patterns: a few representative row+col combos
+      patterns.push(getPlusCrossCells(size, 0, 0))
+      if (size >= 3) {
         const center = Math.floor(size / 2)
-        const cross: number[] = []
-
-        // Middle row
-        for (let col = 0; col < size; col++) {
-          cross.push(center * size + col)
-        }
-
-        // Middle column (excluding center)
-        for (let row = 0; row < size; row++) {
-          if (row !== center) {
-            cross.push(row * size + center)
-          }
-        }
-
-        patterns.push(cross)
+        patterns.push(getPlusCrossCells(size, center, center))
+        patterns.push(getPlusCrossCells(size, size - 1, 0))
       }
+      // X pattern: both diagonals
+      patterns.push(getXCells(size))
       break
 
     case 'full_house':

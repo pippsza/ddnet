@@ -11,6 +11,7 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
+import { MessageImages } from '@/components/chat/MessageImages'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { cn } from '@/lib/utils'
@@ -54,11 +55,9 @@ function ChatContent() {
     data: msgData,
     isLoading: msgLoading,
     mutate: mutateMessages,
-  } = useSWR(
-    activeConversation ? `/api/chat/conversations/${activeConversation}` : null,
-    fetcher,
-    { refreshInterval: 3000 },
-  )
+  } = useSWR(activeConversation ? `/api/chat/conversations/${activeConversation}` : null, fetcher, {
+    refreshInterval: 3000,
+  })
 
   // Fetch friends online status
   const { data: onlineData } = useSWR('/api/friends/online', fetcher, {
@@ -70,13 +69,14 @@ function ChatContent() {
   const messages = msgData?.messages || []
 
   // Poll typing status for all conversations (for sidebar indicators)
-  const { data: typingAllData } = useSWR(
-    '/api/chat/typing?scope=conversation&all=true',
-    fetcher,
-    { refreshInterval: 2000, revalidateOnFocus: false },
-  )
-  const typingAll: Record<string, Array<{ userId: string; userName: string }>> =
-    typingAllData?.typingAll || {}
+  const { data: typingAllData } = useSWR('/api/chat/typing?scope=conversation&all=true', fetcher, {
+    refreshInterval: 2000,
+    revalidateOnFocus: false,
+  })
+  const typingAll: Record<
+    string,
+    Array<{ userId: string; userName: string }>
+  > = typingAllData?.typingAll || {}
 
   // Merge friends + conversations into a unified sidebar list
   const sidebarEntries = useMemo(() => {
@@ -217,61 +217,68 @@ function ChatContent() {
     }
   }, [activeConversation, mutateConversations])
 
-  const handleSendMessage = useCallback(async (content: string | any) => {
-    if (typeof content !== 'string' || !content.trim() || !activeConversation || !currentUserId) return
-    const message = content.trim()
+  const handleSendMessage = useCallback(
+    async (content: string | any, images?: string[]) => {
+      if (!activeConversation || !currentUserId) return
+      const message = typeof content === 'string' ? content.trim() : ''
+      const hasImages = images && images.length > 0
+      if (!message && !hasImages) return
 
-    const optimisticMsg = {
-      id: `temp-${Date.now()}`,
-      content: message,
-      sender: { id: currentUserId },
-      createdAt: new Date().toISOString(),
-      _optimistic: true,
-    }
+      const optimisticMsg = {
+        id: `temp-${Date.now()}`,
+        content: message || (hasImages ? '[image]' : ''),
+        sender: { id: currentUserId },
+        createdAt: new Date().toISOString(),
+        _optimistic: true,
+        ...(hasImages && { images: images.map((id) => ({ image: { id, url: '' } })) }),
+      }
 
-    // Optimistic update: append new message immediately
-    mutateMessages(
-      (prev: any) => ({
-        ...prev,
-        messages: [optimisticMsg, ...(prev?.messages || [])],
-      }),
-      { revalidate: false },
-    )
-
-    // Optimistic update: move conversation to top with new last message
-    mutateConversations(
-      (prev: any) => {
-        if (!prev?.conversations) return prev
-        const convs = prev.conversations.map((c: any) =>
-          c.id === activeConversation
-            ? { ...c, lastMessage: message, lastMessageAt: new Date().toISOString() }
-            : c,
-        )
-        return { ...prev, conversations: convs }
-      },
-      { revalidate: false },
-    )
-
-    setSending(true)
-    try {
-      await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: activeConversation,
-          content: message,
+      // Optimistic update: append new message immediately
+      mutateMessages(
+        (prev: any) => ({
+          ...prev,
+          messages: [optimisticMsg, ...(prev?.messages || [])],
         }),
-      })
-      mutateMessages()
-      mutateConversations()
-    } catch {
-      // Revert on error
-      mutateMessages()
-      mutateConversations()
-    } finally {
-      setSending(false)
-    }
-  }, [activeConversation, currentUserId, mutateMessages, mutateConversations])
+        { revalidate: false },
+      )
+
+      // Optimistic update: move conversation to top with new last message
+      mutateConversations(
+        (prev: any) => {
+          if (!prev?.conversations) return prev
+          const convs = prev.conversations.map((c: any) =>
+            c.id === activeConversation
+              ? { ...c, lastMessage: message || '[image]', lastMessageAt: new Date().toISOString() }
+              : c,
+          )
+          return { ...prev, conversations: convs }
+        },
+        { revalidate: false },
+      )
+
+      setSending(true)
+      try {
+        await fetch('/api/chat/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversationId: activeConversation,
+            content: message,
+            ...(hasImages && { images }),
+          }),
+        })
+        mutateMessages()
+        mutateConversations()
+      } catch {
+        // Revert on error
+        mutateMessages()
+        mutateConversations()
+      } finally {
+        setSending(false)
+      }
+    },
+    [activeConversation, currentUserId, mutateMessages, mutateConversations],
+  )
 
   const activeConvData = activeConversation
     ? conversations.find((c: any) => c.id === activeConversation)
@@ -299,8 +306,8 @@ function ChatContent() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)]">
-      <div className="flex h-full gap-4">
+    <div className="-m-6 lg:m-0 h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-8rem)] overflow-hidden">
+      <div className="flex h-full lg:gap-4">
         {/* Conversations List */}
         <div
           className={cn(
@@ -308,8 +315,8 @@ function ChatContent() {
             activeConversation ? 'hidden lg:flex' : 'flex',
           )}
         >
-          <Card className="flex-1 flex flex-col overflow-hidden">
-            <CardHeader className="shrink-0 pb-3">
+          <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none shadow-none py-0 gap-0 lg:border lg:rounded-xl lg:shadow-sm lg:py-6 lg:gap-6">
+            <CardHeader className="shrink-0 py-3 px-4 lg:px-6">
               <CardTitle className="text-lg">Messages</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-0">
@@ -340,12 +347,16 @@ function ChatContent() {
                         )}
                       >
                         <OnlineStatusIndicator
-                          status={entry.userId ? getUserStatus(entry.userId, entry.lastSeenAt) : null}
+                          status={
+                            entry.userId ? getUserStatus(entry.userId, entry.lastSeenAt) : null
+                          }
                           size="sm"
                           className="shrink-0"
                         >
                           <TeeAvatarWithFallback
-                            skinUrl={entry.skin?.name ? getDDNetSkinUrl(entry.skin.name) : undefined}
+                            skinUrl={
+                              entry.skin?.name ? getDDNetSkinUrl(entry.skin.name) : undefined
+                            }
                             bodyColor={entry.skin?.colorBody}
                             feetColor={entry.skin?.colorFeet}
                             useCustomColors={!!(entry.skin?.colorBody || entry.skin?.colorFeet)}
@@ -358,7 +369,10 @@ function ChatContent() {
                               <span className="text-sm font-medium truncate">
                                 {entry.ingameNick}
                               </span>
-                              <RoleBadge role={entry.primaryRole || entry.roles} className="text-[10px] px-1 py-0" />
+                              <RoleBadge
+                                role={entry.primaryRole || entry.roles}
+                                className="text-[10px] px-1 py-0"
+                              />
                             </span>
                             {entry.unreadCount > 0 && (
                               <Badge className="text-[10px] h-5 min-w-[20px] justify-center">
@@ -407,10 +421,10 @@ function ChatContent() {
           )}
         >
           {activeConversation ? (
-            <Card className="flex-1 flex flex-col overflow-hidden">
+            <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none shadow-none py-0 gap-0 lg:border lg:rounded-xl lg:shadow-sm lg:py-6 lg:gap-6">
               {/* Chat Header */}
-              <CardHeader className="shrink-0 pb-3 border-b">
-                <div className="flex items-center gap-3">
+              <CardHeader className="shrink-0 py-4 border-b px-4 lg:px-6">
+                <div className="flex items-center gap-3 ">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -424,7 +438,11 @@ function ChatContent() {
                     className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                   >
                     <OnlineStatusIndicator
-                      status={activeOtherUser?.id ? getUserStatus(activeOtherUser.id, activeOtherUser.lastSeenAt) : null}
+                      status={
+                        activeOtherUser?.id
+                          ? getUserStatus(activeOtherUser.id, activeOtherUser.lastSeenAt)
+                          : null
+                      }
                       size="sm"
                     >
                       {(() => {
@@ -440,10 +458,11 @@ function ChatContent() {
                         )
                       })()}
                     </OnlineStatusIndicator>
-                    <span className="font-medium">
-                      {activeOtherUser?.ingameNick || 'Unknown'}
-                    </span>
-                    <RoleBadge role={(activeOtherUser as any)?.primaryRole || activeOtherUser?.roles} className="text-[10px] px-1.5 py-0" />
+                    <span className="font-medium">{activeOtherUser?.ingameNick || 'Unknown'}</span>
+                    <RoleBadge
+                      role={(activeOtherUser as any)?.primaryRole || activeOtherUser?.roles}
+                      className="text-[10px] px-1.5 py-0"
+                    />
                   </Link>
                 </div>
               </CardHeader>
@@ -452,13 +471,16 @@ function ChatContent() {
               <ChatMessages
                 scrollKey={messages.length}
                 emptyText="No messages yet. Say hello!"
-                className="px-4"
+                className="px-3 lg:px-4"
                 typingText={typingText}
               >
                 {msgLoading ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className={cn('flex', i % 2 === 0 ? 'justify-start' : 'justify-end')}>
+                      <div
+                        key={i}
+                        className={cn('flex', i % 2 === 0 ? 'justify-start' : 'justify-end')}
+                      >
                         <Skeleton className="h-12 w-48 rounded-lg" />
                       </div>
                     ))}
@@ -468,11 +490,18 @@ function ChatContent() {
                     const isMe = msg.sender?.id === currentUserId
                     return (
                       <ChatBubble key={msg.id} isOwn={isMe} isOptimistic={msg._optimistic}>
-                        <p className="text-sm whitespace-pre-wrap wrap-break-word">{msg.content}</p>
-                        <p className={cn(
-                          'text-[10px]',
-                          isMe ? 'text-primary-foreground/60' : 'text-muted-foreground',
-                        )}>
+                        {msg.content && msg.content !== '[image]' && (
+                          <p className="text-sm whitespace-pre-wrap wrap-break-word">
+                            {msg.content}
+                          </p>
+                        )}
+                        <MessageImages images={msg.images} />
+                        <p
+                          className={cn(
+                            'text-[10px]',
+                            isMe ? 'text-primary-foreground/60' : 'text-muted-foreground',
+                          )}
+                        >
                           {new Date(msg.createdAt).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -485,17 +514,17 @@ function ChatContent() {
               </ChatMessages>
 
               {/* Message Input */}
-              <div className="shrink-0 px-4 pb-4">
+              <div className="shrink-0 px-3 pb-3 lg:px-4 lg:pb-4">
                 <ChatInput
                   onSend={handleSendMessage}
-                  placeholder="Type a message... (Shift+Enter for new line)"
+                  placeholder="Type a message..."
                   sending={sending}
                   onTyping={notifyTyping}
                 />
               </div>
             </Card>
           ) : (
-            <Card className="flex-1 flex items-center justify-center">
+            <Card className="flex-1 flex items-center justify-center border-0 rounded-none shadow-none lg:border lg:rounded-xl lg:shadow-sm">
               <div className="text-center text-muted-foreground">
                 <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">Select a conversation to start chatting</p>

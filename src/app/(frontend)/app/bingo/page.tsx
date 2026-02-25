@@ -3,8 +3,10 @@
 import { useState, useMemo, Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { StatusBadge } from '@/components/ui/status-badge'
 import {
   AlertDialog,
@@ -20,13 +22,19 @@ import {
 import { LobbyPageSkeleton } from '@/components/ui/page-skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
-import { Grid3X3, Plus, X, Users, User } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Grid3X3, Plus, X, Users, User, Mail, LogIn, Loader2 } from 'lucide-react'
+import { CategoryIcon } from '@/components/bingo/CategoryIcon'
+import { toast } from 'sonner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function BingoLobbyContent() {
+  const router = useRouter()
   const { page: lobbyPage, setPage: setLobbyPage, buildUrl } = usePagination({ defaultLimit: 20, pageParam: 'p' })
   const { page: pastPage, setPage: setPastPage } = usePagination({ defaultLimit: 10, pageParam: 'past' })
+  const [inviteCode, setInviteCode] = useState('')
+  const [joiningByCode, setJoiningByCode] = useState(false)
 
   const { data: lobbyData } = useSWR(
     buildUrl('/api/bingo?where[isPublic][equals]=true&where[gameStatus][equals]=waiting&sort=-createdAt&depth=2'),
@@ -49,13 +57,63 @@ function BingoLobbyContent() {
     [allPastGames, pastPage],
   )
 
+  const handleJoinByCode = async () => {
+    const trimmed = inviteCode.trim().toUpperCase()
+    if (!trimmed) return
+
+    setJoiningByCode(true)
+    try {
+      const res = await fetch(`/api/bingo/join/${encodeURIComponent(trimmed)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to join game')
+        setJoiningByCode(false)
+        return
+      }
+
+      toast.success(data.message || 'Joined game!')
+      router.push(`/app/bingo/${data.gameId}`)
+    } catch {
+      toast.error('Failed to join game')
+      setJoiningByCode(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Bingo</h1>
-        <Link href="/app/bingo/create">
-          <Button><Plus className="h-4 w-4 mr-2" />Create Game</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Input
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              placeholder="Invite code"
+              className="w-28 h-9 text-center font-mono text-xs tracking-wider"
+              maxLength={8}
+              disabled={joiningByCode}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleJoinByCode()
+              }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleJoinByCode}
+              disabled={joiningByCode || !inviteCode.trim()}
+            >
+              {joiningByCode ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+            </Button>
+          </div>
+          <Link href="/app/bingo/create">
+            <Button size="sm"><Plus className="h-4 w-4 mr-2" />Create Game</Button>
+          </Link>
+        </div>
       </div>
 
       {/* My Active Games */}
@@ -118,6 +176,7 @@ function BingoLobbyContent() {
 
 function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onCancel?: () => void }) {
   const [cancelling, setCancelling] = useState(false)
+  const isPendingInvite = game.isPendingInvite
 
   const handleCancel = async () => {
     setCancelling(true)
@@ -130,16 +189,29 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
   }
 
   return (
-    <Card className={isMine ? 'border-primary/30' : ''}>
+    <Card className={isPendingInvite ? 'border-yellow-500/40' : isMine ? 'border-primary/30' : ''}>
       <CardContent className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-            <Grid3X3 className="h-5 w-5 text-muted-foreground" />
+          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${isPendingInvite ? 'bg-yellow-500/10' : 'bg-muted'}`}>
+            {isPendingInvite ? (
+              <Mail className="h-5 w-5 text-yellow-500" />
+            ) : (
+              <Grid3X3 className="h-5 w-5 text-muted-foreground" />
+            )}
           </div>
           <div>
-            <h3 className="font-semibold">{game.title}</h3>
-            <p className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold">{game.title}</h3>
+              {isPendingInvite && (
+                <Badge variant="outline" className="text-[10px] border-yellow-500/50 text-yellow-600 dark:text-yellow-400">
+                  Invite
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <CategoryIcon category={game.category} iconName={game.categoryIcon} className="h-3.5 w-3.5 shrink-0" />
               {game.category} &middot; {game.gridSize} &middot; {game.winCondition?.replace('_', ' ')}
+              {game.createdBy?.username && ` · by ${game.createdBy.username}`}
             </p>
           </div>
         </div>
@@ -149,7 +221,7 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
             {game.teams?.reduce((sum: number, t: any) => sum + (t.players?.length || 0), 0) || game.players || 0}/{game.mode === 'solo' ? 2 : 4}
           </div>
           <StatusBadge status={game.gameStatus} />
-          {isMine && game.gameStatus !== 'completed' && (
+          {isMine && !isPendingInvite && game.gameStatus !== 'completed' && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="ghost" disabled={cancelling}>
@@ -171,8 +243,8 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
             </AlertDialog>
           )}
           <Link href={`/app/bingo/${game.id}`}>
-            <Button size="sm" variant={isMine ? 'default' : 'outline'}>
-              {isMine ? 'Open' : 'Join'}
+            <Button size="sm" variant={isPendingInvite ? 'default' : isMine ? 'default' : 'outline'}>
+              {isPendingInvite ? 'View Invite' : isMine ? 'Open' : 'Join'}
             </Button>
           </Link>
         </div>

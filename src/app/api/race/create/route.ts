@@ -13,6 +13,7 @@ interface CreateRaceRequest {
   totalRounds: number
   server: { ip: string; port: number; name?: string }
   isPublic: boolean
+  invitedPlayerId?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -55,20 +56,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check active games limit
-    const { docs: existingGames } = await payload.find({
-      collection: 'races',
-      where: {
-        and: [
-          { createdBy: { equals: user.id } },
-          { status: { in: ['waiting', 'ready', 'in_progress'] } },
-        ],
-      },
-    })
-
-    if (existingGames.length >= MAX_ACTIVE_GAMES_PER_USER) {
+    // Block if user already has an active game (bingo or race)
+    if (user.activeGame) {
       return NextResponse.json(
-        { error: `You can only have ${MAX_ACTIVE_GAMES_PER_USER} active game(s) at a time` },
+        { error: 'You already have an active game. Finish or leave it before creating a new one.' },
         { status: 400 },
       )
     }
@@ -110,6 +101,32 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Send invite notification if a player was invited
+    let inviteSent = false
+    if (body.invitedPlayerId) {
+      try {
+        await payload.create({
+          collection: 'notifications',
+          data: {
+            recipient: body.invitedPlayerId,
+            type: 'game_invite',
+            title: 'Race Invite',
+            message: `${user.ingameNick || user.username} invited you to ${body.title}`,
+            actionUrl: `/app/race/${race.id}`,
+            relatedGame: { relationTo: 'races', value: race.id },
+            relatedUser: user.id,
+            metadata: {
+              gameType: 'race',
+              inviteCode: race.inviteCode,
+            },
+          },
+        })
+        inviteSent = true
+      } catch (inviteErr) {
+        console.error('[API] Error sending race invite notification:', inviteErr)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       race: {
@@ -118,6 +135,7 @@ export async function POST(req: NextRequest) {
         inviteCode: race.inviteCode,
         isPublic: race.isPublic,
       },
+      inviteSent,
     })
   } catch (error: unknown) {
     console.error('[API] Error creating race:', error)

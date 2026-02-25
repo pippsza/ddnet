@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/dialog'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
 import { Plus, Trash2, X, Pencil, Loader2 } from 'lucide-react'
+import { CategoryIcon, ICON_MAP } from '@/components/bingo/CategoryIcon'
+import { AVAILABLE_CATEGORY_ICONS } from '@/lib/ddnet-constants'
+import { cn } from '@/lib/utils'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -31,6 +34,7 @@ interface CustomCategory {
   name: string
   slug: string
   description?: string
+  icon?: string
   maps: ValidatedMap[]
 }
 
@@ -55,6 +59,7 @@ export default function AdminCategoriesPage() {
   // Form state
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [icon, setIcon] = useState('')
   const [maps, setMaps] = useState<ValidatedMap[]>([])
   const [mapInput, setMapInput] = useState('')
   const [validating, setValidating] = useState(false)
@@ -64,6 +69,7 @@ export default function AdminCategoriesPage() {
   const resetForm = () => {
     setName('')
     setDescription('')
+    setIcon('')
     setMaps([])
     setMapInput('')
     setError('')
@@ -73,6 +79,7 @@ export default function AdminCategoriesPage() {
     const cat = categories[index]
     setName(cat.name)
     setDescription(cat.description || '')
+    setIcon(cat.icon || '')
     setMaps([...cat.maps])
     setMapInput('')
     setError('')
@@ -151,6 +158,7 @@ export default function AdminCategoriesPage() {
         name: name.trim(),
         slug: editIndex !== null ? categories[editIndex].slug : slugify(name.trim()),
         description: description.trim() || undefined,
+        icon: icon || undefined,
         maps,
       }
 
@@ -234,6 +242,36 @@ export default function AdminCategoriesPage() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="A curated selection of maps"
         />
+      </div>
+
+      {/* Icon picker */}
+      <div>
+        <Label>Icon</Label>
+        <div className="flex flex-wrap gap-1.5 mt-1.5">
+          {AVAILABLE_CATEGORY_ICONS.map((iconName) => {
+            const IconComp = ICON_MAP[iconName]
+            if (!IconComp) return null
+            return (
+              <button
+                key={iconName}
+                type="button"
+                onClick={() => setIcon(icon === iconName ? '' : iconName)}
+                className={cn(
+                  'flex items-center justify-center h-8 w-8 rounded-md border transition-colors',
+                  icon === iconName
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-transparent hover:bg-muted text-muted-foreground',
+                )}
+                title={iconName}
+              >
+                <IconComp className="h-4 w-4" />
+              </button>
+            )
+          })}
+        </div>
+        {icon && (
+          <p className="text-xs text-muted-foreground mt-1">Selected: {icon}</p>
+        )}
       </div>
 
       <div>
@@ -354,19 +392,24 @@ export default function AdminCategoriesPage() {
         {categories.map((cat, index) => (
           <Card key={cat.slug}>
             <CardContent className="flex items-center justify-between p-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{cat.name}</h3>
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    {cat.slug}
-                  </Badge>
+              <div className="min-w-0 flex-1 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <CategoryIcon iconName={cat.icon} className="h-5 w-5 text-muted-foreground" />
                 </div>
-                {cat.description && (
-                  <p className="text-sm text-muted-foreground mt-0.5">{cat.description}</p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  {cat.maps?.length || 0} maps
-                </p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{cat.name}</h3>
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {cat.slug}
+                    </Badge>
+                  </div>
+                  {cat.description && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{cat.description}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {cat.maps?.length || 0} maps
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2 ml-4">
                 <Button variant="outline" size="sm" onClick={() => openEdit(index)}>

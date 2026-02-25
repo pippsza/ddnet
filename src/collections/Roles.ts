@@ -1,12 +1,30 @@
 import type { CollectionConfig } from 'payload'
 import { invalidateRoleCache } from '@/lib/permissions'
 
+export const ALL_PAGE_PERMISSIONS = [
+  'app_access',
+  'bingo',
+  'race',
+  'leaderboard',
+  'players',
+  'friends',
+  'online_players',
+  'chat',
+  'forum',
+  'articles',
+  'notifications',
+  'support',
+  'ingame_chat',
+] as const
+
+export type PagePermission = (typeof ALL_PAGE_PERMISSIONS)[number]
+
 export const Roles: CollectionConfig = {
   slug: 'roles',
   admin: {
     useAsTitle: 'name',
     group: 'System',
-    defaultColumns: ['name', 'displayName', 'priority', 'createdAt'],
+    defaultColumns: ['name', 'displayName', 'priority', 'isDefault', 'createdAt'],
   },
   access: {
     read: () => true,
@@ -15,6 +33,38 @@ export const Roles: CollectionConfig = {
     delete: ({ req }) => req.user?.roles === 'admin',
   },
   hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // If setting isDefault to true, clear isDefault on all other roles
+        if (data?.isDefault) {
+          const existing = await req.payload.find({
+            collection: 'roles',
+            where: { isDefault: { equals: true } },
+            limit: 100,
+            depth: 0,
+          })
+          for (const doc of existing.docs) {
+            if (operation === 'update' && doc.id === (data as any).id) continue
+            await req.payload.update({
+              collection: 'roles',
+              id: doc.id,
+              data: { isDefault: false },
+              depth: 0,
+              context: { skipDefaultCheck: true },
+            })
+          }
+        }
+        return data
+      },
+    ],
+    beforeDelete: [
+      async ({ id, req }) => {
+        const role = await req.payload.findByID({ collection: 'roles', id, depth: 0 })
+        if (role.isDefault) {
+          throw new Error('Cannot delete the default role')
+        }
+      },
+    ],
     afterChange: [() => invalidateRoleCache()],
     afterDelete: [() => invalidateRoleCache()],
   },
@@ -46,6 +96,14 @@ export const Roles: CollectionConfig = {
       },
     },
     {
+      name: 'isDefault',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Default role applied to all non-admin users. Only one role can be default.',
+      },
+    },
+    {
       name: 'badgeColor',
       type: 'text',
       required: true,
@@ -67,6 +125,26 @@ export const Roles: CollectionConfig = {
       name: 'permissions',
       type: 'group',
       fields: [
+        {
+          name: 'pages',
+          type: 'select',
+          hasMany: true,
+          options: [
+            { label: 'App Access', value: 'app_access' },
+            { label: 'Bingo', value: 'bingo' },
+            { label: 'Race', value: 'race' },
+            { label: 'Leaderboard', value: 'leaderboard' },
+            { label: 'Players', value: 'players' },
+            { label: 'Friends', value: 'friends' },
+            { label: 'Online Players', value: 'online_players' },
+            { label: 'Chat', value: 'chat' },
+            { label: 'Forum', value: 'forum' },
+            { label: 'Articles', value: 'articles' },
+            { label: 'Notifications', value: 'notifications' },
+            { label: 'Support', value: 'support' },
+            { label: 'Ingame Chat', value: 'ingame_chat' },
+          ],
+        },
         {
           name: 'articles',
           type: 'select',
@@ -124,6 +202,7 @@ export const Roles: CollectionConfig = {
             { label: 'Tickets', value: 'tickets' },
             { label: 'Stats', value: 'stats' },
             { label: 'Role Management', value: 'roles' },
+            { label: 'Manage Users', value: 'manage_users' },
           ],
         },
       ],

@@ -77,6 +77,7 @@ export async function GET(
       return {
         id: msg.id,
         content: msg.content,
+        images: msg.images,
         sender: sender
           ? {
               id: sender.id,

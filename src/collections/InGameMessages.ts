@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPageAccess } from '@/lib/permissions'
 
 export const InGameMessages: CollectionConfig = {
   slug: 'in-game-messages',
@@ -8,8 +9,9 @@ export const InGameMessages: CollectionConfig = {
     description: 'Archived messages from in-game chat sessions',
   },
   access: {
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'ingame_chat'))) return false
       if (req.user.roles === 'admin') return true
       return true // Enforced at API level via session ownership
     },

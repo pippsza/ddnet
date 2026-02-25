@@ -66,6 +66,8 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  if (!status) return null
+
   const config = STATUS_MAP[status]
 
   if (!config) {

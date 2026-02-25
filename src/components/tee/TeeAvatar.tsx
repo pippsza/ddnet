@@ -280,29 +280,21 @@ export function TeeAvatar({
           })
         }
 
-        // Don't pass container in constructor when mirrored — setContainer is async
-        // (loads image, then calculates eye positions via getBoundingClientRect).
-        // If scaleX(-1) is applied before that calculation, the flipped coordinates
-        // cause the library to counteract the flip for the eyes.
+        // Always create without container, then await setContainer.
+        // This ensures the async image load + eye positioning is properly
+        // caught by try-catch if the component unmounts mid-init.
+        const tee = new window.TeeAssembler.Tee(options)
+        teeRef.current = tee
+
+        if (!containerRef.current) return
+        await tee.api.functions.setContainer(containerRef.current)
+
+        if (!containerRef.current) return
         if (mirrored) {
-          const tee = new window.TeeAssembler.Tee(options)
-          teeRef.current = tee
-          // Await the full init (image load + eye positioning) with no transforms
-          // Guard: container may unmount before async setContainer completes
-          if (!containerRef.current) return
-          await tee.api.functions.setContainer(containerRef.current)
-          // NOW safe to flip — all getBoundingClientRect calculations are done
-          if (containerRef.current) {
-            containerRef.current.style.transform = 'scaleX(-1)'
-          }
-        } else {
-          if (!containerRef.current) return
-          options.container = containerRef.current
-          const tee = new window.TeeAssembler.Tee(options)
-          teeRef.current = tee
-          if (lookAtCursor) {
-            tee.api.functions.lookAtCursor()
-          }
+          containerRef.current.style.transform = 'scaleX(-1)'
+        }
+        if (lookAtCursor && !mirrored) {
+          tee.api.functions.lookAtCursor()
         }
 
         // Apply eye type after tee is fully initialized

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPageAccess } from '@/lib/permissions'
 
 export const Conversations: CollectionConfig = {
   slug: 'conversations',
@@ -7,14 +8,18 @@ export const Conversations: CollectionConfig = {
     defaultColumns: ['participants', 'lastMessage', 'lastMessageAt'],
   },
   access: {
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'chat'))) return false
       if (req.user.roles === 'admin') return true
       return {
         'participants.user': { equals: req.user.id },
       }
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'chat')
+    },
     update: ({ req }) => {
       if (!req.user) return false
       if (req.user.roles === 'admin') return true

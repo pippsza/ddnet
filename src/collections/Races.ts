@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, hasPageAccess } from '@/lib/permissions'
 import { GAME_STATUSES } from '@/lib/ddnet-constants'
 import { validateCategory } from '@/lib/category-helpers'
 
@@ -12,15 +12,23 @@ export const Races: CollectionConfig = {
     description: 'Race game sessions',
   },
   access: {
-    read: () => true,
-    create: ({ req }) => !!req.user,
+    read: async ({ req }) => {
+      if (req.user && !(await hasPageAccess(req, 'race'))) return false
+      return true
+    },
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'race')
+    },
     update: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'race'))) return false
       if (await hasPermission(req, 'games', 'edit_any')) return true
       return { createdBy: { equals: req.user.id } }
     },
     delete: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'race'))) return false
       return hasPermission(req, 'games', 'delete_any')
     },
   },

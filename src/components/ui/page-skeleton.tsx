@@ -285,7 +285,7 @@ export function FriendsPageSkeleton() {
 
 export function LobbyPageSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="y-6 animate-in fade-in duration-300">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-24" />

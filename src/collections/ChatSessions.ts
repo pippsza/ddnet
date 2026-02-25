@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPageAccess } from '@/lib/permissions'
 
 export const ChatSessions: CollectionConfig = {
   slug: 'chat-sessions',
@@ -8,8 +9,9 @@ export const ChatSessions: CollectionConfig = {
     description: 'In-game chat sessions between users via bot relay',
   },
   access: {
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'ingame_chat'))) return false
       if (req.user.roles === 'admin') return true
       return {
         or: [
@@ -18,7 +20,10 @@ export const ChatSessions: CollectionConfig = {
         ],
       } as any
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'ingame_chat')
+    },
     update: ({ req }) => {
       if (!req.user) return false
       if (req.user.roles === 'admin') return true

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPageAccess } from '@/lib/permissions'
 
 export const WatchedPlayers: CollectionConfig = {
   slug: 'watched-players',
@@ -8,12 +9,16 @@ export const WatchedPlayers: CollectionConfig = {
     description: 'Player watchlist for online status tracking',
   },
   access: {
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'online_players'))) return false
       if (req.user.roles === 'admin') return true
       return { user: { equals: req.user.id } }
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'online_players')
+    },
     update: ({ req }) => {
       if (!req.user) return false
       if (req.user.roles === 'admin') return true

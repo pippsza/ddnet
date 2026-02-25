@@ -12,6 +12,7 @@ import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { LexicalContent } from '@/components/ui/LexicalContent'
 import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
+import { MessageImages } from '@/components/chat/MessageImages'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { Eye, MessageSquare, Pin, Lock, EyeOff, ArrowLeft } from 'lucide-react'
@@ -87,13 +88,15 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  const handleReply = async (content: any) => {
-    if (!content) return
+  const handleReply = async (content: any, images?: string[]) => {
+    const hasImages = images && images.length > 0
+    if (!content && !hasImages) return
 
     const optimisticReply = {
       author: meData?.user || { id: currentUserId },
       content,
       createdAt: new Date().toISOString(),
+      ...(hasImages && { images: images.map((imgId) => ({ image: { id: imgId, url: '' } })) }),
     }
 
     setSending(true)
@@ -103,7 +106,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
           await fetch(`/api/forum/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({ content, ...(hasImages && { images }) }),
           })
           const res = await fetch(`/api/forum/${id}`)
           return await res.json()
@@ -238,6 +241,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
               header={<MessageHeader user={replyAuthor} timestamp={r.createdAt} isOwn={isOwn} />}
             >
               <LexicalContent content={r.content} />
+              <MessageImages images={r.images} />
             </ChatBubble>
           )
         })}

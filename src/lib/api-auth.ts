@@ -5,7 +5,7 @@ import { hasPermission, isAdmin } from '@/lib/permissions'
 import type { User } from '@/payload-types'
 import type { PayloadRequest } from 'payload'
 
-interface AuthResult {
+export interface AuthResult {
   user: User
   payload: Awaited<ReturnType<typeof getPayload>>
 }
@@ -38,7 +38,7 @@ export async function requireAdminPage(
  */
 export async function requirePermission(
   req: NextRequest,
-  category: 'articles' | 'support' | 'forum' | 'games' | 'adminPages',
+  category: 'pages' | 'articles' | 'support' | 'forum' | 'games' | 'adminPages',
   permission: string,
 ): Promise<AuthResult | NextResponse> {
   const payload = await getPayload({ config })
@@ -53,4 +53,15 @@ export async function requirePermission(
   if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   return { user: typedUser, payload }
+}
+
+/**
+ * Require access to a specific page feature.
+ * Returns { user, payload } on success, or a NextResponse error.
+ */
+export async function requirePageAccess(
+  req: NextRequest,
+  page: string,
+): Promise<AuthResult | NextResponse> {
+  return requirePermission(req, 'pages', page)
 }

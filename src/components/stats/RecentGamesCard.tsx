@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CategoryIcon } from '@/components/bingo/CategoryIcon'
 import type { GameHistoryItem } from '@/hooks/use-game-stats'
 
 interface RecentGamesCardProps {
@@ -42,7 +43,10 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
                   </span>
                   <div className="min-w-0">
                     <span className="text-sm font-medium truncate block">{game.title}</span>
-                    <span className="text-xs text-muted-foreground capitalize">{game.category}</span>
+                    <span className="text-xs text-muted-foreground capitalize flex items-center gap-1">
+                      <CategoryIcon category={game.category} className="h-3 w-3" />
+                      {game.category}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

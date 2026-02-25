@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Bingo, User } from '@/payload-types'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
@@ -33,9 +32,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
       return NextResponse.json({ error: 'Only game creator can start the game' }, { status: 403 })
     }
 
-    // Check if game is ready
-    if (game.gameStatus !== 'ready') {
-      return NextResponse.json({ error: 'Game is not ready to start' }, { status: 400 })
+    // Allow starting from waiting or ready status
+    if (game.gameStatus !== 'ready' && game.gameStatus !== 'waiting') {
+      return NextResponse.json({ error: 'Game cannot be started in its current state' }, { status: 400 })
+    }
+
+    // Validate all teams have at least 1 player
+    for (const team of game.teams) {
+      if (!team.players || team.players.length === 0) {
+        return NextResponse.json(
+          { error: `${team.teamName} has no players` },
+          { status: 400 },
+        )
+      }
+    }
+
+    // Validate all non-creator players are ready
+    for (const team of game.teams) {
+      for (const p of team.players ?? []) {
+        const pid = typeof p.user === 'string' ? p.user : p.user.id
+        if (pid !== user.id && !p.isReady) {
+          return NextResponse.json(
+            { error: 'Not all players are ready' },
+            { status: 400 },
+          )
+        }
+      }
     }
 
     // Update game status to in_progress

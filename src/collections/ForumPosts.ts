@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, hasPageAccess } from '@/lib/permissions'
 
 /**
  * Forum Posts Collection
@@ -14,19 +14,25 @@ export const ForumPosts: CollectionConfig = {
   },
   access: {
     read: async ({ req }) => {
+      if (req.user && !(await hasPageAccess(req, 'forum'))) return false
       if (req.user && (await hasPermission(req, 'forum', 'view_hidden'))) {
         return true
       }
       return { status: { equals: 'published' } }
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'forum')
+    },
     update: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'forum'))) return false
       if (await hasPermission(req, 'forum', 'edit_any')) return true
       return { author: { equals: req.user.id } }
     },
     delete: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'forum'))) return false
       if (await hasPermission(req, 'forum', 'delete_any')) return true
       return { author: { equals: req.user.id } }
     },
@@ -165,6 +171,18 @@ export const ForumPosts: CollectionConfig = {
           admin: {
             readOnly: true,
           },
+        },
+        {
+          name: 'images',
+          type: 'array',
+          fields: [
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              required: true,
+            },
+          ],
         },
         {
           name: 'likes',

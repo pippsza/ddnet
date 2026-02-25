@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, hasPageAccess } from '@/lib/permissions'
 
 export const Support: CollectionConfig = {
   slug: 'support',
@@ -11,10 +11,14 @@ export const Support: CollectionConfig = {
   access: {
     read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'support'))) return false
       if (await hasPermission(req, 'support', 'view_all')) return true
       return { createdBy: { equals: req.user.id } }
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'support')
+    },
     update: async ({ req }) => {
       if (!req.user) return false
       return hasPermission(req, 'support', 'change_status')
@@ -171,6 +175,18 @@ export const Support: CollectionConfig = {
               },
             ],
           },
+        },
+        {
+          name: 'images',
+          type: 'array',
+          fields: [
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              required: true,
+            },
+          ],
         },
         {
           name: 'timestamp',

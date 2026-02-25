@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, hasPageAccess } from '@/lib/permissions'
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -14,6 +14,7 @@ export const Articles: CollectionConfig = {
   },
   access: {
     read: async ({ req }) => {
+      if (req.user && !(await hasPageAccess(req, 'articles'))) return false
       if (req.user && (await hasPermission(req, 'articles', 'view_drafts'))) {
         return true
       }
@@ -22,16 +23,19 @@ export const Articles: CollectionConfig = {
 
     create: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'articles'))) return false
       return hasPermission(req, 'articles', 'create')
     },
 
     update: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'articles'))) return false
       return hasPermission(req, 'articles', 'edit')
     },
 
     delete: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'articles'))) return false
       return hasPermission(req, 'articles', 'delete')
     },
   },

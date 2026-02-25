@@ -12,10 +12,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { conversationId, content } = body
+    const { conversationId, content, images } = body
+    const hasImages = Array.isArray(images) && images.length > 0
 
-    if (!conversationId || !content?.trim()) {
-      return NextResponse.json({ error: 'conversationId and content are required' }, { status: 400 })
+    if (!conversationId || (!content?.trim() && !hasImages)) {
+      return NextResponse.json({ error: 'conversationId and content or images are required' }, { status: 400 })
     }
 
     // Verify user is participant
@@ -41,20 +42,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Create message
+    const messageText = (content || '').trim()
+    const imageData = hasImages
+      ? images.map((id: string) => ({ image: id }))
+      : undefined
+
     const message = await payload.create({
       collection: 'messages',
       data: {
         conversation: conversationId,
         sender: user.id,
-        content: content.trim(),
+        content: messageText || (hasImages ? '[image]' : ''),
         isRead: false,
+        ...(imageData && { images: imageData }),
       },
     })
 
     // Update conversation with last message info
-    const preview = content.trim().length > 100
-      ? content.trim().slice(0, 100) + '...'
-      : content.trim()
+    const previewText = messageText || (hasImages ? '[image]' : '')
+    const preview = previewText.length > 100
+      ? previewText.slice(0, 100) + '...'
+      : previewText
 
     await payload.update({
       collection: 'conversations',

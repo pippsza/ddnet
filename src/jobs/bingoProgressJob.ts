@@ -64,7 +64,7 @@ export async function checkBingoProgress(gameId: string) {
       const team = game.teams[teamIndex]
       const completedPositions = new Set((team.completedCells || []).map((c) => c.cellPosition))
 
-      for (const playerObj of team.players) {
+      for (const playerObj of team.players ?? []) {
         const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
         if (!playerUser) continue
 
@@ -167,7 +167,7 @@ async function updatePlayerStats(game: Bingo) {
     const team = game.teams[teamIndex]
     const won = team.teamStatus === 'winner'
 
-    for (const playerObj of team.players) {
+    for (const playerObj of team.players ?? []) {
       try {
         const userId = typeof playerObj.user === 'string' ? playerObj.user : playerObj.user.id
         const user = await payload.findByID({ collection: 'users', id: userId })

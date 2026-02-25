@@ -12,18 +12,23 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
+import { CategoryIcon } from '@/components/bingo/CategoryIcon'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface CategorySelectProps {
   name: string
   defaultValue?: string
+  value?: string
+  disabled?: boolean
   onValueChange?: (value: string, mapCount: number | null) => void
 }
 
 export function CategorySelect({
   name,
   defaultValue = 'novice',
+  value,
+  disabled,
   onValueChange,
 }: CategorySelectProps) {
   const { data } = useSWR('/api/globals/custom-categories', fetcher)
@@ -36,7 +41,7 @@ export function CategorySelect({
   }
 
   return (
-    <Select name={name} defaultValue={defaultValue} onValueChange={handleValueChange}>
+    <Select name={name} value={value} defaultValue={value ? undefined : defaultValue} onValueChange={handleValueChange} disabled={disabled}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
@@ -45,7 +50,10 @@ export function CategorySelect({
           <SelectLabel>Standard Categories</SelectLabel>
           {DDNET_CATEGORIES.map((cat) => (
             <SelectItem key={cat.value} value={cat.value}>
-              {cat.label}
+              <span className="flex items-center gap-2">
+                <CategoryIcon category={cat.value} className="h-4 w-4 text-muted-foreground" />
+                {cat.label}
+              </span>
             </SelectItem>
           ))}
         </SelectGroup>
@@ -56,7 +64,10 @@ export function CategorySelect({
               <SelectLabel>Custom Categories</SelectLabel>
               {customCategories.map((cat: any) => (
                 <SelectItem key={cat.slug} value={cat.slug}>
-                  {cat.name}
+                  <span className="flex items-center gap-2">
+                    <CategoryIcon iconName={cat.icon} className="h-4 w-4 text-muted-foreground" />
+                    {cat.name}
+                  </span>
                 </SelectItem>
               ))}
             </SelectGroup>

@@ -37,7 +37,17 @@
       "Bash(docker images bingo-bot:latest --format '{{.Size}}')",
       "Bash(docker images node:22.17.0-alpine --format '{{.Size}}')",
       "Bash(docker run --rm node:22.17.0-alpine sh -c \"apk info --size docker-cli 2>/dev/null\")",
-      "Bash(grep -r \"process.env\" /home/pippsza/code/ddnet/.env*)"
+      "Bash(grep -r \"process.env\" /home/pippsza/code/ddnet/.env*)",
+      "WebFetch(domain:master1.ddnet.org)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/admin/roles/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/layout.tsx)",
+      "Bash(cat \"/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/forum/[id]/page.tsx\")",
+      "Bash(cat \"/home/pippsza/code/ddnet/src/app/\\(frontend\\)/app/chat/page.tsx\")",
+      "Bash(npm cache clean --force)",
+      "Bash(npm logout)",
+      "Read(//home/pippsza/**)",
+      "Bash(npm config list)",
+      "Bash(xargs -I {} cat ~/.npm/_logs/{})"
     ],
     "additionalDirectories": [
       "/tmp",
@@ -50,7 +60,9 @@
       "/home/pippsza/code/ddnet/src/app/(frontend)/app/articles/[slug]",
       "/home/pippsza/code/ddnet/src/app/(frontend)/support",
       "/home/pippsza/code/ddnet/src/app/api/articles/[id]",
-      "/home/pippsza/code/ddnet/src/app/api/watched-players"
+      "/home/pippsza/code/ddnet/src/app/api/watched-players",
+      "/home/pippsza/code/ddnet/src/app/(frontend)/app/bingo/join",
+      "/home/pippsza/code/ddnet/src/app/api/bingo/[gameId]"
     ]
   }
 }

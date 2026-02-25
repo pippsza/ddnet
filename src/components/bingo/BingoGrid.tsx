@@ -1,6 +1,18 @@
 'use client'
 
+import { useRef, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const TEAM_HEX: Record<string, string> = {
+  red: '#ef4444',
+  blue: '#3b82f6',
+  green: '#22c55e',
+  yellow: '#eab308',
+  purple: '#a855f7',
+  orange: '#f97316',
+}
 
 interface BingoGridProps {
   size: number
@@ -9,82 +21,167 @@ interface BingoGridProps {
     color: string
     completedCells?: { position: number; completedAt?: string }[]
   }[]
+  winnerTeamIndex?: number | null
+  winningCells?: number[]
+  gameStatus?: string
 }
 
-const colorMap: Record<string, { bg: string; border: string }> = {
-  red: { bg: 'bg-red-500/20', border: 'border-red-500/50' },
-  blue: { bg: 'bg-blue-500/20', border: 'border-blue-500/50' },
-  green: { bg: 'bg-green-500/20', border: 'border-green-500/50' },
-  yellow: { bg: 'bg-yellow-500/20', border: 'border-yellow-500/50' },
-  purple: { bg: 'bg-purple-500/20', border: 'border-purple-500/50' },
-  orange: { bg: 'bg-orange-500/20', border: 'border-orange-500/50' },
-}
+export function BingoGrid({
+  size,
+  maps,
+  teams,
+  winnerTeamIndex,
+  winningCells,
+  gameStatus,
+}: BingoGridProps) {
+  const mapLookup = useMemo(() => {
+    const m = new Map<number, string>()
+    maps.forEach((mp) => m.set(mp.position, mp.mapName))
+    return m
+  }, [maps])
 
-const colorFills: Record<string, string> = {
-  red: 'bg-red-500',
-  blue: 'bg-blue-500',
-  green: 'bg-green-500',
-  yellow: 'bg-yellow-500',
-  purple: 'bg-purple-500',
-  orange: 'bg-orange-500',
-}
+  const team1Cells = useMemo(
+    () => new Set(teams[0]?.completedCells?.map((c) => c.position) || []),
+    [teams],
+  )
+  const team2Cells = useMemo(
+    () => new Set(teams[1]?.completedCells?.map((c) => c.position) || []),
+    [teams],
+  )
 
-export function BingoGrid({ size, maps, teams }: BingoGridProps) {
-  const mapLookup = new Map<number, string>()
-  maps.forEach((m) => mapLookup.set(m.position, m.mapName))
+  const winCellSet = useMemo(() => new Set(winningCells || []), [winningCells])
 
-  const team1Cells = new Set(teams[0]?.completedCells?.map((c) => c.position) || [])
-  const team2Cells = new Set(teams[1]?.completedCells?.map((c) => c.position) || [])
+  // Track previous completed cells to detect new completions
+  const prevCellsRef = useRef<{ t1: Set<number>; t2: Set<number> }>({
+    t1: new Set(),
+    t2: new Set(),
+  })
+  const newlyCompleted = useMemo(() => {
+    const newCells = new Set<number>()
+    team1Cells.forEach((c) => {
+      if (!prevCellsRef.current.t1.has(c)) newCells.add(c)
+    })
+    team2Cells.forEach((c) => {
+      if (!prevCellsRef.current.t2.has(c)) newCells.add(c)
+    })
+    return newCells
+  }, [team1Cells, team2Cells])
 
-  const getTeamIndex = (position: number): number | null => {
-    if (team1Cells.has(position)) return 0
-    if (team2Cells.has(position)) return 1
-    return null
-  }
+  useEffect(() => {
+    prevCellsRef.current = { t1: new Set(team1Cells), t2: new Set(team2Cells) }
+  }, [team1Cells, team2Cells])
+
+  const isCompleted = gameStatus === 'completed' || gameStatus === 'cancelled'
+  const team1Hex = TEAM_HEX[teams[0]?.color] || '#ef4444'
+  const team2Hex = TEAM_HEX[teams[1]?.color] || '#3b82f6'
 
   return (
     <div
-      className="grid gap-2 w-full max-w-2xl mx-auto"
-      style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+      className="grid gap-0.5 sm:gap-1 w-full max-h-full"
+      style={{
+        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+        gridTemplateRows: `repeat(${size}, minmax(0, 1fr))`,
+        aspectRatio: '1',
+        maxWidth: '100%',
+      }}
     >
       {Array.from({ length: size * size }, (_, i) => {
-        const teamIdx = getTeamIndex(i)
-        const isCompleted = teamIdx !== null
-        const teamColor = teamIdx !== null ? teams[teamIdx]?.color : null
         const mapName = mapLookup.get(i) || '?'
+        const t1 = team1Cells.has(i)
+        const t2 = team2Cells.has(i)
+        const bothTeams = t1 && t2
+        const anyTeam = t1 || t2
+        const isWinCell = isCompleted && winCellSet.has(i)
+        const isNew = newlyCompleted.has(i)
+
+        // Determine cell background
+        let cellStyle: React.CSSProperties = {}
+
+        if (isCompleted) {
+          // After game ends, use CSS primary accent for all completed cells
+        } else if (bothTeams) {
+          cellStyle.background = `linear-gradient(to bottom, ${team1Hex}33 0%, ${team1Hex}33 50%, ${team2Hex}33 50%, ${team2Hex}33 100%)`
+          cellStyle.borderColor = `${team1Hex}80`
+        } else if (t1) {
+          cellStyle.backgroundColor = team1Hex + '30'
+          cellStyle.borderColor = team1Hex + '80'
+        } else if (t2) {
+          cellStyle.backgroundColor = team2Hex + '30'
+          cellStyle.borderColor = team2Hex + '80'
+        }
 
         return (
-          <div
+          <motion.div
             key={i}
+            animate={isNew ? { scale: [1, 1.12, 1] } : isWinCell ? { opacity: [0.7, 1, 0.7] } : {}}
+            transition={
+              isNew
+                ? { duration: 0.4, ease: 'easeOut' }
+                : isWinCell
+                  ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
+                  : {}
+            }
             className={cn(
-              'aspect-square flex flex-col items-center justify-center rounded-lg border-2 p-1.5 text-center transition-all duration-300 relative overflow-hidden',
-              isCompleted
-                ? cn(
-                    colorMap[teamColor || 'blue']?.bg || 'bg-blue-500/20',
-                    colorMap[teamColor || 'blue']?.border || 'border-blue-500/50',
-                  )
-                : 'border-border bg-muted/30 hover:bg-muted/60 hover:border-muted-foreground/30',
+              'flex items-center justify-center rounded-md border p-0.5 text-center relative overflow-hidden transition-colors duration-300',
+              !anyTeam && !isCompleted && 'border-border bg-muted/30',
+              isWinCell && 'shadow-lg border-2 bg-primary border-primary',
+              isCompleted && !isWinCell && anyTeam && 'bg-primary/20 border-primary/40',
+              isCompleted && !anyTeam && 'border-border bg-muted/30',
+              !isCompleted && !isWinCell && 'border',
             )}
+            style={cellStyle}
           >
-            {/* Completed indicator */}
-            {isCompleted && (
-              <div className={cn(
-                'absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center',
-                colorFills[teamColor || 'blue'] || 'bg-blue-500',
-              )}>
-                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            {/* Completed checkmark dot */}
+            {anyTeam && !isCompleted && (
+              <div
+                className="absolute top-0.5 right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center"
+                style={{
+                  backgroundColor: bothTeams ? team1Hex : t1 ? team1Hex : team2Hex,
+                }}
+              >
+                <svg
+                  className="w-1 h-1 sm:w-1.5 sm:h-1.5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             )}
 
-            <span className={cn(
-              'text-[10px] sm:text-xs font-medium leading-tight line-clamp-2',
-              isCompleted ? 'text-foreground' : 'text-muted-foreground',
-            )}>
-              {mapName}
-            </span>
-          </div>
+            {/* Second team dot for both-completed cells */}
+            {bothTeams && !isCompleted && (
+              <div
+                className="absolute top-0.5 left-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: team2Hex }}
+              >
+                <svg
+                  className="w-1 h-1 sm:w-1.5 sm:h-1.5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
+
+            {isWinCell ? (
+              <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary-foreground" />
+            ) : (
+              <span
+                className={cn(
+                  'text-[7px] sm:text-[9px] font-medium leading-tight line-clamp-2',
+                  anyTeam ? 'text-foreground' : 'text-muted-foreground',
+                )}
+              >
+                {mapName}
+              </span>
+            )}
+          </motion.div>
         )
       })}
     </div>

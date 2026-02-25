@@ -32,10 +32,11 @@ export async function POST(
     const { user, payload } = result
 
     const body = await req.json()
-    const { message } = body
+    const { message, images } = body
+    const hasImages = Array.isArray(images) && images.length > 0
 
-    if (!message?.trim()) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+    if (!message?.trim() && !hasImages) {
+      return NextResponse.json({ error: 'Message or images required' }, { status: 400 })
     }
 
     const ticket = await payload.findByID({
@@ -49,12 +50,17 @@ export async function POST(
     }
 
     const isStaff = true // User passed requirePermission('support', 'reply')
+    const imageData = hasImages
+      ? images.map((id: string) => ({ image: id }))
+      : undefined
+
     const responses = ticket.responses || []
     responses.push({
-      message: textToLexical(message.trim()),
+      message: message?.trim() ? textToLexical(message.trim()) : textToLexical(' '),
       author: user.id,
       isStaffResponse: isStaff,
       timestamp: new Date().toISOString(),
+      ...(imageData && { images: imageData }),
     })
 
     const updated = await payload.update({

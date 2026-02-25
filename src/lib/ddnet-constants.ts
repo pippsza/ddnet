@@ -5,15 +5,23 @@
  */
 
 export const DDNET_CATEGORIES = [
-  { label: 'Novice', value: 'novice' },
-  { label: 'Moderate', value: 'moderate' },
-  { label: 'Brutal', value: 'brutal' },
-  { label: 'Insane', value: 'insane' },
-  { label: 'Dummy', value: 'dummy' },
-  { label: 'DDmaX', value: 'ddmax' },
-  { label: 'Oldschool', value: 'oldschool' },
-  { label: 'Solo', value: 'solo_maps' },
-  { label: 'Race', value: 'race' },
+  { label: 'Novice', value: 'novice', icon: 'Sprout' },
+  { label: 'Moderate', value: 'moderate', icon: 'Mountain' },
+  { label: 'Brutal', value: 'brutal', icon: 'Flame' },
+  { label: 'Insane', value: 'insane', icon: 'Skull' },
+  { label: 'Dummy', value: 'dummy', icon: 'Bot' },
+  { label: 'DDmaX', value: 'ddmax', icon: 'Crown' },
+  { label: 'Oldschool', value: 'oldschool', icon: 'Clock' },
+  { label: 'Solo', value: 'solo_maps', icon: 'User' },
+  { label: 'Race', value: 'race', icon: 'Timer' },
+]
+
+export const AVAILABLE_CATEGORY_ICONS = [
+  'Sprout', 'Mountain', 'Flame', 'Skull', 'Bot', 'Crown', 'Clock', 'User', 'Timer',
+  'Star', 'Heart', 'Gem', 'Trophy', 'Target', 'Puzzle',
+  'Gamepad2', 'Sword', 'Shield', 'Rocket', 'Globe',
+  'Compass', 'Crosshair', 'Dice1', 'Music', 'BookOpen',
+  'Palette', 'Sparkles', 'Zap', 'Map',
 ]
 
 export const DDNET_SUBCATEGORIES = [

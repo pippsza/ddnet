@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, hasPageAccess } from '@/lib/permissions'
 import {
   DDNET_SUBCATEGORIES,
   BINGO_MODES,
@@ -36,14 +36,22 @@ export const Bingo: CollectionConfig = {
     defaultColumns: ['title', 'mode', 'category', 'status', 'createdAt'],
   },
   access: {
-    read: () => true,
+    read: async ({ req }) => {
+      if (req.user && !(await hasPageAccess(req, 'bingo'))) return false
+      return true
+    },
     update: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'bingo'))) return false
       return hasPermission(req, 'games', 'edit_any')
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'bingo')
+    },
     delete: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'bingo'))) return false
       return hasPermission(req, 'games', 'delete_any')
     },
   },
@@ -237,12 +245,10 @@ export const Bingo: CollectionConfig = {
         {
           name: 'players',
           type: 'array',
-          required: true,
-          minRows: 1,
           maxRows: 2,
           label: 'Players',
           admin: {
-            description: 'Each team must have 1-2 players. Only players in team receive tokens.',
+            description: 'Each team can have 0-2 players. Validated at game start.',
           },
           fields: [
             {
@@ -257,6 +263,25 @@ export const Bingo: CollectionConfig = {
               type: 'checkbox',
               defaultValue: false,
               label: 'Ready Status',
+            },
+          ],
+        },
+        {
+          name: 'pendingInvites',
+          type: 'array',
+          label: 'Pending Invites',
+          fields: [
+            {
+              name: 'user',
+              type: 'relationship',
+              relationTo: 'users',
+              required: true,
+              label: 'Invited Player',
+            },
+            {
+              name: 'invitedAt',
+              type: 'date',
+              label: 'Invited At',
             },
           ],
         },
@@ -328,6 +353,15 @@ export const Bingo: CollectionConfig = {
       label: 'Duration (minutes)',
       admin: {
         description: 'Calculated automatically',
+      },
+    },
+    {
+      name: 'rematchGame',
+      type: 'relationship',
+      relationTo: 'bingo',
+      label: 'Rematch Game',
+      admin: {
+        description: 'Reference to the rematch game created from this one',
       },
     },
   ],

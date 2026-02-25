@@ -48,7 +48,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
     }
 
     // Toggle ready status
-    const player = game.teams[playerTeamIndex].players[playerIndex]
+    const teamPlayers = game.teams[playerTeamIndex].players ?? []
+    const player = teamPlayers[playerIndex]
     player.isReady = !player.isReady
 
     // Check if all players in all teams are ready
@@ -56,14 +57,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
     let totalPlayers = 0
 
     for (const team of game.teams) {
-      if (team.players.length === 0) {
+      const players = team.players ?? []
+      if (players.length === 0) {
         allReady = false
         break
       }
 
-      totalPlayers += team.players.length
+      totalPlayers += players.length
 
-      for (const p of team.players) {
+      for (const p of players) {
         if (!p.isReady) {
           allReady = false
           break
@@ -83,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
 
       let canStart = true
       for (const team of game.teams) {
-        if (game.mode === 'team' && team.players.length < minPlayersPerTeam) {
+        if (game.mode === 'team' && (team.players ?? []).length < minPlayersPerTeam) {
           canStart = false
           break
         }

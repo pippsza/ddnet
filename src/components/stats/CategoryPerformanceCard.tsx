@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getCategoryColor } from '@/lib/chart-constants'
+import { CategoryIcon } from '@/components/bingo/CategoryIcon'
 
 interface CategoryPerformanceCardProps {
   categoryStats: Record<string, { wins: number; losses: number; total: number }>
@@ -24,10 +25,7 @@ export function CategoryPerformanceCard({ categoryStats }: CategoryPerformanceCa
             <div key={category} className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-xs"
-                    style={{ backgroundColor: color }}
-                  />
+                  <CategoryIcon category={category} className="h-3.5 w-3.5 shrink-0" style={{ color }} />
                   <span className="font-medium capitalize">{category}</span>
                 </div>
                 <span className="text-muted-foreground text-xs">

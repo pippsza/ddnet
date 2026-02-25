@@ -107,19 +107,27 @@ export async function POST(
     }
 
     const body = await req.json()
-    const { content } = body
+    const { content, images } = body
+    const hasImages = Array.isArray(images) && images.length > 0
 
-    if (!content) {
+    if (!content && !hasImages) {
       return NextResponse.json({ error: 'Reply content is required' }, { status: 400 })
     }
 
     // Accept both Lexical JSON and plain text string
-    const lexicalContent = typeof content === 'string' ? textToLexical(content.trim()) : content
+    const lexicalContent = content
+      ? (typeof content === 'string' ? textToLexical(content.trim()) : content)
+      : undefined
+
+    const imageData = hasImages
+      ? images.map((id: string) => ({ image: id }))
+      : undefined
 
     const replies = post.replies || []
     replies.push({
       author: user.id,
-      content: lexicalContent,
+      ...(lexicalContent && { content: lexicalContent }),
+      ...(imageData && { images: imageData }),
       createdAt: new Date().toISOString(),
       likes: 0,
     })

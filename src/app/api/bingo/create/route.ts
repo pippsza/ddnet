@@ -14,6 +14,8 @@ interface CreateGameRequest {
   isPublic: boolean
   difficultyMin: number
   difficultyMax: number
+  invitedPlayerId?: string
+  invitedTeammateId?: string
 }
 
 const MAX_ACTIVE_GAMES_PER_USER = parseInt(process.env.MAX_ACTIVE_GAMES_PER_USER || '1')
@@ -50,32 +52,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    // Check if user already has active game
-    const { docs: existingGames } = await payload.find({
-      collection: 'bingo',
-      where: {
-        and: [
-          {
-            createdBy: {
-              equals: user.id,
-            },
-          },
-          {
-            gameStatus: {
-              in: ['waiting', 'ready', 'in_progress'],
-            },
-          },
-        ],
-      },
-    })
+    // Block if user already has an active game (bingo or race)
+    // Auto-clear stale references to completed/cancelled games
+    if (user.activeGame) {
+      const ref = user.activeGame as { relationTo: string; value: string | { id: string } }
+      const refId = typeof ref.value === 'object' ? ref.value.id : ref.value
+      let isStale = false
+      try {
+        const activeDoc = await payload.findByID({
+          collection: ref.relationTo as 'bingo' | 'races',
+          id: refId,
+          depth: 0,
+        })
+        const status = (activeDoc as any)?.gameStatus
+        if (!activeDoc || status === 'completed' || status === 'cancelled') {
+          isStale = true
+        }
+      } catch {
+        isStale = true
+      }
 
-    if (existingGames.length >= MAX_ACTIVE_GAMES_PER_USER) {
-      return NextResponse.json(
-        {
-          error: `You can only have ${MAX_ACTIVE_GAMES_PER_USER} active game(s) at a time`,
-        },
-        { status: 400 },
-      )
+      if (isStale) {
+        await payload.update({
+          collection: 'users',
+          id: user.id,
+          data: { activeGame: null },
+        })
+      } else {
+        return NextResponse.json(
+          { error: 'You already have an active game. Finish or leave it before creating a new one.' },
+          { status: 400 },
+        )
+      }
     }
 
     // Generate grid maps
@@ -95,7 +103,7 @@ export async function POST(req: NextRequest) {
         players: [
           {
             user: user.id,
-            isReady: false,
+            isReady: true,
           },
         ],
         completedCells: [],
@@ -144,6 +152,35 @@ export async function POST(req: NextRequest) {
         activeGame: { relationTo: 'bingo', value: game.id },
       },
     })
+
+    // Send invite notifications
+    const inviteTargets: { id: string; teamIndex: number }[] = []
+    if (body.invitedTeammateId) inviteTargets.push({ id: body.invitedTeammateId, teamIndex: 0 })
+    if (body.invitedPlayerId) inviteTargets.push({ id: body.invitedPlayerId, teamIndex: 1 })
+
+    for (const target of inviteTargets) {
+      try {
+        await payload.create({
+          collection: 'notifications',
+          data: {
+            recipient: target.id,
+            type: 'game_invite',
+            title: 'Game Invite',
+            message: `${user.ingameNick || user.username} invited you to ${body.title}`,
+            actionUrl: `/app/bingo/${game.id}?team=${target.teamIndex}`,
+            relatedGame: { relationTo: 'bingo', value: game.id },
+            relatedUser: user.id,
+            metadata: {
+              gameType: 'bingo',
+              inviteCode: game.inviteCode,
+              teamIndex: target.teamIndex,
+            },
+          },
+        })
+      } catch (inviteErr) {
+        console.error('[API] Error sending invite notification:', inviteErr)
+      }
+    }
 
     return NextResponse.json({
       success: true,

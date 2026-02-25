@@ -26,12 +26,14 @@ import {
   Gamepad2,
   Lock,
   ShieldCheck,
+  Settings,
 } from 'lucide-react'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { toast } from 'sonner'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
 import { DDNetSection } from '@/components/stats/DDNetSection'
+import { PlayerSettingsTab } from '@/components/admin/PlayerSettingsTab'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -45,7 +47,7 @@ function PlayerDetailContent({ name }: { name: string }) {
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'service'
 
-  const { data, isLoading, error } = useSWR(
+  const { data, isLoading, error, mutate: mutatePlayer } = useSWR(
     `/api/players/${encodeURIComponent(decodedName)}`,
     fetcher,
     { refreshInterval: 30000 },
@@ -457,6 +459,12 @@ function PlayerDetailContent({ name }: { name: string }) {
             <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
               DDNet
             </TabsTrigger>
+            {(isAdmin || permissions?.adminPages?.includes('manage_users')) && (
+              <TabsTrigger value="settings" className={TAB_TRIGGER_CLASSES}>
+                <Settings className="h-4 w-4 mr-1.5" />
+                Settings
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ═══ SERVICE TAB ═══ */}
@@ -489,6 +497,13 @@ function PlayerDetailContent({ name }: { name: string }) {
               playingSince={playingSince}
             />
           </TabsContent>
+
+          {/* ═══ SETTINGS TAB (admin / manage_users) ═══ */}
+          {(isAdmin || permissions?.adminPages?.includes('manage_users')) && (
+            <TabsContent value="settings" className="mt-4">
+              <PlayerSettingsTab user={reg} mutate={mutatePlayer} />
+            </TabsContent>
+          )}
         </Tabs>
       ) : (
         /* Unregistered: show DDNet content directly */

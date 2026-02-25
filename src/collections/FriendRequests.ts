@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasPageAccess } from '@/lib/permissions'
 
 export const FriendRequests: CollectionConfig = {
   slug: 'friend-requests',
@@ -8,8 +9,9 @@ export const FriendRequests: CollectionConfig = {
     description: 'Friend request management',
   },
   access: {
-    read: ({ req }) => {
+    read: async ({ req }) => {
       if (!req.user) return false
+      if (!(await hasPageAccess(req, 'friends'))) return false
       if (req.user.roles === 'admin') return true
       // Users can only see requests they sent or received
       return {
@@ -19,7 +21,10 @@ export const FriendRequests: CollectionConfig = {
         ],
       } as any
     },
-    create: ({ req }) => !!req.user,
+    create: async ({ req }) => {
+      if (!req.user) return false
+      return hasPageAccess(req, 'friends')
+    },
     update: ({ req }) => {
       if (!req.user) return false
       if (req.user.roles === 'admin') return true

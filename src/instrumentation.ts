@@ -15,6 +15,13 @@ export async function register() {
 
     const { startOnlineWatchJob } = await import('@/jobs/onlineWatchJob')
 
+    // Ensure default role exists before starting jobs
+    const { getPayload } = await import('payload')
+    const payloadConfig = await import('@payload-config')
+    const payload = await getPayload({ config: payloadConfig.default })
+    const { ensureDefaultRole } = await import('@/lib/ensure-default-role')
+    await ensureDefaultRole(payload)
+
     startDDNetSyncJob()
     startBotCleanupJob()
     startBingoProgressJob()

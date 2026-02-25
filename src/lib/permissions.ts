@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+import { ALL_PAGE_PERMISSIONS } from '@/collections/Roles'
 
 export interface RolePrimaryDisplay {
   name: string
@@ -9,6 +10,7 @@ export interface RolePrimaryDisplay {
 
 export interface ResolvedPermissions {
   isAdmin: boolean
+  pages: string[]
   articles: string[]
   support: string[]
   forum: string[]
@@ -19,6 +21,7 @@ export interface ResolvedPermissions {
 
 const ADMIN_PERMISSIONS: ResolvedPermissions = {
   isAdmin: true,
+  pages: [...ALL_PAGE_PERMISSIONS],
   articles: ['create', 'edit', 'delete', 'view_drafts'],
   support: ['view_all', 'reply', 'change_status', 'delete'],
   forum: ['view_hidden', 'edit_any', 'delete_any', 'pin', 'lock'],
@@ -29,6 +32,7 @@ const ADMIN_PERMISSIONS: ResolvedPermissions = {
 
 const EMPTY_PERMISSIONS: ResolvedPermissions = {
   isAdmin: false,
+  pages: [],
   articles: [],
   support: [],
   forum: [],
@@ -45,7 +49,9 @@ export interface CachedRole {
   priority: number
   badgeColor: string
   textColor: string
+  isDefault?: boolean
   permissions: {
+    pages?: string[] | null
     articles?: string[] | null
     support?: string[] | null
     forum?: string[] | null
@@ -87,8 +93,32 @@ export async function ensureRoleCachePopulated(req: PayloadRequest): Promise<voi
   cachePopulated = true
 }
 
+/** Find the default role from cache */
+function getDefaultRole(): CachedRole | null {
+  for (const role of roleCache.values()) {
+    if (role.isDefault) return role
+  }
+  return null
+}
+
 export function isAdmin(user: { roles?: string } | null | undefined): boolean {
   return user?.roles === 'admin'
+}
+
+function mergeRolePermissions(role: CachedRole, sets: {
+  pages: Set<string>
+  articles: Set<string>
+  support: Set<string>
+  forum: Set<string>
+  games: Set<string>
+  adminPages: Set<string>
+}) {
+  for (const p of role.permissions?.pages || []) sets.pages.add(p)
+  for (const p of role.permissions?.articles || []) sets.articles.add(p)
+  for (const p of role.permissions?.support || []) sets.support.add(p)
+  for (const p of role.permissions?.forum || []) sets.forum.add(p)
+  for (const p of role.permissions?.games || []) sets.games.add(p)
+  for (const p of role.permissions?.adminPages || []) sets.adminPages.add(p)
 }
 
 export async function resolvePermissions(
@@ -98,53 +128,67 @@ export async function resolvePermissions(
   if (!user) return EMPTY_PERMISSIONS
   if (user.roles === 'admin') return ADMIN_PERMISSIONS
 
-  const roleRefs = user.assignedRoles
-  if (!roleRefs || roleRefs.length === 0) return EMPTY_PERMISSIONS
-
   await ensureRoleCachePopulated(req)
 
-  const articles = new Set<string>()
-  const support = new Set<string>()
-  const forum = new Set<string>()
-  const games = new Set<string>()
-  const adminPages = new Set<string>()
+  const sets = {
+    pages: new Set<string>(),
+    articles: new Set<string>(),
+    support: new Set<string>(),
+    forum: new Set<string>(),
+    games: new Set<string>(),
+    adminPages: new Set<string>(),
+  }
   let highestPriority = -Infinity
   let primaryRole: RolePrimaryDisplay | null = null
 
-  for (const ref of roleRefs) {
-    const roleId = typeof ref === 'string' ? ref : (ref as { id: string }).id
-    const role = roleCache.get(roleId)
-    if (!role) continue
+  // Always include the default role for non-admin users
+  const defaultRole = getDefaultRole()
+  if (defaultRole) {
+    mergeRolePermissions(defaultRole, sets)
+    highestPriority = defaultRole.priority
+    primaryRole = {
+      name: defaultRole.name,
+      displayName: defaultRole.displayName,
+      badgeColor: defaultRole.badgeColor,
+      textColor: defaultRole.textColor,
+    }
+  }
 
-    for (const p of role.permissions?.articles || []) articles.add(p)
-    for (const p of role.permissions?.support || []) support.add(p)
-    for (const p of role.permissions?.forum || []) forum.add(p)
-    for (const p of role.permissions?.games || []) games.add(p)
-    for (const p of role.permissions?.adminPages || []) adminPages.add(p)
+  // Merge assigned roles
+  const roleRefs = user.assignedRoles
+  if (roleRefs && roleRefs.length > 0) {
+    for (const ref of roleRefs) {
+      const roleId = typeof ref === 'string' ? ref : (ref as { id: string }).id
+      const role = roleCache.get(roleId)
+      if (!role) continue
 
-    if (role.priority > highestPriority) {
-      highestPriority = role.priority
-      primaryRole = {
-        name: role.name,
-        displayName: role.displayName,
-        badgeColor: role.badgeColor,
-        textColor: role.textColor,
+      mergeRolePermissions(role, sets)
+
+      if (role.priority > highestPriority) {
+        highestPriority = role.priority
+        primaryRole = {
+          name: role.name,
+          displayName: role.displayName,
+          badgeColor: role.badgeColor,
+          textColor: role.textColor,
+        }
       }
     }
   }
 
   return {
     isAdmin: false,
-    articles: [...articles],
-    support: [...support],
-    forum: [...forum],
-    games: [...games],
-    adminPages: [...adminPages],
+    pages: [...sets.pages],
+    articles: [...sets.articles],
+    support: [...sets.support],
+    forum: [...sets.forum],
+    games: [...sets.games],
+    adminPages: [...sets.adminPages],
     primaryRole,
   }
 }
 
-type PermissionCategory = 'articles' | 'support' | 'forum' | 'games' | 'adminPages'
+type PermissionCategory = 'pages' | 'articles' | 'support' | 'forum' | 'games' | 'adminPages'
 
 export async function hasPermission(
   req: PayloadRequest,
@@ -157,6 +201,10 @@ export async function hasPermission(
 
   const perms = await resolvePermissions(user, req)
   return perms[category].includes(permission)
+}
+
+export async function hasPageAccess(req: PayloadRequest, page: string): Promise<boolean> {
+  return hasPermission(req, 'pages', page)
 }
 
 export async function hasAnyAdminAccess(req: PayloadRequest): Promise<boolean> {

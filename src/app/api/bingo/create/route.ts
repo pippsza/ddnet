@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     // Create initial team structure
     const teams: Bingo['teams'] = [
       {
-        teamName: body.mode === 'solo' ? `${user.username}'s Team` : 'Team 1',
+        teamName: body.mode === 'solo' ? `${user.ingameNick || user.username}'s Team` : 'Team 1',
         color: 'red',
         players: [
           {

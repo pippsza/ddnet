@@ -69,26 +69,6 @@ export class BackendApi {
   // Race callbacks
   // =========================================================================
 
-  async reportRaceFinish(
-    raceId: string,
-    playerName: string,
-    finishTime: number,
-  ): Promise<void> {
-    await this.post('/api/race/finish', {
-      raceId,
-      playerName,
-      finishTime,
-      timestamp: new Date().toISOString(),
-    })
-  }
-
-  async reportMapChange(raceId: string, mapName: string): Promise<void> {
-    await this.post('/api/race/map-change', {
-      raceId,
-      mapName,
-    })
-  }
-
   async getRaceStatus(raceId: string): Promise<unknown> {
     return this.get(`/api/race/${raceId}`)
   }
@@ -97,7 +77,7 @@ export class BackendApi {
   // HTTP helpers
   // =========================================================================
 
-  private async post(path: string, data: unknown): Promise<void> {
+  private async post(path: string, data: unknown): Promise<any> {
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {
         method: 'POST',
@@ -110,11 +90,14 @@ export class BackendApi {
 
       if (!response.ok) {
         console.error(`[API] POST ${path} failed: ${response.status} ${response.statusText}`)
-      } else {
-        console.log(`[API] POST ${path} success`)
+        return null
       }
+
+      console.log(`[API] POST ${path} success`)
+      return await response.json()
     } catch (error) {
       console.error(`[API] POST ${path} error:`, error)
+      return null
     }
   }
 

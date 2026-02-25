@@ -44,6 +44,7 @@ export class TeeworldsClient {
   private serverIp = ''
   private serverPort = 0
   private onDisconnectHandler: ((reason: string) => void) | null = null
+  private mapName = ''
 
   constructor(options: ClientOptions) {
     this.options = options
@@ -62,8 +63,8 @@ export class TeeworldsClient {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const identity: any = {
         name: this.options.name,
-        clan: this.options.clan || 'DDNet',
-        skin: this.options.skin || 'default',
+        clan: this.options.clan || 'DDashBoard',
+        skin: this.options.skin || 'bot',
         use_custom_color: this.options.useCustomColor ? 1 : 0,
         color_body: this.options.colorBody ?? 0,
         color_feet: this.options.colorFeet ?? 0,
@@ -74,10 +75,20 @@ export class TeeworldsClient {
         ...(this.options.password ? { password: this.options.password } : {}),
       })
 
+      // Track map name from connection handshake (fires before 'connected')
+      this.client.on('map_change', (...args: unknown[]) => {
+        const data = args[0] as { map_name?: string }
+        if (data.map_name) this.mapName = data.map_name
+      })
+      this.client.on('map_details', (...args: unknown[]) => {
+        const data = args[0] as { map_name?: string }
+        if (data.map_name) this.mapName = data.map_name
+      })
+
       this.client.on('connected', () => {
         clearTimeout(timeout)
         this.connected = true
-        console.log(`[Client] Connected to ${ip}:${port}`)
+        console.log(`[Client] Connected to ${ip}:${port} (map: ${this.mapName})`)
         resolve()
       })
 
@@ -263,6 +274,10 @@ export class TeeworldsClient {
 
   isConnected(): boolean {
     return this.connected
+  }
+
+  getCurrentMap(): string {
+    return this.mapName
   }
 
   /**

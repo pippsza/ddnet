@@ -808,49 +808,107 @@ export interface Bingo {
 export interface Race {
   id: string;
   title: string;
+  mode: 'solo' | 'team';
+  categoryMode: 'selected' | 'free';
+  category: string;
   /**
-   * If enabled, this race will be visible in the public lobby
+   * Number of steps in the race path (3-20)
+   */
+  pathLength: number;
+  /**
+   * Public games are visible in lobby, private games require invite code
    */
   isPublic?: boolean | null;
-  /**
-   * Code for joining private games
-   */
-  inviteCode?: string | null;
-  category: string;
-  totalRounds: number;
-  currentRound?: number | null;
-  currentMap?: string | null;
-  server: {
-    ip: string;
-    port: number;
+  difficultyRange?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  server?: {
+    ip?: string | null;
+    port?: number | null;
     name?: string | null;
   };
-  players: {
-    user: string | User;
-    ingameNick: string;
-    roundsWon?: number | null;
-    isReady?: boolean | null;
-    id?: string | null;
-  }[];
-  rounds?:
+  createdBy: string | User;
+  /**
+   * Auto-generated code for private games
+   */
+  inviteCode?: string | null;
+  /**
+   * For selected mode: pre-filled on start. For free mode: filled as maps are completed.
+   */
+  maps?:
     | {
-        roundNumber: number;
         mapName: string;
-        winner?: (string | null) | User;
-        finishTime?: number | null;
-        completedAt?: string | null;
+        position: number;
         id?: string | null;
       }[]
     | null;
-  winner?: (string | null) | User;
-  status: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
   /**
-   * ID of the bot monitoring this race
+   * Solo mode: 1 team, Team mode: 2 teams (1-2 players each)
    */
-  botId?: string | null;
-  createdBy: string | User;
+  teams: {
+    teamName: string;
+    color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
+    players?:
+      | {
+          user: string | User;
+          isReady?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    pendingInvites?:
+      | {
+          user: string | User;
+          invitedAt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Number of steps claimed by this team
+     */
+    score?: number | null;
+    /**
+     * Steps on the path completed by this team
+     */
+    completedSteps?:
+      | {
+          position: number;
+          completedAt?: string | null;
+          finishTime?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    teamStatus: 'not_ready' | 'ready' | 'playing' | 'winner' | 'loser';
+    id?: string | null;
+  }[];
+  /**
+   * Which step is currently being played (0-indexed)
+   */
+  currentStep?: number | null;
+  currentMap?: string | null;
+  gameStatus: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  /**
+   * Index of winning team (0 or 1)
+   */
+  winnerTeam?: number | null;
+  /**
+   * Index of the team that surrendered (0 or 1)
+   */
+  surrenderedByTeam?: number | null;
   startedAt?: string | null;
   completedAt?: string | null;
+  /**
+   * Calculated automatically
+   */
+  duration?: number | null;
+  /**
+   * Docker container ID of the monitoring bot
+   */
+  botContainerId?: string | null;
+  /**
+   * Reference to the rematch game created from this one
+   */
+  rematchGame?: (string | null) | Race;
   updatedAt: string;
   createdAt: string;
 }
@@ -2122,12 +2180,17 @@ export interface BingoSelect<T extends boolean = true> {
  */
 export interface RacesSelect<T extends boolean = true> {
   title?: T;
-  isPublic?: T;
-  inviteCode?: T;
+  mode?: T;
+  categoryMode?: T;
   category?: T;
-  totalRounds?: T;
-  currentRound?: T;
-  currentMap?: T;
+  pathLength?: T;
+  isPublic?: T;
+  difficultyRange?:
+    | T
+    | {
+        min?: T;
+        max?: T;
+      };
   server?:
     | T
     | {
@@ -2135,31 +2198,56 @@ export interface RacesSelect<T extends boolean = true> {
         port?: T;
         name?: T;
       };
-  players?:
-    | T
-    | {
-        user?: T;
-        ingameNick?: T;
-        roundsWon?: T;
-        isReady?: T;
-        id?: T;
-      };
-  rounds?:
-    | T
-    | {
-        roundNumber?: T;
-        mapName?: T;
-        winner?: T;
-        finishTime?: T;
-        completedAt?: T;
-        id?: T;
-      };
-  winner?: T;
-  status?: T;
-  botId?: T;
   createdBy?: T;
+  inviteCode?: T;
+  maps?:
+    | T
+    | {
+        mapName?: T;
+        position?: T;
+        id?: T;
+      };
+  teams?:
+    | T
+    | {
+        teamName?: T;
+        color?: T;
+        players?:
+          | T
+          | {
+              user?: T;
+              isReady?: T;
+              id?: T;
+            };
+        pendingInvites?:
+          | T
+          | {
+              user?: T;
+              invitedAt?: T;
+              id?: T;
+            };
+        score?: T;
+        completedSteps?:
+          | T
+          | {
+              position?: T;
+              completedAt?: T;
+              finishTime?: T;
+              id?: T;
+            };
+        teamStatus?: T;
+        id?: T;
+      };
+  currentStep?: T;
+  currentMap?: T;
+  gameStatus?: T;
+  winnerTeam?: T;
+  surrenderedByTeam?: T;
   startedAt?: T;
   completedAt?: T;
+  duration?: T;
+  botContainerId?: T;
+  rematchGame?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -147,7 +147,7 @@ export class InGameChatMode extends BaseBotMode {
     console.log(`[InGameChat] Connecting to ${SERVER_IP}:${port}${serverPassword ? ' (with password)' : ''}`)
 
     const client = this.createClient(botName, serverPassword, {
-      skin: botSkin,
+      skin: botSkin || 'default',
       useCustomColor,
       colorBody: botColorBody,
       colorFeet: botColorFeet,

@@ -144,6 +144,9 @@ interface AppSidebarProps {
 const chatFetcher = (url: string) =>
   fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))
 
+const meFetcher = (url: string) =>
+  fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))
+
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -151,6 +154,23 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const { unreadCount } = useNotifications()
   const [mounted, setMounted] = useState(false)
   const [chatMentions, setChatMentions] = useState(0)
+
+  // Poll for activeGame changes so the sidebar updates when a game ends
+  const { data: meData } = useSWR(user.activeGame ? '/api/users/me' : null, meFetcher, {
+    refreshInterval: 10000,
+    revalidateOnFocus: true,
+  })
+  const activeGame = meData?.user?.activeGame
+    ? {
+        relationTo: meData.user.activeGame.relationTo as 'bingo' | 'races',
+        value:
+          typeof meData.user.activeGame.value === 'object'
+            ? meData.user.activeGame.value.id
+            : meData.user.activeGame.value,
+      }
+    : meData
+      ? null
+      : user.activeGame
 
   const isAdminUser = user.permissions.isAdmin
   const pages = user.permissions.pages
@@ -220,23 +240,23 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              {user.activeGame && (
+              {activeGame && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
                     isActive={
                       pathname.startsWith(
-                        user.activeGame.relationTo === 'bingo'
-                          ? `/app/bingo/${user.activeGame.value}`
-                          : `/app/race/${user.activeGame.value}`,
+                        activeGame.relationTo === 'bingo'
+                          ? `/app/bingo/${activeGame.value}`
+                          : `/app/race/${activeGame.value}`,
                       )
                     }
                   >
                     <Link
                       href={
-                        user.activeGame.relationTo === 'bingo'
-                          ? `/app/bingo/${user.activeGame.value}`
-                          : `/app/race/${user.activeGame.value}`
+                        activeGame.relationTo === 'bingo'
+                          ? `/app/bingo/${activeGame.value}`
+                          : `/app/race/${activeGame.value}`
                       }
                       onClick={handleNavClick}
                     >

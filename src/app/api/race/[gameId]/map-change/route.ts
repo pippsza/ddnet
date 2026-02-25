@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ gameId: string }> },
+) {
   try {
     // Verify bot secret
     const botSecret = req.headers.get('X-Bot-Secret')
@@ -10,26 +13,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { raceId, mapName } = await req.json()
+    const { gameId } = await params
+    const { mapName } = await req.json()
 
-    if (!raceId || !mapName) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!mapName) {
+      return NextResponse.json({ error: 'Missing mapName' }, { status: 400 })
     }
 
     const payload = await getPayload({ config })
 
     await payload.update({
       collection: 'races',
-      id: raceId,
+      id: gameId,
       data: { currentMap: mapName },
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('[API] Error updating map:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update map' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: error.message || 'Failed to update map' }, { status: 500 })
   }
 }

@@ -110,6 +110,7 @@ export class BotManager implements BotDriverInterface {
     serverIp: string,
     serverPort: number,
     players: string[],
+    maps: { mapName: string; position: number }[] = [],
   ): Promise<string> {
     if (!this.mockDriver && !this.dockerInitialized) {
       await this.initDocker()
@@ -137,13 +138,15 @@ export class BotManager implements BotDriverInterface {
         `SERVER_IP=${serverIp}`,
         `SERVER_PORT=${serverPort}`,
         `PLAYERS_LIST=${JSON.stringify(players)}`,
+        `MAPS_LIST=${JSON.stringify(maps)}`,
         `BACKEND_URL=${(process.env.NEXT_PUBLIC_SERVER_URL || 'http://host.docker.internal:3000').replace('localhost', '127.0.0.1')}`,
         `BACKEND_SECRET=${process.env.BACKEND_SECRET}`,
+        `LOG_FILE=/app/logs/race-${raceId}.log`,
       ],
       HostConfig: {
-        AutoRemove: true,
-        NetworkMode: 'bridge',
-        ExtraHosts: ['host.docker.internal:host-gateway'],
+        AutoRemove: false,
+        NetworkMode: 'host',
+        Binds: ['/tmp/bot-logs:/app/logs'],
       },
     })
 
@@ -301,7 +304,7 @@ export class BotManager implements BotDriverInterface {
     try {
       const docker = this.docker as import('dockerode')
       const container = docker.getContainer(containerId)
-      await container.stop({ t: 5 })
+      await container.stop({ t: 10 })
       console.log(`[BotManager] Stopped container: ${containerId}`)
     } catch {
       console.log(`[BotManager] Container ${containerId} already stopped or not found`)

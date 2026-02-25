@@ -162,7 +162,7 @@ async function getRaceLeaderboard(
   payload: Awaited<ReturnType<typeof getPayload>>,
   { category, sort, page, limit }: LeaderboardParams,
 ) {
-  const where: any = { status: { equals: 'completed' } }
+  const where: any = { gameStatus: { equals: 'completed' } }
   if (category !== 'all') {
     where.category = { equals: category }
   }
@@ -174,22 +174,26 @@ async function getRaceLeaderboard(
     depth: 0,
   })
 
-  // Aggregate per player
-  const playerMap = new Map<string, { wins: number; games: number; roundsWon: number }>()
+  // Aggregate per player from teams
+  const playerMap = new Map<string, { wins: number; games: number; stepsWon: number }>()
 
   for (const race of races) {
-    const winnerId = typeof race.winner === 'string' ? race.winner : (race.winner as any)?.id
-    const players = (race.players || []) as any[]
+    const winnerIdx = race.winnerTeam
 
-    for (const p of players) {
-      const userId = typeof p.user === 'string' ? p.user : p.user?.id
-      if (!userId) continue
+    for (let ti = 0; ti < race.teams.length; ti++) {
+      const team = race.teams[ti]
+      const isWinnerTeam = winnerIdx === ti
 
-      const existing = playerMap.get(userId) || { wins: 0, games: 0, roundsWon: 0 }
-      existing.games++
-      existing.roundsWon += p.roundsWon || 0
-      if (userId === winnerId) existing.wins++
-      playerMap.set(userId, existing)
+      for (const p of team.players ?? []) {
+        const userId = typeof p.user === 'string' ? p.user : (p.user as any)?.id
+        if (!userId) continue
+
+        const existing = playerMap.get(userId) || { wins: 0, games: 0, stepsWon: 0 }
+        existing.games++
+        existing.stepsWon += team.score || 0
+        if (isWinnerTeam) existing.wins++
+        playerMap.set(userId, existing)
+      }
     }
   }
 
@@ -222,7 +226,7 @@ async function getRaceLeaderboard(
       gamesPlayed: number
       gamesWon: number
       winRate: number
-      roundsWon: number
+      stepsWon: number
     }
   }
 
@@ -252,7 +256,7 @@ async function getRaceLeaderboard(
         gamesPlayed: agg.games,
         gamesWon: agg.wins,
         winRate: agg.games > 0 ? Math.round((agg.wins / agg.games) * 100) : 0,
-        roundsWon: agg.roundsWon,
+        stepsWon: agg.stepsWon,
       },
     })
   }
@@ -265,7 +269,7 @@ async function getRaceLeaderboard(
       case 'games':
         return b.stats.gamesPlayed - a.stats.gamesPlayed
       case 'rounds':
-        return b.stats.roundsWon - a.stats.roundsWon
+        return b.stats.stepsWon - a.stats.stepsWon
       default: // 'wins'
         return b.stats.gamesWon - a.stats.gamesWon || b.stats.winRate - a.stats.winRate
     }

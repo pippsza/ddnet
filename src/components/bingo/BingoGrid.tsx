@@ -95,7 +95,7 @@ export function BingoGrid({
         const isNew = newlyCompleted.has(i)
 
         // Determine cell background
-        let cellStyle: React.CSSProperties = {}
+        const cellStyle: React.CSSProperties = {}
 
         if (isCompleted) {
           // After game ends, use CSS primary accent for all completed cells

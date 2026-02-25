@@ -150,29 +150,47 @@ export function RaceMap({ rounds, totalRounds, currentRound, players }: RaceMapP
               </text>
 
               {/* Map name label */}
-              <text
-                x={cx}
-                y={cy + nodeR + 14}
-                textAnchor="middle"
-                fill="hsl(var(--foreground))"
-                fontSize={9}
-                fontWeight="500"
+              <foreignObject
+                x={cx - cellW / 2}
+                y={cy + nodeR + 4}
+                width={cellW}
+                height={20}
               >
-                {truncate(mapName, 14)}
-              </text>
+                <span
+                  style={{
+                    display: 'block',
+                    textAlign: 'center',
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: 'var(--foreground)',
+                    lineHeight: '1',
+                  }}
+                >
+                  {truncate(mapName, 14)}
+                </span>
+              </foreignObject>
 
               {/* Winner name + time for completed rounds */}
               {isCompleted && round?.winner && (
-                <text
-                  x={cx}
-                  y={cy + nodeR + 26}
-                  textAnchor="middle"
-                  fill="hsl(var(--muted-foreground))"
-                  fontSize={8}
+                <foreignObject
+                  x={cx - cellW / 2}
+                  y={cy + nodeR + 18}
+                  width={cellW}
+                  height={16}
                 >
-                  {typeof round.winner === 'object' ? (round.winner.username || '') : ''}
-                  {round.finishTime ? ` ${formatTime(round.finishTime)}` : ''}
-                </text>
+                  <span
+                    style={{
+                      display: 'block',
+                      textAlign: 'center',
+                      fontSize: 8,
+                      color: 'var(--muted-foreground)',
+                      lineHeight: '1',
+                    }}
+                  >
+                    {typeof round.winner === 'object' ? (round.winner.username || '') : ''}
+                    {round.finishTime ? ` ${formatTime(round.finishTime)}` : ''}
+                  </span>
+                </foreignObject>
               )}
             </g>
           )

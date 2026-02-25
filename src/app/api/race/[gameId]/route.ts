@@ -3,46 +3,48 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { User } from '@/payload-types'
 import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
-import { checkWinner } from '@/services/bingo/winChecker'
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ gameId: string }> },
+) {
   try {
     const payload = await getPayload({ config })
-
     const { gameId } = await params
 
-    // Get game with populated relationships
     const game = await payload.findByID({
-      collection: 'bingo',
+      collection: 'races',
       id: gameId,
       depth: 3,
     })
 
     if (!game) {
-      return NextResponse.json({ error: 'Game not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Race not found' }, { status: 404 })
     }
 
-    // Check if game is public or if user has access
+    // Allow bot access via X-Bot-Secret
+    const botSecret = req.headers.get('X-Bot-Secret')
+    const isBotRequest = botSecret === process.env.BACKEND_SECRET && !!botSecret
+
     const { user } = await payload.auth({ headers: req.headers })
     const creatorId = typeof game.createdBy === 'string' ? game.createdBy : game.createdBy.id
 
-    if (!game.isPublic) {
-      // Private game - check if user is in game
+    if (!game.isPublic && !isBotRequest) {
       if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
       const isInGame = game.teams.some((team) =>
         team.players?.some((p) => {
-          const playerId = typeof p.user === 'string' ? p.user : p.user.id
-          return playerId === user.id
+          const pid = typeof p.user === 'string' ? p.user : p.user.id
+          return pid === user.id
         }),
       )
 
       const isInvited = game.teams.some((team) =>
         team.pendingInvites?.some((p) => {
-          const playerId = typeof p.user === 'string' ? p.user : p.user.id
-          return playerId === user.id
+          const pid = typeof p.user === 'string' ? p.user : p.user.id
+          return pid === user.id
         }),
       )
 
@@ -51,18 +53,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
       }
     }
 
-    // Format response
     const formattedTeams = game.teams.map((team, index) => ({
       index,
       name: team.teamName,
       color: team.color,
       status: team.teamStatus,
+      score: team.score || 0,
       players: (team.players ?? []).map((p) => {
         const playerUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: playerUser?.id || '',
           username: playerUser?.ingameNick || '',
-          avatar: playerUser?.avatar,
           points: playerUser?.ingameStats?.points || 0,
           skin: playerUser?.ingameStats?.skin
             ? {
@@ -90,15 +91,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
           invitedAt: p.invitedAt,
         }
       }),
-      completedCells: (team.completedCells || []).map((c) => ({
-        position: c.cellPosition,
-        completedAt: c.completedAt,
+      completedSteps: (team.completedSteps || []).map((s) => ({
+        position: s.position,
+        completedAt: s.completedAt,
+        finishTime: s.finishTime,
       })),
     }))
 
     const creator = typeof game.createdBy === 'object' ? game.createdBy : null
 
-    // Determine current user's position in the game
     let isCurrentUserInGame = false
     let currentUserTeamIndex: number | null = null
     if (user) {
@@ -113,21 +114,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
           break
         }
       }
-    }
-
-    // Compute winning cells for completed games
-    let winningCells: number[] | undefined
-    if (game.gameStatus === 'completed' && game.winnerTeam != null) {
-      const teamCells = formattedTeams.map((t, i) => ({
-        teamIndex: i,
-        completedCells: t.completedCells.map((c) => c.position),
-      }))
-      const result = checkWinner(
-        game.gridSize as '3x3' | '5x5' | '7x7',
-        game.winCondition as 'line' | 'cross' | 'full_house',
-        teamCells,
-      )
-      winningCells = result.winningCells
     }
 
     // Resolve category icon
@@ -147,41 +133,41 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
       id: game.id,
       title: game.title,
       mode: game.mode,
+      categoryMode: game.categoryMode,
       category: game.category,
       categoryIcon,
-      subcategory: game.subcategory,
-      gridSize: game.gridSize,
-      winCondition: game.winCondition,
+      pathLength: game.pathLength,
       gameStatus: game.gameStatus,
       isPublic: game.isPublic,
       inviteCode: game.isPublic ? undefined : game.inviteCode,
       difficultyRange: game.difficultyRange,
+      server: game.server,
       createdBy: creator
-        ? {
-            id: creator.id,
-            username: creator.ingameNick,
-          }
+        ? { id: creator.id, username: creator.ingameNick }
         : null,
-      maps: game.maps,
+      maps: game.maps || [],
       teams: formattedTeams,
       isCurrentUserInGame,
       currentUserTeamIndex,
       currentUserId: user?.id || null,
       isCreator: user ? user.id === creatorId : false,
+      currentStep: game.currentStep,
+      currentMap: game.currentMap,
       startedAt: game.startedAt,
       completedAt: game.completedAt,
       duration: game.duration,
       winnerTeam: game.winnerTeam,
-      winningCells,
+      surrenderedByTeam: (game as any).surrenderedByTeam ?? null,
+      rematchGameId: typeof game.rematchGame === 'string'
+        ? game.rematchGame
+        : game.rematchGame?.id || null,
       createdAt: game.createdAt,
       updatedAt: game.updatedAt,
     })
   } catch (error: any) {
-    console.error('[API] Error fetching game:', error)
+    console.error('[API] Error fetching race:', error)
     return NextResponse.json(
-      {
-        error: error.message || 'Failed to fetch game',
-      },
+      { error: error.message || 'Failed to fetch race' },
       { status: 500 },
     )
   }

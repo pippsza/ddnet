@@ -54,8 +54,8 @@ export abstract class BaseBotMode implements BotMode {
   }): TeeworldsClient {
     this.client = new TeeworldsClient({
       name,
-      clan: 'DDNet',
-      skin: skinOptions?.skin || 'default',
+      clan: 'DDashBoard',
+      skin: skinOptions?.skin || 'bot',
       useCustomColor: skinOptions?.useCustomColor,
       colorBody: skinOptions?.colorBody,
       colorFeet: skinOptions?.colorFeet,

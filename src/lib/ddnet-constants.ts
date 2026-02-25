@@ -137,6 +137,13 @@ export const getCategoryLabelUniversal = (
   return value
 }
 
+export const RACE_CATEGORY_MODES = [
+  { label: 'Selected (pre-determined maps)', value: 'selected' },
+  { label: 'Free (any map, filled dynamically)', value: 'free' },
+]
+
+export type RaceCategoryMode = 'selected' | 'free'
+
 // Points calculation (from DDNet)
 export const CATEGORY_MULTIPLIERS = {
   novice: { multiplier: 1, offset: 0 },

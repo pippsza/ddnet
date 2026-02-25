@@ -94,7 +94,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <ThemeToggleButton start="top-right" variant="circle-blur" />
           </div>
         </header>
-        <div className="flex-1 p-6 overflow-hidden justify-center">
+        <div className="flex-1 p-6 pt-2 overflow-hidden justify-center">
           {showMaintenance ? <MaintenancePage /> : children}
         </div>
       </main>

@@ -237,6 +237,14 @@ function LobbyView({
     return true
   })()
 
+  const amReady = (() => {
+    if (myTeamIndex == null || !game.currentUserId) return false
+    const myTeam = teams[myTeamIndex]
+    if (!myTeam) return false
+    const me = myTeam.players.find((p) => p.id === game.currentUserId)
+    return me?.isReady ?? false
+  })()
+
   // ─── Batched settings save ─────────────────────────────────────────────────
 
   const revertFromServer = useCallback((fields: string[]) => {
@@ -755,9 +763,14 @@ function LobbyView({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                <Button size="sm" onClick={handleReady} disabled={actionLoading}>
+                <Button
+                  size="sm"
+                  variant={amReady ? 'destructive' : 'default'}
+                  onClick={handleReady}
+                  disabled={actionLoading}
+                >
                   <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                  {actionLoading ? '...' : 'Ready'}
+                  {actionLoading ? '...' : amReady ? 'Unready' : 'Ready'}
                 </Button>
               </>
             )}

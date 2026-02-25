@@ -47,7 +47,13 @@
       "Bash(npm logout)",
       "Read(//home/pippsza/**)",
       "Bash(npm config list)",
-      "Bash(xargs -I {} cat ~/.npm/_logs/{})"
+      "Bash(xargs -I {} cat ~/.npm/_logs/{})",
+      "Bash(grep -n \"refreshInterval\\\\|useSWR\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/bingo/[id]/page.tsx)",
+      "Bash(grep -n \"GameStartCountdown\\\\|showCountdown\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/bingo/[id]/page.tsx)",
+      "Bash(grep -n \"onComplete\\\\|setShowCountdown\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/bingo/[id]/page.tsx)",
+      "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.CreatedAt}}\")",
+      "Bash(docker stop silly_shockley)",
+      "Bash(chmod 777 /tmp/bot-logs)"
     ],
     "additionalDirectories": [
       "/tmp",
@@ -62,7 +68,9 @@
       "/home/pippsza/code/ddnet/src/app/api/articles/[id]",
       "/home/pippsza/code/ddnet/src/app/api/watched-players",
       "/home/pippsza/code/ddnet/src/app/(frontend)/app/bingo/join",
-      "/home/pippsza/code/ddnet/src/app/api/bingo/[gameId]"
+      "/home/pippsza/code/ddnet/src/app/api/bingo/[gameId]",
+      "/home/pippsza/code/ddnet/src/app/api/race/[gameId]/finish",
+      "/home/pippsza/code/ddnet/src/app/api/race/[gameId]/finish/"
     ]
   }
 }

@@ -88,11 +88,9 @@ function ImageLightbox({
 }
 
 export function MessageImages({ images }: { images?: AttachmentItem[] }) {
-  if (!images || images.length === 0) return null
-
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
-  const imageItems = images
+  const imageItems = (images || [])
     .map((item) => (typeof item.image === 'object' && item.image?.url ? item.image : null))
     .filter((img): img is { url: string; filename?: string; mimeType?: string } => img !== null)
 
@@ -112,6 +110,8 @@ export function MessageImages({ images }: { images?: AttachmentItem[] }) {
   const nextImage = useCallback(() => {
     setLightboxIndex((i) => (i !== null ? (i + 1) % onlyImages.length : null))
   }, [onlyImages.length])
+
+  if (!images || images.length === 0) return null
 
   return (
     <>

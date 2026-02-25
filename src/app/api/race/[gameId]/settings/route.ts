@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { generateBingoGrid, validateGridOptions } from '@/services/bingo/gridGenerator'
-import type { Bingo } from '@/payload-types'
+import { validatePathOptions } from '@/services/race/pathGenerator'
 
 interface SettingsUpdate {
   title?: string
   mode?: 'solo' | 'team'
+  categoryMode?: 'selected' | 'free'
   category?: string
-  subcategory?: string
-  gridSize?: '3x3' | '5x5' | '7x7'
-  winCondition?: 'line' | 'cross' | 'full_house'
+  pathLength?: number
   difficultyMin?: number
   difficultyMax?: number
   isPublic?: boolean
+  serverIp?: string
+  serverPort?: number
+  serverName?: string
 }
 
 export async function PATCH(
@@ -31,14 +32,10 @@ export async function PATCH(
     const { gameId } = await params
     const body: SettingsUpdate = await req.json()
 
-    const game = await payload.findByID({
-      collection: 'bingo',
-      id: gameId,
-      depth: 1,
-    })
+    const game = await payload.findByID({ collection: 'races', id: gameId, depth: 1 })
 
     if (!game) {
-      return NextResponse.json({ error: 'Game not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Race not found' }, { status: 404 })
     }
 
     const creatorId = typeof game.createdBy === 'string' ? game.createdBy : game.createdBy.id
@@ -47,68 +44,61 @@ export async function PATCH(
     }
 
     if (game.gameStatus !== 'waiting' && game.gameStatus !== 'ready') {
-      return NextResponse.json({ error: 'Cannot update settings after game has started' }, { status: 400 })
+      return NextResponse.json({ error: 'Cannot update settings after race has started' }, { status: 400 })
     }
 
-    // Build update data
     const updateData: Record<string, any> = {}
 
-    // If game was 'ready', reset to 'waiting' since settings changed
     if (game.gameStatus === 'ready') {
       updateData.gameStatus = 'waiting'
     }
 
     if (body.title !== undefined) updateData.title = body.title
-    if (body.winCondition !== undefined) updateData.winCondition = body.winCondition
     if (body.isPublic !== undefined) updateData.isPublic = body.isPublic
+    if (body.categoryMode !== undefined) updateData.categoryMode = body.categoryMode
 
-    // Check if grid-affecting settings changed
+    // Server updates
+    if (body.serverIp !== undefined || body.serverPort !== undefined || body.serverName !== undefined) {
+      updateData.server = {
+        ip: body.serverIp ?? game.server?.ip ?? '',
+        port: body.serverPort ?? game.server?.port ?? 8303,
+        name: body.serverName ?? game.server?.name ?? '',
+      }
+    }
+
+    // Check if path-affecting settings changed
     const newCategory = body.category ?? game.category
-    const newSubcategory = body.subcategory ?? game.subcategory ?? undefined
-    const newGridSize = body.gridSize ?? game.gridSize
+    const newPathLength = body.pathLength ?? game.pathLength
     const newDiffMin = body.difficultyMin ?? game.difficultyRange?.min ?? 0
     const newDiffMax = body.difficultyMax ?? game.difficultyRange?.max ?? 5
+    const newCategoryMode = body.categoryMode ?? game.categoryMode
 
-    const gridChanged =
+    const pathChanged =
       body.category !== undefined ||
-      body.subcategory !== undefined ||
-      body.gridSize !== undefined ||
+      body.pathLength !== undefined ||
       body.difficultyMin !== undefined ||
-      body.difficultyMax !== undefined
+      body.difficultyMax !== undefined ||
+      body.categoryMode !== undefined
 
-    if (gridChanged) {
-      const validation = validateGridOptions({
-        category: newCategory,
-        subcategory: newSubcategory,
-        gridSize: newGridSize,
-        difficultyMin: newDiffMin,
-        difficultyMax: newDiffMax,
-      })
-
-      if (!validation.valid) {
-        return NextResponse.json({ error: validation.error }, { status: 400 })
-      }
-
-      const maps = await generateBingoGrid({
-        category: newCategory,
-        subcategory: newSubcategory,
-        gridSize: newGridSize,
-        difficultyMin: newDiffMin,
-        difficultyMax: newDiffMax,
-      })
-
-      updateData.maps = maps
+    if (pathChanged) {
       updateData.category = newCategory
-      updateData.subcategory = newSubcategory
-      updateData.gridSize = newGridSize
+      updateData.pathLength = newPathLength
       updateData.difficultyRange = { min: newDiffMin, max: newDiffMax }
 
-      // Reset completed cells on all teams when grid changes
-      const teams = JSON.parse(JSON.stringify(game.teams))
-      for (const team of teams) {
-        team.completedCells = []
+      if (newCategoryMode !== 'free') {
+        const validation = validatePathOptions({
+          category: newCategory,
+          pathLength: newPathLength,
+          difficultyMin: newDiffMin,
+          difficultyMax: newDiffMax,
+        })
+        if (!validation.valid) {
+          return NextResponse.json({ error: validation.error }, { status: 400 })
+        }
       }
-      updateData.teams = teams
+
+      // Maps are generated at game start, not during settings changes
+      updateData.maps = []
     }
 
     // Handle mode change
@@ -123,7 +113,8 @@ export async function PATCH(
           teamName: 'Team 2',
           color: 'blue',
           players: [],
-          completedCells: [],
+          score: 0,
+          completedSteps: [],
           teamStatus: 'not_ready',
         })
         teams[0].teamName = 'Team 1'
@@ -147,7 +138,7 @@ export async function PATCH(
       return NextResponse.json({ success: true })
     }
 
-    // Reset all players' ready status when settings change
+    // Reset ready status when settings change
     if (game.gameStatus === 'ready') {
       const teamsData = updateData.teams ?? JSON.parse(JSON.stringify(game.teams))
       for (const team of teamsData) {
@@ -159,18 +150,11 @@ export async function PATCH(
       updateData.teams = teamsData
     }
 
-    await payload.update({
-      collection: 'bingo',
-      id: gameId,
-      data: updateData,
-    })
+    await payload.update({ collection: 'races', id: gameId, data: updateData })
 
     return NextResponse.json({ success: true })
-  } catch (error: unknown) {
-    console.error('[API] Error updating bingo settings:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update settings' },
-      { status: 500 },
-    )
+  } catch (error: any) {
+    console.error('[API] Error updating race settings:', error)
+    return NextResponse.json({ error: error.message || 'Failed to update settings' }, { status: 500 })
   }
 }

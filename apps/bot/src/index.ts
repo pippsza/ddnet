@@ -56,7 +56,7 @@ for (const envKey of activeMode.requiredEnv) {
 
 // Also include optional env vars that start with BOT_ or WEBHOOK_
 for (const [key, value] of Object.entries(process.env)) {
-  if ((key.startsWith('BOT_') || key.startsWith('WEBHOOK_') || key === 'COMMAND_PREFIX') && value) {
+  if ((key.startsWith('BOT_') || key.startsWith('WEBHOOK_') || key === 'COMMAND_PREFIX' || key === 'LOG_FILE') && value) {
     config[key] = value
   }
 }

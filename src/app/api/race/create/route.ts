@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { nanoid } from 'nanoid'
+import { validatePathOptions } from '@/services/race/pathGenerator'
 import type { Race } from '@/payload-types'
-import { isCustomCategory } from '@/lib/category-helpers'
-
-const MAX_ACTIVE_GAMES_PER_USER = parseInt(process.env.MAX_ACTIVE_GAMES_PER_USER || '1')
 
 interface CreateRaceRequest {
   title: string
-  category: string
-  totalRounds: number
-  server: { ip: string; port: number; name?: string }
-  isPublic: boolean
+  mode?: 'solo' | 'team'
+  categoryMode?: 'selected' | 'free'
+  category?: string
+  pathLength?: number
+  isPublic?: boolean
+  difficultyMin?: number
+  difficultyMax?: number
+  server?: { ip?: string; port?: number; name?: string }
   invitedPlayerId?: string
+  invitedTeammateId?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -25,103 +27,144 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check verification
     if (!user.isSystemVerified) {
       return NextResponse.json({ error: 'You must verify your nickname first' }, { status: 400 })
     }
 
     const body: CreateRaceRequest = await req.json()
 
-    if (!body.title || !body.category || !body.totalRounds || !body.server?.ip) {
+    if (!body.title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    if (body.totalRounds < 1) {
-      return NextResponse.json({ error: 'Total rounds must be at least 1' }, { status: 400 })
+    const categoryMode = body.categoryMode || 'selected'
+    const category = body.category || 'novice'
+
+    // Validate path options for selected mode
+    if (categoryMode !== 'free') {
+      const validation = validatePathOptions({
+        category,
+        pathLength: body.pathLength || 5,
+        difficultyMin: body.difficultyMin || 0,
+        difficultyMax: body.difficultyMax || 5,
+      })
+      if (!validation.valid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 })
+      }
     }
 
-    // Validate totalRounds against available maps for custom categories
-    if (isCustomCategory(body.category)) {
-      const customCats = await payload.findGlobal({ slug: 'custom-categories' })
-      const cat = (customCats as any)?.categories?.find((c: any) => c.slug === body.category)
-      if (!cat) {
-        return NextResponse.json({ error: `Category "${body.category}" not found` }, { status: 400 })
+    // Block if user already has an active game
+    if (user.activeGame) {
+      const ref = user.activeGame as { relationTo: string; value: string | { id: string } }
+      const refId = typeof ref.value === 'object' ? ref.value.id : ref.value
+      let isStale = false
+      try {
+        const activeDoc = await payload.findByID({
+          collection: ref.relationTo as 'bingo' | 'races',
+          id: refId,
+          depth: 0,
+        })
+        const status = (activeDoc as any)?.gameStatus
+        if (!activeDoc || status === 'completed' || status === 'cancelled') {
+          isStale = true
+        }
+      } catch {
+        isStale = true
       }
-      const availableMaps = cat.maps?.length || 0
-      if (body.totalRounds > availableMaps) {
+
+      if (isStale) {
+        await payload.update({ collection: 'users', id: user.id, data: { activeGame: null } })
+      } else {
         return NextResponse.json(
-          { error: `Not enough maps. Category has ${availableMaps} maps but ${body.totalRounds} rounds requested.` },
+          { error: 'You already have an active game. Finish or leave it before creating a new one.' },
           { status: 400 },
         )
       }
     }
 
-    // Block if user already has an active game (bingo or race)
-    if (user.activeGame) {
-      return NextResponse.json(
-        { error: 'You already have an active game. Finish or leave it before creating a new one.' },
-        { status: 400 },
-      )
+    // Maps are generated at game start, not during creation
+    const pathLength = body.pathLength || 5
+    const maps: Race['maps'] = []
+
+    // Create team structure
+    const teams: Race['teams'] = [
+      {
+        teamName: body.mode === 'solo' ? `${user.ingameNick || user.username}'s Team` : 'Team 1',
+        color: 'red',
+        players: [{ user: user.id, isReady: true }],
+        score: 0,
+        completedSteps: [],
+        teamStatus: 'not_ready',
+      },
+    ]
+
+    if (body.mode === 'team') {
+      teams.push({
+        teamName: 'Team 2',
+        color: 'blue',
+        players: [],
+        score: 0,
+        completedSteps: [],
+        teamStatus: 'not_ready',
+      })
     }
 
     const race = await payload.create({
       collection: 'races',
       data: {
         title: body.title,
-        category: body.category as Race['category'],
-        totalRounds: body.totalRounds,
-        server: {
-          ip: body.server.ip,
-          port: body.server.port || 8303,
-          name: body.server.name,
+        mode: body.mode || 'solo',
+        categoryMode,
+        category: category as Race['category'],
+        pathLength,
+        isPublic: body.isPublic ?? false,
+        difficultyRange: {
+          min: body.difficultyMin || 0,
+          max: body.difficultyMax || 5,
         },
-        isPublic: body.isPublic,
-        currentRound: 0,
-        players: [
-          {
-            user: user.id,
-            ingameNick: user.ingameNick,
-            roundsWon: 0,
-            isReady: false,
-          },
-        ],
-        rounds: [],
-        status: 'waiting',
+        server: {
+          ip: body.server?.ip || '',
+          port: body.server?.port || 8303,
+          name: body.server?.name,
+        },
         createdBy: user.id,
-        inviteCode: body.isPublic ? undefined : nanoid(8),
+        maps,
+        teams,
+        gameStatus: 'waiting',
+        currentStep: 0,
       },
     })
 
-    // Update user's active game reference
     await payload.update({
       collection: 'users',
       id: user.id,
-      data: {
-        activeGame: { relationTo: 'races', value: race.id },
-      },
+      data: { activeGame: { relationTo: 'races', value: race.id } },
     })
 
-    // Send invite notification if a player was invited
-    let inviteSent = false
-    if (body.invitedPlayerId) {
+    // Send invite notifications
+    const inviteTargets: { id: string; teamIndex: number }[] = []
+    if (body.invitedTeammateId) inviteTargets.push({ id: body.invitedTeammateId, teamIndex: 0 })
+    if (body.invitedPlayerId) inviteTargets.push({ id: body.invitedPlayerId, teamIndex: 1 })
+
+    for (const target of inviteTargets) {
       try {
         await payload.create({
           collection: 'notifications',
           data: {
-            recipient: body.invitedPlayerId,
+            recipient: target.id,
             type: 'game_invite',
             title: 'Race Invite',
             message: `${user.ingameNick || user.username} invited you to ${body.title}`,
-            actionUrl: `/app/race/${race.id}`,
+            actionUrl: `/app/race/${race.id}?team=${target.teamIndex}`,
             relatedGame: { relationTo: 'races', value: race.id },
             relatedUser: user.id,
             metadata: {
               gameType: 'race',
               inviteCode: race.inviteCode,
+              teamIndex: target.teamIndex,
             },
           },
         })
-        inviteSent = true
       } catch (inviteErr) {
         console.error('[API] Error sending race invite notification:', inviteErr)
       }
@@ -132,15 +175,15 @@ export async function POST(req: NextRequest) {
       race: {
         id: race.id,
         title: race.title,
+        mode: race.mode,
         inviteCode: race.inviteCode,
         isPublic: race.isPublic,
       },
-      inviteSent,
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('[API] Error creating race:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create race' },
+      { error: error.message || 'Failed to create race' },
       { status: 500 },
     )
   }

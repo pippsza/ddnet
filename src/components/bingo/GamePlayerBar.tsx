@@ -34,11 +34,13 @@ interface GamePlayerBarProps {
   isWinner?: boolean
   label?: string
   creatorId?: string
+  /** Override the progress display with a custom score (e.g. for race mode) */
+  score?: number
 }
 
-export function GamePlayerBar({ team, totalCells, isWinner, label, creatorId }: GamePlayerBarProps) {
+export function GamePlayerBar({ team, totalCells, isWinner, label, creatorId, score }: GamePlayerBarProps) {
   const teamHex = TEAM_HEX[team.color] || '#3b82f6'
-  const completedCount = team.completedCells?.length || 0
+  const completedCount = score ?? (team.completedCells?.length || 0)
 
   return (
     <div

@@ -54,11 +54,18 @@ export class TeeworldsClient {
     this.serverIp = ip
     this.serverPort = port
 
+    console.log(`[Client] Attempting connection to ${ip}:${port}`)
+    console.log(`[Client] Identity: name="${this.options.name}", clan="${this.options.clan || 'DDashBoard'}", skin="${this.options.skin || 'bot'}"`)
+
     return new Promise((resolve, reject) => {
+      const timeoutMs = this.options.timeout || 10000
+      console.log(`[Client] Connection timeout: ${timeoutMs}ms`)
+
       const timeout = setTimeout(() => {
+        console.log(`[Client] Connection timeout reached after ${timeoutMs}ms`)
         this.disconnect()
         reject(new Error('Connection timeout'))
-      }, this.options.timeout || 10000)
+      }, timeoutMs)
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const identity: any = {
@@ -74,6 +81,7 @@ export class TeeworldsClient {
         identity,
         ...(this.options.password ? { password: this.options.password } : {}),
       })
+      console.log(`[Client] Teeworlds client created, initiating handshake...`)
 
       // Track map name from connection handshake (fires before 'connected')
       this.client.on('map_change', (...args: unknown[]) => {

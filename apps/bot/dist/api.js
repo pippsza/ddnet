@@ -8,27 +8,58 @@ export class BackendApi {
         this.baseUrl = baseUrl;
         this.secret = secret;
     }
-    async reportFound(requestId, nickname, serverIp, serverPort) {
-        await this.sendCallback({
+    // =========================================================================
+    // Verification callbacks
+    // =========================================================================
+    async reportVerified(requestId, nickname, serverIp, serverPort) {
+        await this.post('/api/verification/bot-callback', {
             requestId,
             nickname,
             serverIp,
             serverPort,
-            found: true,
+            result: 'verified',
+        });
+    }
+    async reportHidden(requestId, nickname, serverIp, serverPort) {
+        await this.post('/api/verification/bot-callback', {
+            requestId,
+            nickname,
+            serverIp,
+            serverPort,
+            result: 'hidden',
         });
     }
     async reportNotFound(requestId, nickname) {
-        await this.sendCallback({
+        await this.post('/api/verification/bot-callback', {
             requestId,
             nickname,
             serverIp: '',
             serverPort: 0,
-            found: false,
+            result: 'not_found',
         });
     }
-    async sendCallback(data) {
+    async reportError(requestId, nickname, error) {
+        await this.post('/api/verification/bot-callback', {
+            requestId,
+            nickname,
+            serverIp: '',
+            serverPort: 0,
+            result: 'error',
+            message: error,
+        });
+    }
+    // =========================================================================
+    // Race callbacks
+    // =========================================================================
+    async getRaceStatus(raceId) {
+        return this.get(`/api/race/${raceId}`);
+    }
+    // =========================================================================
+    // HTTP helpers
+    // =========================================================================
+    async post(path, data) {
         try {
-            const response = await fetch(`${this.baseUrl}/api/verification/bot-callback`, {
+            const response = await fetch(`${this.baseUrl}${path}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -37,14 +68,33 @@ export class BackendApi {
                 body: JSON.stringify(data),
             });
             if (!response.ok) {
-                console.error(`[API] Callback failed: ${response.status} ${response.statusText}`);
+                console.error(`[API] POST ${path} failed: ${response.status} ${response.statusText}`);
+                return null;
             }
-            else {
-                console.log(`[API] Callback sent successfully`);
-            }
+            console.log(`[API] POST ${path} success`);
+            return await response.json();
         }
         catch (error) {
-            console.error(`[API] Callback error:`, error);
+            console.error(`[API] POST ${path} error:`, error);
+            return null;
+        }
+    }
+    async get(path) {
+        try {
+            const response = await fetch(`${this.baseUrl}${path}`, {
+                headers: {
+                    'X-Bot-Secret': this.secret,
+                },
+            });
+            if (!response.ok) {
+                console.error(`[API] GET ${path} failed: ${response.status} ${response.statusText}`);
+                return null;
+            }
+            return await response.json();
+        }
+        catch (error) {
+            console.error(`[API] GET ${path} error:`, error);
+            return null;
         }
     }
 }

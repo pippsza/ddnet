@@ -15,12 +15,16 @@ export class BaseBotMode {
             throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
         }
     }
-    createClient(name) {
+    createClient(name, password, skinOptions) {
         this.client = new TeeworldsClient({
             name,
-            clan: 'DDNet',
-            skin: 'default',
+            clan: 'DDashBoard',
+            skin: skinOptions?.skin || 'bot',
+            useCustomColor: skinOptions?.useCustomColor,
+            colorBody: skinOptions?.colorBody,
+            colorFeet: skinOptions?.colorFeet,
             timeout: 15000,
+            ...(password ? { password } : {}),
         });
         return this.client;
     }
@@ -29,7 +33,7 @@ export class BaseBotMode {
     }
     async cleanup() {
         if (this.client?.isConnected()) {
-            this.client.disconnect();
+            await this.client.gracefulDisconnect();
         }
     }
 }

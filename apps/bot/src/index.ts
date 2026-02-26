@@ -61,8 +61,33 @@ for (const [key, value] of Object.entries(process.env)) {
   }
 }
 
+async function logNetworkInfo() {
+  const os = await import('os')
+  const interfaces = os.networkInterfaces()
+
+  console.log('[Bot] Network interfaces:')
+  for (const [name, addrs] of Object.entries(interfaces)) {
+    if (!addrs) continue
+    for (const addr of addrs) {
+      if (addr.family === 'IPv4') {
+        console.log(`  ${name}: ${addr.address} (internal: ${addr.internal})`)
+      }
+    }
+  }
+
+  // Try to detect external IP
+  try {
+    const res = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) })
+    const data = await res.json() as { ip: string }
+    console.log(`[Bot] External IP: ${data.ip}`)
+  } catch {
+    console.log('[Bot] External IP: could not detect')
+  }
+}
+
 async function main() {
   console.log(`[Bot] Starting in ${modeName} mode`)
+  await logNetworkInfo()
 
   try {
     activeMode.init(config)

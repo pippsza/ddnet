@@ -27,7 +27,12 @@ export declare abstract class BaseBotMode implements BotMode {
     protected client: TeeworldsClient | null;
     init(config: Record<string, string>): void;
     protected validateConfig(): void;
-    protected createClient(name: string): TeeworldsClient;
+    protected createClient(name: string, password?: string, skinOptions?: {
+        skin?: string;
+        useCustomColor?: boolean;
+        colorBody?: number;
+        colorFeet?: number;
+    }): TeeworldsClient;
     protected sleep(ms: number): Promise<void>;
     abstract run(): Promise<void>;
     cleanup(): Promise<void>;

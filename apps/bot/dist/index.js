@@ -45,12 +45,36 @@ for (const envKey of activeMode.requiredEnv) {
 }
 // Also include optional env vars that start with BOT_ or WEBHOOK_
 for (const [key, value] of Object.entries(process.env)) {
-    if ((key.startsWith('BOT_') || key.startsWith('WEBHOOK_') || key === 'COMMAND_PREFIX') && value) {
+    if ((key.startsWith('BOT_') || key.startsWith('WEBHOOK_') || key === 'COMMAND_PREFIX' || key === 'LOG_FILE') && value) {
         config[key] = value;
+    }
+}
+async function logNetworkInfo() {
+    const os = await import('os');
+    const interfaces = os.networkInterfaces();
+    console.log('[Bot] Network interfaces:');
+    for (const [name, addrs] of Object.entries(interfaces)) {
+        if (!addrs)
+            continue;
+        for (const addr of addrs) {
+            if (addr.family === 'IPv4') {
+                console.log(`  ${name}: ${addr.address} (internal: ${addr.internal})`);
+            }
+        }
+    }
+    // Try to detect external IP
+    try {
+        const res = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
+        const data = await res.json();
+        console.log(`[Bot] External IP: ${data.ip}`);
+    }
+    catch {
+        console.log('[Bot] External IP: could not detect');
     }
 }
 async function main() {
     console.log(`[Bot] Starting in ${modeName} mode`);
+    await logNetworkInfo();
     try {
         activeMode.init(config);
     }

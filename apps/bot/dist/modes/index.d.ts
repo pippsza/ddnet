@@ -19,3 +19,6 @@ export { BotMode, BaseBotMode } from './base.js';
 export { VerificationMode } from './verification.js';
 export { ChatbotMode } from './chatbot.js';
 export { MonitorMode } from './monitor.js';
+export { RaceMode } from './race.js';
+export { TestMode } from './test.js';
+export { InGameChatMode } from './ingamechat.js';

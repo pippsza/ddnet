@@ -1,78 +1,104 @@
 import { BaseBotMode } from './base.js';
-import { ServerHopper } from '../serverHopper.js';
 import { BackendApi } from '../api.js';
 /**
- * Verification mode - searches for a player across servers
- * and sends them a verification token via whisper
+ * Verification mode - connects to a server, logs in, and uses /verify
+ * to check if a player is authenticated on the DDNet server.
  */
 export class VerificationMode extends BaseBotMode {
     name = 'verification';
-    description = 'Search for player and send verification token';
+    description = 'Verify player identity via /verify command on DDNet server';
     requiredEnv = [
         'TARGET_NICK',
-        'VERIFY_TOKEN',
         'REQUEST_ID',
-        'SERVERS_LIST',
+        'SERVER_IP',
+        'SERVER_PORT',
         'BACKEND_URL',
         'BACKEND_SECRET',
+        'BOT_LOGIN_TOKEN',
     ];
-    servers = [];
     api = null;
     init(config) {
         super.init(config);
-        try {
-            this.servers = JSON.parse(config.SERVERS_LIST || '[]');
-        }
-        catch {
-            throw new Error('Failed to parse SERVERS_LIST');
-        }
-        if (this.servers.length === 0) {
-            throw new Error('No servers provided in SERVERS_LIST');
-        }
         this.api = new BackendApi(config.BACKEND_URL, config.BACKEND_SECRET);
     }
     async run() {
-        const { TARGET_NICK, VERIFY_TOKEN, REQUEST_ID } = this.config;
-        const hopper = new ServerHopper(this.servers);
+        const { TARGET_NICK, REQUEST_ID, SERVER_IP, SERVER_PORT, BOT_LOGIN_TOKEN } = this.config;
+        const port = parseInt(SERVER_PORT);
         console.log(`[Verification] Starting for: ${TARGET_NICK}`);
-        console.log(`[Verification] Searching across ${this.servers.length} servers`);
-        let found = false;
-        while (hopper.hasMoreServers()) {
-            const server = hopper.getNextServer();
-            if (!server)
-                break;
-            console.log(`[Verification] Connecting to ${server.name || server.ip}:${server.port}...`);
-            const client = this.createClient('BingoBot');
-            try {
-                await client.connect(server.ip, server.port);
-                const player = await client.findPlayer(TARGET_NICK);
-                if (player) {
-                    console.log(`[Verification] Found ${TARGET_NICK} on ${server.ip}:${server.port}`);
-                    // Send whisper with token
-                    client.whisper(TARGET_NICK, `Your verification code: ${VERIFY_TOKEN}`);
-                    // Report to backend
-                    await this.api.reportFound(REQUEST_ID, TARGET_NICK, server.ip, server.port);
-                    // Stay connected for a bit to ensure message delivery
-                    await this.sleep(5000);
-                    found = true;
-                    client.disconnect();
-                    break;
-                }
-                else {
-                    console.log(`[Verification] Player not found on ${server.ip}:${server.port}`);
-                }
+        console.log(`[Verification] Server: ${SERVER_IP}:${SERVER_PORT}`);
+        const client = this.createClient('BingoBot');
+        try {
+            // 1. Connect to server
+            await client.connect(SERVER_IP, port);
+            // Log ALL messages for debugging
+            client.onServerMessage((text) => {
+                console.log(`[Server] ${text}`);
+            });
+            client.onMessage((msg) => {
+                console.log(`[Chat] <${msg.author}> ${msg.text}`);
+            });
+            // Wait for server to fully initialize our client
+            console.log('[Verification] Connected, waiting for server readiness...');
+            await this.sleep(3000);
+            // 2. Login
+            console.log('[Verification] Logging in...');
+            client.say(`/login ${BOT_LOGIN_TOKEN}`);
+            const loginResult = await client.waitForServerMessage(/\[Accounts\] Welcome back/, 10000);
+            if (!loginResult) {
+                console.error('[Verification] Login failed or timed out');
+                await this.api.reportError(REQUEST_ID, TARGET_NICK, 'Bot login failed');
                 client.disconnect();
+                return;
             }
-            catch (error) {
-                console.error(`[Verification] Error on ${server.ip}:${server.port}:`, error);
-            }
-            // Small delay between servers
+            console.log('[Verification] Login successful');
+            // 3. Small delay to ensure we're ready
             await this.sleep(1000);
+            // 4. Run /verify
+            console.log(`[Verification] Running /verify ${TARGET_NICK}`);
+            client.say(`/verify ${TARGET_NICK}`);
+            // Wait for the final result (skip the "is now being checked" message)
+            // Server responses:
+            //   [VERIFY] "Nick" is verified as "AccountName"
+            //   [VERIFY] "Nick" is not logged in!
+            //   [VERIFY] "Nick" is not connected on this server.
+            const verifyResult = await client.waitForServerMessage(new RegExp(`\\[VERIFY\\].*"${this.escapeRegex(TARGET_NICK)}".*(is verified|is not logged in|is not connected)`), 15000);
+            if (!verifyResult) {
+                console.error('[Verification] /verify timed out — no response from server');
+                await this.api.reportError(REQUEST_ID, TARGET_NICK, 'Verify command timed out');
+                await client.gracefulDisconnect();
+                return;
+            }
+            // 5. Parse result and notify player via /whisper (server command — works for spectators)
+            // DDNet has sv_spamprotection — drops messages sent <1s after the previous one.
+            // /verify was the last message sent, so wait before whispering.
+            await this.sleep(1500);
+            if (/is verified/.test(verifyResult)) {
+                console.log(`[Verification] ${TARGET_NICK} is VERIFIED`);
+                client.whisper(TARGET_NICK, 'You are now verified! You can close the game.');
+                await this.sleep(500);
+                await this.api.reportVerified(REQUEST_ID, TARGET_NICK, SERVER_IP, port);
+            }
+            else if (/is not logged in/.test(verifyResult)) {
+                console.log(`[Verification] ${TARGET_NICK} is NOT LOGGED IN`);
+                client.whisper(TARGET_NICK, 'You are not logged in. Use /login first, then try again.');
+                await this.sleep(500);
+                await this.api.reportHidden(REQUEST_ID, TARGET_NICK, SERVER_IP, port);
+            }
+            else if (/is not connected/.test(verifyResult)) {
+                console.log(`[Verification] ${TARGET_NICK} is NOT CONNECTED on this server`);
+                await this.api.reportNotFound(REQUEST_ID, TARGET_NICK);
+            }
+            // 6. Disconnect gracefully (flush + disconnect + wait)
+            await client.gracefulDisconnect();
         }
-        if (!found) {
-            console.log(`[Verification] Player ${TARGET_NICK} not found on any server`);
-            await this.api.reportNotFound(REQUEST_ID, TARGET_NICK);
+        catch (error) {
+            console.error('[Verification] Error:', error);
+            await this.api.reportError(REQUEST_ID, TARGET_NICK, error instanceof Error ? error.message : String(error));
+            await client.gracefulDisconnect();
         }
         console.log('[Verification] Finished');
+    }
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 }

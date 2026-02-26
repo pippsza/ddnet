@@ -53,7 +53,8 @@
       "Bash(grep -n \"onComplete\\\\|setShowCountdown\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/bingo/[id]/page.tsx)",
       "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.CreatedAt}}\")",
       "Bash(docker stop silly_shockley)",
-      "Bash(chmod 777 /tmp/bot-logs)"
+      "Bash(chmod 777 /tmp/bot-logs)",
+      "Read(//home/pippsza/code/ddnet/**)"
     ],
     "additionalDirectories": [
       "/tmp",

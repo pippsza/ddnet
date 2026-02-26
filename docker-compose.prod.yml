@@ -10,4 +10,8 @@ services:
       - BOT_DOCKER_IMAGE=pippsza/ddnet-bot:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    # Grant the container's nextjs user access to the Docker socket.
+    # Replace the GID below with the output of: stat -c '%g' /var/run/docker.sock
+    group_add:
+      - "${DOCKER_GID:-999}"
     restart: unless-stopped

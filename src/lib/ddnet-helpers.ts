@@ -15,6 +15,7 @@
 export interface PlayerOnlineStatus {
   name: string
   online: boolean
+  afk?: boolean
   server?: {
     ip: string
     port: number
@@ -223,6 +224,7 @@ export async function findPlayersOnline(nicknames: string[]): Promise<PlayerOnli
 
       entry.online = true
       entry.name = client.name // preserve original casing from server
+      entry.afk = client.afk ?? false
       entry.server = {
         ip: addressMatch?.[1] || '',
         port: parseInt(addressMatch?.[2] || '8303'),

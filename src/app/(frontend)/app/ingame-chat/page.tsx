@@ -10,7 +10,8 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft, Square, Loader2, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Square, Loader2, Lock, ShieldCheck, Wrench } from 'lucide-react'
+import { useBotSettings } from '@/hooks/use-bot-settings'
 import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatMessages } from '@/components/chat/ChatMessages'
 import { ChatInput } from '@/components/chat/ChatInput'
@@ -79,6 +80,7 @@ function InGameChatContent() {
   const [containerId, setContainerId] = useState<string | null>(() =>
     sessionId ? loadContainerId(sessionId) : null,
   )
+  const { botSettings } = useBotSettings()
   // Current user data
   const { data: meData } = useSWR('/api/users/me', fetcher)
 
@@ -400,6 +402,27 @@ function InGameChatContent() {
       setStopping(false)
     }
   }, [sessionId, containerId])
+
+  if (!botSettings.ingameChatBotEnabled && !sessionId) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Card>
+          <CardContent className="p-8 text-center space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+              <Wrench className="h-6 w-6 text-yellow-500" />
+            </div>
+            <h2 className="text-lg font-semibold">In-Game Chat Disabled</h2>
+            <p className="text-muted-foreground text-sm">
+              In-game chat is temporarily disabled for maintenance. Please try again later.
+            </p>
+            <Link href="/app/players" className="text-primary hover:underline text-sm block">
+              Back to Players
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (!sessionId) {
     return (

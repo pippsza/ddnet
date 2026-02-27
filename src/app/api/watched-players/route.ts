@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
         notifyOnline: entry.notifyOnline,
         addedAt: entry.addedAt,
         online: status?.online ?? false,
+        afk: status?.afk ?? false,
         server: status?.server ?? null,
         skin,
         isVerified: regUser?.isSystemVerified ?? false,

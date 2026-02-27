@@ -6,7 +6,11 @@ import type {
   Field,
 } from 'payload'
 import { APIError } from 'payload'
-import { getRoleCacheEntry, isRoleCachePopulated, ensureRoleCachePopulated } from '@/lib/permissions'
+import {
+  getRoleCacheEntry,
+  isRoleCachePopulated,
+  ensureRoleCachePopulated,
+} from '@/lib/permissions'
 // DDNET_CATEGORIES import removed — favoriteCategory fields changed from select to text
 
 // ── Helper functions to reduce field repetition ──
@@ -59,7 +63,11 @@ const raceCategoryStats = (): Field[] => [
   { name: 'gamesWon', type: 'number', defaultValue: 0, min: 0 },
   { name: 'gamesLost', type: 'number', defaultValue: 0, min: 0 },
   { name: 'totalRoundsWon', type: 'number', defaultValue: 0, min: 0 },
-  { name: 'bestFinishTime', type: 'number', admin: { description: 'Best round finish time in seconds' } },
+  {
+    name: 'bestFinishTime',
+    type: 'number',
+    admin: { description: 'Best round finish time in seconds' },
+  },
   { name: 'averageFinishTime', type: 'number', defaultValue: 0 },
 ]
 
@@ -139,10 +147,7 @@ const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation 
           400,
         )
       }
-      throw new APIError(
-        'This nickname is already taken.',
-        400,
-      )
+      throw new APIError('This nickname is already taken.', 400)
     }
   }
 
@@ -155,10 +160,7 @@ const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation 
 
   for (const existingUser of usernameConflicts.docs) {
     if (existingUser.isSystemVerified) {
-      throw new APIError(
-        'This username is already protected. Please choose a different name.',
-        400,
-      )
+      throw new APIError('This username is already protected. Please choose a different name.', 400)
     }
     // Username-only conflict, unverified — delete to allow re-registration
     await payload.delete({
@@ -225,7 +227,7 @@ const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, re
 export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
-    useAsTitle: 'username',
+    useAsTitle: 'ingameNick',
   },
   access: {
     admin: adminAccessControl,
@@ -250,6 +252,7 @@ export const Users: CollectionConfig = {
   auth: {
     useAPIKey: true,
     // Use nickname (name field) as login instead of email
+    tokenExpiration: 60 * 60 * 24 * 7, // 7 days
     loginWithUsername: {
       requireEmail: false,
       allowEmailLogin: false,
@@ -291,7 +294,13 @@ export const Users: CollectionConfig = {
             if (!isRoleCachePopulated()) {
               await ensureRoleCachePopulated(req)
             }
-            let best: { priority: number; name: string; displayName: string; badgeColor: string; textColor: string } | null = null
+            let best: {
+              priority: number
+              name: string
+              displayName: string
+              badgeColor: string
+              textColor: string
+            } | null = null
             for (const ref of doc.assignedRoles) {
               const roleId = typeof ref === 'string' ? ref : null
               if (!roleId) continue
@@ -323,6 +332,12 @@ export const Users: CollectionConfig = {
       unique: true,
       required: true,
       label: 'Username (Login)',
+      access: {
+        read: ({ req, doc }) => {
+          if (!req.user || !doc) return false
+          return req.user.id === doc.id || req.user.roles === 'admin'
+        },
+      },
       admin: {
         description: 'Lowercase login name (auto-set by Payload)',
       },
@@ -502,7 +517,10 @@ export const Users: CollectionConfig = {
           min: 0,
           max: 100,
           label: 'Bingo Win Rate (%)',
-          admin: { readOnly: true, description: 'Calculated automatically (totalWins / totalPlayed * 100)' },
+          admin: {
+            readOnly: true,
+            description: 'Calculated automatically (totalWins / totalPlayed * 100)',
+          },
         },
         {
           name: 'favoriteCategory',

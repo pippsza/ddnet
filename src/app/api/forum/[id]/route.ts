@@ -139,6 +139,53 @@ export async function POST(
       overrideAccess: true,
     })
 
+    // Notify thread participants (author + previous repliers, excluding sender)
+    const participantIds = new Set<string>()
+    const postAuthorId = typeof post.author === 'string' ? post.author : (post.author as any)?.id
+    if (postAuthorId) participantIds.add(postAuthorId)
+
+    for (const reply of (post.replies || [])) {
+      const replyAuthorId = typeof reply.author === 'string' ? reply.author : (reply.author as any)?.id
+      if (replyAuthorId) participantIds.add(replyAuthorId)
+    }
+    participantIds.delete(user.id)
+
+    const actionUrl = `/app/forum/${id}`
+    for (const recipientId of participantIds) {
+      try {
+        const { totalDocs } = await payload.find({
+          collection: 'notifications',
+          where: {
+            and: [
+              { recipient: { equals: recipientId } },
+              { type: { equals: 'forum_reply' } },
+              { isRead: { equals: false } },
+              { actionUrl: { equals: actionUrl } },
+            ],
+          },
+          limit: 0,
+          overrideAccess: true,
+        })
+
+        if (totalDocs === 0) {
+          await payload.create({
+            collection: 'notifications',
+            data: {
+              recipient: recipientId,
+              type: 'forum_reply',
+              title: 'New reply in forum thread',
+              message: `New reply in "${post.title}"`,
+              actionUrl,
+              relatedUser: user.id,
+            },
+            overrideAccess: true,
+          })
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+
     return NextResponse.json({ post: updated })
   } catch (error) {
     console.error('[API] Forum reply error:', error)

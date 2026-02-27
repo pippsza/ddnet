@@ -21,7 +21,7 @@ export default function CreateBingoPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: `${user.ingameNick || user.username}'s Bingo`,
+        title: `${user.ingameNick}'s Bingo`,
         mode: 'solo',
         category: 'novice',
         gridSize: '3x3',

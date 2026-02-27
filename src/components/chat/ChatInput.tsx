@@ -198,6 +198,7 @@ function PlainTextInput({
   const [text, setText] = useState('')
   const [cooldown, setCooldown] = useState(false)
   const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { files, uploading, fileRef, handleFiles, removeFile, clearFiles, fileIds } =
     useFileUpload()
   const handlePaste = usePasteUpload(handleFiles)
@@ -239,8 +240,11 @@ function PlainTextInput({
           ref={fileRef}
           type="file"
           multiple
-          className="hidden "
-          onChange={(e) => handleFiles(e.target.files)}
+          className="hidden"
+          onChange={async (e) => {
+            await handleFiles(e.target.files)
+            textareaRef.current?.focus()
+          }}
         />
         <Button
           type="button"
@@ -253,6 +257,7 @@ function PlainTextInput({
           <Paperclip className="h-4 w-4" />
         </Button>
         <Textarea
+          ref={textareaRef}
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -287,6 +292,7 @@ function RichTextInput({
   onTyping?: () => void
 }) {
   const contentRef = useRef<any>(null)
+  const editorAreaRef = useRef<HTMLDivElement>(null)
   const [key, setKey] = useState(0)
   const { files, uploading, fileRef, handleFiles, removeFile, clearFiles, fileIds } =
     useFileUpload()
@@ -311,7 +317,7 @@ function RichTextInput({
   }, [onSend, sending, uploading, fileIds, clearFiles])
 
   return (
-    <div className="shrink-0 space-y-2 pt-4 border-t" onPaste={handlePaste}>
+    <div ref={editorAreaRef} className="shrink-0 space-y-2 pt-4 border-t" onPaste={handlePaste}>
       <AttachmentPreviews files={files} uploading={uploading} onRemove={removeFile} />
       <LexicalRichTextEditor
         key={key}
@@ -326,7 +332,11 @@ function RichTextInput({
           type="file"
           multiple
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={async (e) => {
+            await handleFiles(e.target.files)
+            const el = editorAreaRef.current?.querySelector('[contenteditable="true"]') as HTMLElement | null
+            el?.focus()
+          }}
         />
         <Button
           variant="ghost"

@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl'
 
 import Script from 'next/script'
 import { ThemeProvider } from '@/components/theme/theme-provider'
+import { themeIds, themeClassMap } from '@/lib/themes'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { FloatingBackground } from '@/components/ui/floating-background'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
@@ -41,7 +42,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="default-dark"
+          themes={themeIds}
+          value={themeClassMap}
+        >
           {process.env.NODE_ENV === 'development' && (
             <Script
               src="https://unpkg.com/react-scan/dist/auto.global.js"
@@ -55,6 +61,9 @@ export default function RootLayout({
             <AuthProvider>
               <Toaster />
               <div className="relative z-10">{children}</div>
+              <div className=" fixed bottom-0 right-0 text-primary bg-secondary p-2 rounded-tl-2xl">
+                v1.0.0
+              </div>
             </AuthProvider>
           </NextIntlClientProvider>
         </ThemeProvider>

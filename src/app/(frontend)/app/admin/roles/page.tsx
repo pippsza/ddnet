@@ -236,7 +236,6 @@ function RolesContent() {
       const optimisticUser = {
         id: userId,
         ingameNick: player.name,
-        username: player.name,
         ingameStats: player.skin ? { skin: { name: player.skin.name } } : undefined,
         _optimistic: true,
       }
@@ -641,7 +640,7 @@ function RolesContent() {
                         }
                         size="xs"
                       />
-                      <span>{user.ingameNick || user.username}</span>
+                      <span>{user.ingameNick}</span>
                       <button
                         onClick={() => removeUserFromRole(user.id)}
                         className="ml-0.5 rounded-full p-0.5 hover:bg-muted"

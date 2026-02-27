@@ -66,7 +66,7 @@ const TEAM_COLORS: Record<string, string> = {
 
 interface Player {
   id: string
-  username: string
+  ingameNick: string
   points?: number
   skin?: { name: string; colorBody: number; colorFeet: number } | null
   isReady: boolean
@@ -75,7 +75,7 @@ interface Player {
 
 interface PendingInvite {
   id: string
-  username: string
+  ingameNick: string
   skin?: { name: string; colorBody: number; colorFeet: number } | null
 }
 
@@ -891,7 +891,7 @@ function LobbyTeamCard({
     // Optimistic: add to local pending immediately
     const optimisticEntry: PendingInvite = {
       id: player.id,
-      username: player.name,
+      ingameNick: player.name,
       skin: player.skin || null,
     }
     setOptimisticPending((prev) => [...prev, optimisticEntry])
@@ -975,7 +975,7 @@ function LobbyTeamCard({
                   useCustomColors={!!(player.skin?.colorBody || player.skin?.colorFeet)}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{player.username}</span>
+                  <span className="text-sm font-medium truncate block">{player.ingameNick}</span>
                   {player.points !== undefined && player.points > 0 && (
                     <span className="text-xs text-muted-foreground">
                       {player.points.toLocaleString()} pts
@@ -1019,7 +1019,7 @@ function LobbyTeamCard({
                   useCustomColors={!!(invite.skin?.colorBody || invite.skin?.colorFeet)}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{invite.username}</span>
+                  <span className="text-sm font-medium truncate block">{invite.ingameNick}</span>
                 </div>
                 <Badge
                   variant="outline"

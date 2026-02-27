@@ -61,6 +61,7 @@ export async function GET(
         onlineStatus = {
           server: status.server,
           skin: status.skin,
+          afk: status.afk ?? false,
         }
       }
     } catch {
@@ -71,7 +72,7 @@ export async function GET(
       registered: registeredUser
         ? {
             id: registeredUser.id,
-            username: registeredUser.ingameNick,
+            ingameNick: registeredUser.ingameNick,
             roles: registeredUser.roles || 'player',
             primaryRole: (registeredUser as any).primaryRole || null,
             isVerified: registeredUser.isSystemVerified || false,

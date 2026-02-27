@@ -3,13 +3,13 @@
 interface Round {
   roundNumber: number
   mapName: string
-  winner?: string | { id: string; username?: string }
+  winner?: string | { id: string; ingameNick?: string }
   finishTime?: number
 }
 
 interface RacePlayer {
   id: string
-  username: string
+  ingameNick: string
   color?: string
 }
 
@@ -187,7 +187,7 @@ export function RaceMap({ rounds, totalRounds, currentRound, players }: RaceMapP
                       lineHeight: '1',
                     }}
                   >
-                    {typeof round.winner === 'object' ? (round.winner.username || '') : ''}
+                    {typeof round.winner === 'object' ? (round.winner.ingameNick || '') : ''}
                     {round.finishTime ? ` ${formatTime(round.finishTime)}` : ''}
                   </span>
                 </foreignObject>

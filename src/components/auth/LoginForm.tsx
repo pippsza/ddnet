@@ -22,7 +22,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 
 const loginSchema = z.object({
   nickname: z.string().min(2).max(16),
-  password: z.string().min(6),
+  password: z.string().min(3).max(100),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -127,9 +127,7 @@ export function LoginForm({ onPasswordVisibilityChange }: LoginFormProps) {
             </FormItem>
           )}
         />
-        {error && (
-          <p className="text-sm text-destructive text-center">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive text-center">{error}</p>}
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {t('signIn')}

@@ -125,7 +125,7 @@ function ChatContent() {
         key: `friend-${friend.userId}`,
         conversationId: null,
         userId: friend.userId,
-        ingameNick: friend.username || friend.nickname || 'Unknown',
+        ingameNick: friend.ingameNick || friend.nickname || 'Unknown',
         roles: friend.roles || 'player',
         primaryRole: (friend as any).primaryRole || null,
         lastSeenAt: null,

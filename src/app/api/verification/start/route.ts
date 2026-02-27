@@ -26,6 +26,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if verification bot is enabled
+    const botSettings = await payload.findGlobal({ slug: 'bot-settings' })
+    if (!botSettings.verificationBotEnabled) {
+      return NextResponse.json(
+        { error: 'bot_disabled', message: 'Verification is temporarily disabled. Please try again later.' },
+        { status: 503 },
+      )
+    }
+
     // Load verification settings from global
     const settings = await payload.findGlobal({ slug: 'verification-settings' })
 

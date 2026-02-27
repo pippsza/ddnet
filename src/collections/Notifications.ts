@@ -60,6 +60,9 @@ export const Notifications: CollectionConfig = {
         { label: 'System', value: 'system' },
         { label: 'Player Online', value: 'player_online' },
         { label: 'Chat Mention', value: 'chat_mention' },
+        { label: 'Direct Message', value: 'direct_message' },
+        { label: 'Forum Reply', value: 'forum_reply' },
+        { label: 'Support Reply', value: 'support_reply' },
       ],
       admin: {
         description: 'Type of notification',

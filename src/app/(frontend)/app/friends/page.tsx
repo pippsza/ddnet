@@ -13,6 +13,8 @@ import { PlayerCard } from '@/components/players/PlayerCard'
 import { FriendsPageSkeleton } from '@/components/ui/page-skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
+import { cn } from '@/lib/utils'
+import { AfkBadge } from '@/components/tee/OnlineStatusIndicator'
 import {
   UserPlus,
   Check,
@@ -175,7 +177,7 @@ function FriendsContent() {
 
   // Filter suggested players (exclude self, friends, pending)
   const myNick = meData?.user?.ingameNick?.toLowerCase()
-  const friendUsernames = new Set(friends.map((f: any) => (f.username || f.ingameNick)?.toLowerCase()))
+  const friendUsernames = new Set(friends.map((f: any) => (f.ingameNick || f.nickname)?.toLowerCase()))
   const outgoingNicks = new Set(outgoing.map((r: any) => r.otherUser?.ingameNick?.toLowerCase()))
   const suggested = (suggestedData?.registered || []).filter(
     (p: any) =>
@@ -204,7 +206,7 @@ function FriendsContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 ref={friendInputRef}
-                placeholder="Enter username or in-game nick..."
+                placeholder="Enter in-game nickname..."
                 className="pl-10"
               />
             </div>
@@ -407,11 +409,12 @@ function FriendsList({
       {friends.map((friend: any) => (
         <PlayerCard
           key={friend.userId}
-          name={friend.username || friend.nickname}
+          name={friend.ingameNick || friend.nickname}
           role={(friend as any).primaryRole || friend.roles}
           skin={friend.skin}
           platformOnline={friend.platformOnline ?? false}
           inGameOnline={friend.online ?? false}
+          afk={friend.afk ?? false}
           serverName={friend.server?.name}
           mapName={friend.server?.map}
           showMapBackground
@@ -419,10 +422,11 @@ function FriendsList({
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               {friend.online ? (
                 <>
-                  <Wifi className="h-3 w-3 text-green-500" />
-                  <span className="text-green-600 dark:text-green-400 truncate">
+                  <Wifi className={cn('h-3 w-3', friend.afk ? 'text-yellow-500' : 'text-green-500')} />
+                  <span className={cn('truncate', friend.afk ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400')}>
                     {friend.server?.name || 'Online'}
                   </span>
+                  {friend.afk && <AfkBadge />}
                 </>
               ) : (
                 <>

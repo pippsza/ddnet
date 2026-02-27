@@ -61,7 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
         const playerUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: playerUser?.id || '',
-          username: playerUser?.ingameNick || '',
+          ingameNick: playerUser?.ingameNick || '',
           avatar: playerUser?.avatar,
           points: playerUser?.ingameStats?.points || 0,
           skin: playerUser?.ingameStats?.skin
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
         const invUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: invUser?.id || '',
-          username: invUser?.ingameNick || '',
+          ingameNick: invUser?.ingameNick || '',
           skin: invUser?.ingameStats?.skin
             ? {
                 name: invUser.ingameStats.skin.name || 'default',
@@ -159,7 +159,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
       createdBy: creator
         ? {
             id: creator.id,
-            username: creator.ingameNick,
+            ingameNick: creator.ingameNick,
           }
         : null,
       maps: game.maps,

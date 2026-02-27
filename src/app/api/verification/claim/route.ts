@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
 
     const payload = await getPayload({ config: payloadConfig })
 
+    // Check if verification bot is enabled
+    const botSettings = await payload.findGlobal({ slug: 'bot-settings' })
+    if (!botSettings.verificationBotEnabled) {
+      return NextResponse.json(
+        { error: 'bot_disabled', message: 'Verification is temporarily disabled. Please contact an admin via ticket.' },
+        { status: 503 },
+      )
+    }
+
     // Check if a user exists with this nickname
     const existingUsers = await payload.find({
       collection: 'users',

@@ -72,6 +72,47 @@ export async function POST(
       },
     })
 
+    // Notify ticket creator when staff replies
+    const ticketCreatorId = typeof ticket.createdBy === 'string'
+      ? ticket.createdBy
+      : (ticket.createdBy as any)?.id
+
+    if (ticketCreatorId && ticketCreatorId !== user.id) {
+      try {
+        const ticketUrl = `/support/${id}`
+        const { totalDocs } = await payload.find({
+          collection: 'notifications',
+          where: {
+            and: [
+              { recipient: { equals: ticketCreatorId } },
+              { type: { equals: 'support_reply' } },
+              { isRead: { equals: false } },
+              { actionUrl: { equals: ticketUrl } },
+            ],
+          },
+          limit: 0,
+          overrideAccess: true,
+        })
+
+        if (totalDocs === 0) {
+          await payload.create({
+            collection: 'notifications',
+            data: {
+              recipient: ticketCreatorId,
+              type: 'support_reply',
+              title: 'New reply in your ticket',
+              message: `Staff replied to "${ticket.subject}"`,
+              actionUrl: ticketUrl,
+              relatedUser: user.id,
+            },
+            overrideAccess: true,
+          })
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+
     return NextResponse.json({ ticket: updated })
   } catch (error) {
     console.error('[API] Support reply error:', error)

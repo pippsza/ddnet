@@ -211,7 +211,7 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <CategoryIcon category={game.category} iconName={game.categoryIcon} className="h-3.5 w-3.5 shrink-0" />
               {game.category} &middot; {game.gridSize} &middot; {game.winCondition?.replace('_', ' ')}
-              {game.createdBy?.username && ` · by ${game.createdBy.username}`}
+              {game.createdBy?.ingameNick && ` · by ${game.createdBy.ingameNick}`}
             </p>
           </div>
         </div>

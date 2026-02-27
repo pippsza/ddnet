@@ -11,7 +11,11 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2 } from 'lucide-react'
+import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2, Wrench, Check, Sun, Moon } from 'lucide-react'
+import { useBotSettings } from '@/hooks/use-bot-settings'
+import { useTheme } from 'next-themes'
+import { themes } from '@/lib/themes'
+import Link from 'next/link'
 import {
   StepIndicator,
   StepConnector,
@@ -50,7 +54,9 @@ export default function SettingsPage() {
   const [verifyError, setVerifyError] = useState<string | null>(null)
   const [verifyMessage, setVerifyMessage] = useState<string | null>(null)
 
+  const { botSettings } = useBotSettings()
   const servers = serversData?.servers || []
+  const { theme: currentTheme, setTheme } = useTheme()
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -281,7 +287,7 @@ export default function SettingsPage() {
                   />
                 </OnlineStatusIndicator>
                 <div>
-                  <p className="text-lg font-semibold">{user?.user?.ingameNick || user?.user?.username}</p>
+                  <p className="text-lg font-semibold">{user?.user?.ingameNick}</p>
                   <RoleBadge role={(user?.user as any)?.primaryRole || user?.user?.roles} />
                 </div>
               </div>
@@ -297,6 +303,98 @@ export default function SettingsPage() {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Theme Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Theme</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {themes.map((t) => {
+              const isSelected = currentTheme === t.id
+              const isDark = t.mode === 'dark'
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  className={`group relative rounded-lg border-2 p-2 text-left transition-all hover:scale-[1.02] ${
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  {/* Mini preview */}
+                  <div
+                    className="rounded-md p-2.5 space-y-1.5 mb-2"
+                    style={{
+                      background: t.preview.background,
+                      borderColor: t.preview.border,
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                    }}
+                  >
+                    {/* Header bar */}
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center"
+                        style={{ background: t.preview.primary }}
+                      >
+                        {isDark ? (
+                          <Moon className="w-3 h-3" style={{ color: t.preview.background }} />
+                        ) : (
+                          <Sun className="w-3 h-3" style={{ color: t.preview.background }} />
+                        )}
+                      </div>
+                      <div
+                        className="h-2 flex-1 rounded-full"
+                        style={{ background: t.preview.muted }}
+                      />
+                    </div>
+                    {/* Card preview */}
+                    <div
+                      className="rounded p-1.5 space-y-1"
+                      style={{
+                        background: t.preview.card,
+                        borderColor: t.preview.border,
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                      }}
+                    >
+                      <div
+                        className="h-1.5 w-3/4 rounded-full"
+                        style={{ background: t.preview.foreground, opacity: 0.7 }}
+                      />
+                      <div
+                        className="h-1.5 w-1/2 rounded-full"
+                        style={{ background: t.preview.muted }}
+                      />
+                      <div
+                        className="h-1.5 w-1/3 rounded-full"
+                        style={{ background: t.preview.primary }}
+                      />
+                    </div>
+                  </div>
+                  {/* Label */}
+                  <p
+                    className={`text-xs font-medium text-center truncate ${
+                      isSelected ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {t.name}
+                  </p>
+                  {/* Selected indicator */}
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </CardContent>
       </Card>
 
@@ -332,6 +430,22 @@ export default function SettingsPage() {
               <div>
                 <p className="font-medium text-green-700 dark:text-green-400">Your account is verified and protected</p>
                 <p className="text-sm text-muted-foreground">You have full access to all features.</p>
+              </div>
+            </div>
+          ) : !botSettings.verificationBotEnabled ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <Wrench className="h-5 w-5 shrink-0 mt-0.5 text-yellow-500" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                    Verification Temporarily Unavailable
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Account verification is temporarily disabled for maintenance.
+                    Please try again later or contact an admin via a{' '}
+                    <Link href="/support" className="text-primary hover:underline">support ticket</Link>.
+                  </p>
+                </div>
               </div>
             </div>
           ) : (

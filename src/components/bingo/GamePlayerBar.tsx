@@ -17,7 +17,7 @@ const TEAM_HEX: Record<string, string> = {
 
 interface Player {
   id: string
-  username: string
+  ingameNick: string
   points?: number
   skin?: { name: string; colorBody: number; colorFeet: number } | null
   roles?: string
@@ -58,7 +58,7 @@ export function GamePlayerBar({ team, totalCells, isWinner, label, creatorId, sc
           return (
             <Link
               key={player.id}
-              href={`/app/players/${encodeURIComponent(player.username)}`}
+              href={`/app/players/${encodeURIComponent(player.ingameNick)}`}
               className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
             >
               <TeeAvatarWithFallback
@@ -70,7 +70,7 @@ export function GamePlayerBar({ team, totalCells, isWinner, label, creatorId, sc
               />
               <div className="min-w-0 flex items-center gap-1.5">
                 <span className="text-sm font-medium truncate leading-tight">
-                  {player.username}
+                  {player.ingameNick}
                 </span>
                 {isHost && (
                   <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-amber-500/50 text-amber-500 gap-0.5">

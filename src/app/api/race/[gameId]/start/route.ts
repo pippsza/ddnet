@@ -51,12 +51,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
       return NextResponse.json({ error: 'Server IP is required to start the game' }, { status: 400 })
     }
 
-    // Check bot availability
-    const botManager = getBotManager()
-    if (!botManager.hasAvailableSlots()) {
-      return NextResponse.json({ error: 'No bot slots available. Try again later.' }, { status: 503 })
-    }
-
     // Generate maps at start time (not during settings)
     let maps = game.maps || []
     if (game.categoryMode !== 'free' && game.category) {
@@ -68,23 +62,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
       })
     }
 
-    // Collect all player ingame nicks
-    const allPlayerIds = game.teams.flatMap((t) =>
-      (t.players ?? []).map((p) => (typeof p.user === 'string' ? p.user : p.user.id)),
-    )
-    const playerUsers = await Promise.all(
-      allPlayerIds.map((id) => payload.findByID({ collection: 'users', id })),
-    )
-    const playerNames = playerUsers.map((u) => u.ingameNick).filter(Boolean) as string[]
+    // Check if race bot is enabled
+    const botSettings = await payload.findGlobal({ slug: 'bot-settings' })
+    let containerId: string | undefined
 
-    // Start the race bot
-    const containerId = await botManager.startRaceBot(
-      gameId,
-      game.server.ip,
-      game.server.port ?? 8303,
-      playerNames,
-      maps,
-    )
+    if (botSettings.raceBotEnabled) {
+      const botManager = getBotManager()
+      if (!botManager.hasAvailableSlots()) {
+        return NextResponse.json({ error: 'No bot slots available. Try again later.' }, { status: 503 })
+      }
+
+      // Collect all player ingame nicks
+      const allPlayerIds = game.teams.flatMap((t) =>
+        (t.players ?? []).map((p) => (typeof p.user === 'string' ? p.user : p.user.id)),
+      )
+      const playerUsers = await Promise.all(
+        allPlayerIds.map((id) => payload.findByID({ collection: 'users', id })),
+      )
+      const playerNames = playerUsers.map((u) => u.ingameNick).filter(Boolean) as string[]
+
+      containerId = await botManager.startRaceBot(
+        gameId,
+        game.server.ip,
+        game.server.port ?? 8303,
+        playerNames,
+        maps,
+      )
+    }
 
     // Update game status
     for (const team of game.teams) {
@@ -99,29 +103,35 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gam
         startedAt: new Date().toISOString(),
         teams: game.teams,
         maps,
-        botContainerId: containerId,
+        ...(containerId ? { botContainerId: containerId } : {}),
       },
     })
 
-    // Create bot record
-    await payload.create({
-      collection: 'bots',
-      data: {
-        name: `RaceBot-${gameId.slice(0, 8)}`,
-        containerId,
-        mode: 'race',
-        status: 'running',
-        connectedServer: {
-          ip: game.server!.ip!,
-          port: game.server!.port ?? 8303,
-          name: game.server!.name ?? '',
+    // Create bot record only if bot was started
+    if (containerId) {
+      await payload.create({
+        collection: 'bots',
+        data: {
+          name: `RaceBot-${gameId.slice(0, 8)}`,
+          containerId,
+          mode: 'race',
+          status: 'running',
+          connectedServer: {
+            ip: game.server!.ip!,
+            port: game.server!.port ?? 8303,
+            name: game.server!.name ?? '',
+          },
+          linkedGame: { relationTo: 'races', value: gameId },
+          startedAt: new Date().toISOString(),
         },
-        linkedGame: { relationTo: 'races', value: gameId },
-        startedAt: new Date().toISOString(),
-      },
-    })
+      })
+    }
 
-    return NextResponse.json({ success: true, message: 'Race started!' })
+    return NextResponse.json({
+      success: true,
+      message: 'Race started!',
+      botDisabled: !botSettings.raceBotEnabled,
+    })
   } catch (error: any) {
     console.error('[API] Error starting race:', error)
     return NextResponse.json({ error: error.message || 'Failed to start race' }, { status: 500 })

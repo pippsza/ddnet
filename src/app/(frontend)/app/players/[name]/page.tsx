@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { PlayerDetailSkeleton } from '@/components/ui/page-skeleton'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useDDStats } from '@/hooks/use-ddstats'
 import { useGameStats } from '@/hooks/use-game-stats'
 import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils'
@@ -28,7 +29,7 @@ import {
   ShieldCheck,
   Settings,
 } from 'lucide-react'
-import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
+import { OnlineStatusIndicator, AfkBadge } from '@/components/tee/OnlineStatusIndicator'
 import { toast } from 'sonner'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
@@ -55,10 +56,11 @@ function PlayerDetailContent({ name }: { name: string }) {
   const { data: meData } = useSWR('/api/users/me', fetcher)
   const { data: pendingData } = useSWR('/api/friends/pending', fetcher)
 
+  const { botSettings } = useBotSettings()
   const reg = data?.registered
   const ddnet = data?.ddnet
   const online = data?.online
-  const playerName = reg?.username || ddnet?.player || decodedName
+  const playerName = reg?.ingameNick || ddnet?.player || decodedName
 
   const { ddstats, ddstatsLoading } = useDDStats(playerName)
   const gameStats = useGameStats(reg?.id)
@@ -249,6 +251,7 @@ function PlayerDetailContent({ name }: { name: string }) {
                 ? Date.now() - new Date(reg.lastSeenAt).getTime() < 2 * 60_000
                 : false,
               inGameOnline: !!online,
+              afk: online?.afk ?? false,
               serverName: online?.server?.name,
               mapName: online?.server?.map,
             }}
@@ -308,9 +311,10 @@ function PlayerDetailContent({ name }: { name: string }) {
             {/* Currently playing — inline */}
             {online?.server && (
               <div className="flex items-center gap-4 mt-2 text-sm flex-wrap">
-                <span className="flex items-center gap-1.5 text-green-500">
+                <span className={`flex items-center gap-1.5 ${online.afk ? 'text-yellow-500' : 'text-green-500'}`}>
                   <Map className="h-3.5 w-3.5" />
                   <span className="font-medium">{online.server.map}</span>
+                  {online.afk && <AfkBadge />}
                 </span>
                 <span className="text-muted-foreground truncate">{online.server.name}</span>
                 <span className="flex items-center gap-1.5 text-muted-foreground">
@@ -362,7 +366,8 @@ function PlayerDetailContent({ name }: { name: string }) {
                   </Button>
                 </>
               )}
-              {(meData?.user?.isSystemVerified ||
+              {botSettings.ingameChatBotEnabled &&
+                (meData?.user?.isSystemVerified ||
                   isAdmin ||
                   (permissions?.adminPages?.length ?? 0) > 0) &&
                 online && (

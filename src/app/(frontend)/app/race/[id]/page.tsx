@@ -21,7 +21,9 @@ import {
   Flag,
   RotateCcw,
   Server,
+  Wrench,
 } from 'lucide-react'
+import { useBotSettings } from '@/hooks/use-bot-settings'
 import { RacePathGame } from '@/components/race/RacePathGame'
 import { RacePathPreview } from '@/components/race/RacePathPreview'
 import { RaceStartCountdown } from '@/components/race/RaceStartCountdown'
@@ -67,7 +69,7 @@ const TEAM_COLORS: Record<string, string> = {
 
 interface Player {
   id: string
-  username: string
+  ingameNick: string
   points?: number
   skin?: { name: string; colorBody: number; colorFeet: number } | null
   isReady: boolean
@@ -76,7 +78,7 @@ interface Player {
 
 interface PendingInvite {
   id: string
-  username: string
+  ingameNick: string
   skin?: { name: string; colorBody: number; colorFeet: number } | null
 }
 
@@ -159,6 +161,7 @@ function LobbyView({
   router: ReturnType<typeof useRouter>
   inviteTeamIndex?: number
 }) {
+  const { botSettings } = useBotSettings()
   const [actionLoading, setActionLoading] = useState(false)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
   const [settingsError, setSettingsError] = useState('')
@@ -837,6 +840,14 @@ function LobbyView({
 
   return (
     <div className="h-full flex flex-col overflow-hidden relative">
+      {!botSettings.raceBotEnabled && (
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shrink-0 mb-2">
+          <Wrench className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
+          <p className="text-xs text-yellow-700 dark:text-yellow-400">
+            Race announcement bot is on maintenance. The race will still work, but there won&apos;t be in-game announcements.
+          </p>
+        </div>
+      )}
       {/* Top bar */}
       <div className="shrink-0 border-b">
         <div className="flex items-center justify-between py-2">
@@ -1042,7 +1053,7 @@ function LobbyTeamCard({
 
     const optimisticEntry: PendingInvite = {
       id: player.id,
-      username: player.name,
+      ingameNick: player.name,
       skin: player.skin || null,
     }
     setOptimisticPending((prev) => [...prev, optimisticEntry])
@@ -1123,7 +1134,7 @@ function LobbyTeamCard({
                   useCustomColors={!!(player.skin?.colorBody || player.skin?.colorFeet)}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{player.username}</span>
+                  <span className="text-sm font-medium truncate block">{player.ingameNick}</span>
                   {player.points !== undefined && player.points > 0 && (
                     <span className="text-xs text-muted-foreground">
                       {player.points.toLocaleString()} pts
@@ -1167,7 +1178,7 @@ function LobbyTeamCard({
                   useCustomColors={!!(invite.skin?.colorBody || invite.skin?.colorFeet)}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{invite.username}</span>
+                  <span className="text-sm font-medium truncate block">{invite.ingameNick}</span>
                 </div>
                 <Badge
                   variant="outline"
@@ -1261,6 +1272,7 @@ function GameView({
   mutate: () => void
   router: ReturnType<typeof useRouter>
 }) {
+  const { botSettings } = useBotSettings()
   const teams: Team[] = game.teams || []
   const confettiFired = useRef(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -1355,6 +1367,14 @@ function GameView({
 
   return (
     <div className="h-full flex flex-col max-w-xl mx-auto overflow-hidden">
+      {!botSettings.raceBotEnabled && game.gameStatus === 'in_progress' && (
+        <div className="flex items-start gap-3 p-3 mb-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shrink-0">
+          <Wrench className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
+          <p className="text-xs text-yellow-700 dark:text-yellow-400">
+            Race bot is on maintenance. Scoring and progress tracking are unaffected.
+          </p>
+        </div>
+      )}
       {/* Header row: title + timer + status */}
       <div className="flex items-center justify-between shrink-0 py-2 flex-wrap">
         <div className="min-w-0 flex-1">

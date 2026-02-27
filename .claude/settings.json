@@ -54,7 +54,20 @@
       "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.CreatedAt}}\")",
       "Bash(docker stop silly_shockley)",
       "Bash(chmod 777 /tmp/bot-logs)",
-      "Read(//home/pippsza/code/ddnet/**)"
+      "Read(//home/pippsza/code/ddnet/**)",
+      "Bash(grep -n \"onClick.*startRace\\\\|fetch.*start\\\\|/api/race.*start\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/race/[id]/page.tsx)",
+      "Bash(grep -n \"handleStart\\\\|Start Game\\\\|Play\\\\|/api/race.*start\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/race/[id]/page.tsx)",
+      "Bash(grep -n \"ingame.*[Cc]hat\\\\|[Cc]hat.*ingame\\\\|startIngemChat\\\\|startChat\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/race/[id]/page.tsx)",
+      "Bash(grep -n \"gameStatus.*in_progress\\\\|startBingoBot\\\\|bingo.*bot\" /home/pippsza/code/ddnet/src/app/api/bingo/[gameId]/start/route.ts)",
+      "Bash(grep -n \"handleChatInGame\\\\|InGameChat\\\\|ingame-chat\\\\|/api/race.*chat\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/race/[id]/page.tsx)",
+      "Bash(grep -n \"onClick.*startRace\\\\|handleStart\" /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/race/[id]/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/api/support/[id]/reply/route.ts)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/api/forum/[id]/route.ts)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/forum/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/support/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/\\\\\\(frontend\\\\\\)/app/chat/page.tsx)",
+      "Bash(cat /home/pippsza/code/ddnet/src/app/api/bingo/[gameId]/invite/route.ts)",
+      "Bash(grep -r \"localStorage\\\\|theme\\\\|dark\" /home/pippsza/code/ddnet/src/components/theme/*.tsx)"
     ],
     "additionalDirectories": [
       "/tmp",

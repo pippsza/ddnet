@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 interface BingoPlayer {
   id: string
-  username: string
+  ingameNick: string
   points?: number
   skin?: { name: string; colorBody: number; colorFeet: number } | null
   isReady: boolean
@@ -81,7 +81,7 @@ export function PlayerCard({ team }: BingoPlayerCardProps) {
                 />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium truncate block">
-                    {player.username}
+                    {player.ingameNick}
                   </span>
                   {player.points !== undefined && player.points > 0 && (
                     <span className="text-xs text-muted-foreground">

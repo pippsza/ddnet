@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
+import { getNextTheme, getThemeById } from '@/lib/themes'
 
 type AnimationVariant = 'circle' | 'circle-blur' | 'gif' | 'polygon'
 type StartPosition = 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
@@ -23,7 +24,7 @@ export const ThemeToggleButton = ({
   url,
   className,
 }: ThemeToggleButtonProps) => {
-  const { resolvedTheme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const { startTransition } = useThemeTransition()
   const [mounted, setMounted] = useState(false)
 
@@ -31,8 +32,11 @@ export const ThemeToggleButton = ({
     setMounted(true)
   }, [])
 
+  const currentThemeDef = getThemeById(theme || 'default-dark')
+  const isDark = currentThemeDef ? currentThemeDef.mode === 'dark' : resolvedTheme === 'dark'
+
   const handleClick = useCallback(() => {
-    const newMode = resolvedTheme === 'dark' ? 'light' : 'dark'
+    const next = getNextTheme(theme || 'default-dark')
 
     // Inject animation styles for this specific transition
     const styleId = `theme-transition-${Date.now()}`
@@ -173,9 +177,9 @@ export const ThemeToggleButton = ({
 
     // Execute theme change with transition
     startTransition(() => {
-      setTheme(newMode)
+      setTheme(next.id)
     })
-  }, [variant, start, url, resolvedTheme, setTheme, startTransition])
+  }, [variant, start, url, resolvedTheme, theme, setTheme, startTransition])
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -198,14 +202,14 @@ export const ThemeToggleButton = ({
       size={showLabel ? 'default' : 'icon'}
       onClick={handleClick}
       className={cn('relative overflow-hidden transition-all', showLabel && 'gap-2', className)}
-      aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
+      aria-label={`Switch theme (current: ${currentThemeDef?.name || 'Default'})`}
     >
-      {resolvedTheme === 'dark' ? (
+      {isDark ? (
         <Moon className="h-[1.2rem] w-[1.2rem]" />
       ) : (
         <Sun className="h-[1.2rem] w-[1.2rem]" />
       )}
-      {showLabel && <span className="text-sm">{resolvedTheme === 'dark' ? 'Dark' : 'Light'}</span>}
+      {showLabel && <span className="text-sm">{currentThemeDef?.name || 'Theme'}</span>}
     </Button>
   )
 }

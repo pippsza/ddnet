@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
           collection: 'users',
           limit: 100,
           page,
-          select: { username: true },
+          select: { ingameNick: true },
           overrideAccess: true,
         })
         recipientIds.push(...docs.map((u) => u.id))

@@ -21,6 +21,9 @@ import {
   CheckCheck,
   Wifi,
   AtSign,
+  MessageCircle,
+  MessageSquare,
+  LifeBuoy,
 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -37,6 +40,9 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> =
   info: { icon: Info, color: 'text-blue-500 bg-blue-500/10', label: 'Info' },
   player_online: { icon: Wifi, color: 'text-green-500 bg-green-500/10', label: 'Player Online' },
   chat_mention: { icon: AtSign, color: 'text-sky-500 bg-sky-500/10', label: 'Chat Mention' },
+  direct_message: { icon: MessageCircle, color: 'text-indigo-500 bg-indigo-500/10', label: 'Direct Message' },
+  forum_reply: { icon: MessageSquare, color: 'text-orange-500 bg-orange-500/10', label: 'Forum Reply' },
+  support_reply: { icon: LifeBuoy, color: 'text-rose-500 bg-rose-500/10', label: 'Support Reply' },
 }
 
 function NotificationsContent() {

@@ -63,7 +63,7 @@ export async function GET(
         const playerUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: playerUser?.id || '',
-          username: playerUser?.ingameNick || '',
+          ingameNick: playerUser?.ingameNick || '',
           points: playerUser?.ingameStats?.points || 0,
           skin: playerUser?.ingameStats?.skin
             ? {
@@ -80,7 +80,7 @@ export async function GET(
         const invUser = typeof p.user === 'object' ? (p.user as User) : null
         return {
           id: invUser?.id || '',
-          username: invUser?.ingameNick || '',
+          ingameNick: invUser?.ingameNick || '',
           skin: invUser?.ingameStats?.skin
             ? {
                 name: invUser.ingameStats.skin.name || 'default',
@@ -143,7 +143,7 @@ export async function GET(
       difficultyRange: game.difficultyRange,
       server: game.server,
       createdBy: creator
-        ? { id: creator.id, username: creator.ingameNick }
+        ? { id: creator.id, ingameNick: creator.ingameNick }
         : null,
       maps: game.maps || [],
       teams: formattedTeams,

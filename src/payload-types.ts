@@ -123,11 +123,13 @@ export interface Config {
     'verification-settings': VerificationSetting;
     'custom-categories': CustomCategory;
     'site-announcement': SiteAnnouncement;
+    'bot-settings': BotSetting;
   };
   globalsSelect: {
     'verification-settings': VerificationSettingsSelect<false> | VerificationSettingsSelect<true>;
     'custom-categories': CustomCategoriesSelect<false> | CustomCategoriesSelect<true>;
     'site-announcement': SiteAnnouncementSelect<false> | SiteAnnouncementSelect<true>;
+    'bot-settings': BotSettingsSelect<false> | BotSettingsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1013,7 +1015,10 @@ export interface Notification {
     | 'achievement'
     | 'system'
     | 'player_online'
-    | 'chat_mention';
+    | 'chat_mention'
+    | 'direct_message'
+    | 'forum_reply'
+    | 'support_reply';
   title: string;
   message: string;
   isRead?: boolean | null;
@@ -2687,6 +2692,27 @@ export interface SiteAnnouncement {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bot-settings".
+ */
+export interface BotSetting {
+  id: string;
+  /**
+   * When disabled, verification and claim flows will show a "temporarily disabled" message.
+   */
+  verificationBotEnabled?: boolean | null;
+  /**
+   * When disabled, races still work (server-side scoring), but the in-game announcement bot will not start.
+   */
+  raceBotEnabled?: boolean | null;
+  /**
+   * When disabled, the "Chat In-Game" button is hidden and the ingame-chat page shows a disabled message.
+   */
+  ingameChatBotEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verification-settings_select".
  */
 export interface VerificationSettingsSelect<T extends boolean = true> {
@@ -2741,6 +2767,18 @@ export interface SiteAnnouncementSelect<T extends boolean = true> {
   enabled?: T;
   message?: T;
   announcementId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bot-settings_select".
+ */
+export interface BotSettingsSelect<T extends boolean = true> {
+  verificationBotEnabled?: T;
+  raceBotEnabled?: T;
+  ingameChatBotEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

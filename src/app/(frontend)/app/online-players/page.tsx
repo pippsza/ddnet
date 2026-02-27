@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PlayerCard } from '@/components/players/PlayerCard'
 import { FriendsPageSkeleton } from '@/components/ui/page-skeleton'
+import { cn } from '@/lib/utils'
+import { AfkBadge } from '@/components/tee/OnlineStatusIndicator'
 import {
   Eye,
   Plus,
@@ -129,6 +131,7 @@ function OnlinePlayersContent() {
               role={player.role}
               isVerified={player.isVerified}
               inGameOnline={player.online}
+              afk={player.afk}
               serverName={player.server?.name}
               mapName={player.server?.map}
               showMapBackground
@@ -136,10 +139,11 @@ function OnlinePlayersContent() {
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   {player.online ? (
                     <>
-                      <Wifi className="h-3 w-3 text-green-500" />
-                      <span className="text-green-600 dark:text-green-400 truncate">
+                      <Wifi className={cn('h-3 w-3', player.afk ? 'text-yellow-500' : 'text-green-500')} />
+                      <span className={cn('truncate', player.afk ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400')}>
                         {player.server?.name || 'Online'}
                       </span>
+                      {player.afk && <AfkBadge />}
                     </>
                   ) : (
                     <>

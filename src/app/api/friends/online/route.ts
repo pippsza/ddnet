@@ -52,12 +52,13 @@ export async function GET(req: NextRequest) {
 
       return {
         userId: friendUser?.id || f.user,
-        username: friendUser?.ingameNick,
+        ingameNick: friendUser?.ingameNick,
         roles: friendUser?.roles || 'player',
         primaryRole: (friendUser as any)?.primaryRole || null,
         nickname: f.nickname || nickname,
         addedAt: f.addedAt,
         online: onlineStatus?.online || false,
+        afk: onlineStatus?.afk ?? false,
         platformOnline: friendUser?.lastSeenAt
           ? (Date.now() - new Date(friendUser.lastSeenAt).getTime()) < 2 * 60_000
           : false,

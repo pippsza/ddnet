@@ -21,7 +21,7 @@ export default function CreateRacePage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: `${user.ingameNick || user.username}'s Race`,
+        title: `${user.ingameNick}'s Race`,
         mode: 'solo',
         categoryMode: 'selected',
         category: 'novice',

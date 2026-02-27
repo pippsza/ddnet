@@ -73,6 +73,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if ingame chat bot is enabled
+    const botSettings = await payload.findGlobal({ slug: 'bot-settings' })
+    if (!botSettings.ingameChatBotEnabled) {
+      return NextResponse.json(
+        { error: 'bot_disabled', message: 'In-game chat is temporarily disabled for maintenance.' },
+        { status: 503 },
+      )
+    }
+
     // Must be verified (staff with any admin access are exempt)
     const payloadReq = { user, payload, headers: req.headers } as any
     const isStaff = await hasAnyAdminAccess(payloadReq)

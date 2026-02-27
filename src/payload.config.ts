@@ -19,6 +19,7 @@ import { VerificationRequests } from './collections/VerificationRequests'
 import { VerificationSettings } from './globals/VerificationSettings'
 import { CustomCategories } from './globals/CustomCategories'
 import { SiteAnnouncement } from './globals/SiteAnnouncement'
+import { BotSettings } from './globals/BotSettings'
 import { ChatSessions } from './collections/ChatSessions'
 import { PushSubscriptions } from './collections/PushSubscriptions'
 import { Conversations } from './collections/Conversations'
@@ -57,7 +58,7 @@ export default buildConfig({
     Roles,
     WatchedPlayers,
   ],
-  globals: [VerificationSettings, CustomCategories, SiteAnnouncement],
+  globals: [VerificationSettings, CustomCategories, SiteAnnouncement, BotSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

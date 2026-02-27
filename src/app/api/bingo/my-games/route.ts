@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
         isPublic: game.isPublic,
         isWinner,
         isPendingInvite,
-        createdBy: creator ? { id: creator.id, username: creator.ingameNick } : null,
+        createdBy: creator ? { id: creator.id, ingameNick: creator.ingameNick } : null,
         players: totalPlayers,
         maxPlayers,
         createdAt: game.createdAt,

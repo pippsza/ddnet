@@ -19,6 +19,7 @@ interface PlayerCardProps {
   // Online status
   platformOnline?: boolean
   inGameOnline?: boolean
+  afk?: boolean
   serverName?: string
   mapName?: string
   // Appearance
@@ -41,6 +42,7 @@ export function PlayerCard({
   skin,
   platformOnline,
   inGameOnline,
+  afk,
   serverName,
   mapName,
   size = 'md',
@@ -57,6 +59,7 @@ export function PlayerCard({
       ? {
           platformOnline: platformOnline ?? false,
           inGameOnline: inGameOnline ?? false,
+          afk: afk ?? false,
           serverName,
           mapName,
         }

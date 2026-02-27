@@ -64,7 +64,6 @@ export async function GET(req: NextRequest) {
     const response = {
       player: {
         id: user.id,
-        username: user.username,
         ingameNick: user.ingameNick,
       },
 
@@ -131,7 +130,6 @@ function formatGameForClient(
       const u = typeof p.user === 'object' ? p.user : null
       if (!u) return false
       return (u as User).ingameNick?.toLowerCase() === nick.toLowerCase()
-        || (u as User).username?.toLowerCase() === nick.toLowerCase()
     })
     if (found) {
       playerTeamIndex = i
@@ -174,8 +172,7 @@ function formatGameForClient(
         players: (t.players ?? []).map((p) => {
           const u = typeof p.user === 'object' ? (p.user as User) : null
           return {
-            ingameNick: u?.ingameNick ?? u?.username ?? '?',
-            username: u?.username ?? '?',
+            ingameNick: u?.ingameNick ?? '?',
           }
         }),
         completedCells: (t.completedCells ?? []).map((c) => ({
@@ -207,8 +204,7 @@ function formatGameForClient(
       players: (t.players ?? []).map((p) => {
         const u = typeof p.user === 'object' ? (p.user as User) : null
         return {
-          ingameNick: u?.ingameNick ?? u?.username ?? '?',
-          username: u?.username ?? '?',
+          ingameNick: u?.ingameNick ?? '?',
         }
       }),
       completedSteps: (t.completedSteps ?? []).map((s) => ({

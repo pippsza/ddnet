@@ -86,7 +86,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         }}
       />
       <main className="flex-1 flex min-w-0 flex-col min-h-screen">
-        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur z-10">
+        <header className="flex items-center justify-between  p-4 border-b sticky top-0 bg-background/95 backdrop-blur z-999909999999">
           <SidebarTrigger />
           <div className="flex items-center gap-3">
             <LocaleSwitcher currentLocale={locale} />

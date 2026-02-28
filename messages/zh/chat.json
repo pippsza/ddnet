@@ -1,0 +1,30 @@
+{
+  "title": "消息",
+  "searchPlaceholder": "搜索玩家...",
+  "selectAll": "全选",
+  "selectedCount": "已选 {count} 项",
+  "deleteSelected": "删除 ({count})",
+  "deleteConversation": "删除对话",
+  "otherPlayers": "其他玩家",
+  "noPlayersFound": "未找到玩家",
+  "noFriendsYet": "还没有好友。",
+  "addFriendsToChat": "添加好友开始聊天吧！",
+  "selectConversation": "选择一个对话开始聊天",
+  "noMessagesPreview": "暂无消息",
+  "typing": "输入中...",
+  "emptyChat": "暂无消息，打个招呼吧！",
+  "messagePlaceholder": "输入消息...",
+  "unknownUser": "未知",
+  "yesterday": "昨天",
+  "deleteError": "删除对话失败",
+  "deleteMultipleError": "删除对话失败",
+  "input": {
+    "placeholder": "输入消息...",
+    "cooldownPlaceholder": "请稍候...",
+    "attach": "附件",
+    "send": "发送",
+    "sending": "发送中...",
+    "uploadFailed": "文件上传失败",
+    "uploadError": "上传失败"
+  }
+}

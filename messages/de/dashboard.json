@@ -1,0 +1,26 @@
+{
+  "fallbackName": "Unbekannt",
+  "points": "Punkte",
+  "rank": "Rang #{rank}",
+  "played": "gespielt",
+  "playingSince": "Spielt seit {date}",
+  "tabs": {
+    "service": "Service",
+    "ddnet": "DDNet"
+  },
+  "bingo": {
+    "title": "Bingo",
+    "description": "Erstelle oder tritt einem Bingo-Spiel bei, um auf DDNet-Maps zu wetteifern",
+    "createButton": "Spiel erstellen",
+    "browseButton": "Lobby durchsuchen"
+  },
+  "race": {
+    "title": "Rennen",
+    "description": "Tritt gegen andere Spieler auf DDNet-Servern an",
+    "createButton": "Rennen erstellen",
+    "browseButton": "Lobby durchsuchen"
+  },
+  "friends": {
+    "title": "Freunde"
+  }
+}

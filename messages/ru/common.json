@@ -1,0 +1,86 @@
+{
+  "buttons": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "create": "Создать",
+    "join": "Присоединиться",
+    "open": "Открыть",
+    "back": "Назад",
+    "submit": "Отправить",
+    "close": "Закрыть",
+    "confirm": "Подтвердить",
+    "edit": "Редактировать",
+    "loading": "Загрузка...",
+    "sending": "Отправка...",
+    "creating": "Создание...",
+    "saving": "Сохранение...",
+    "tryAgain": "Попробовать снова",
+    "enable": "Включить",
+    "disable": "Отключить",
+    "copy": "Копировать"
+  },
+  "status": {
+    "waiting": "Ожидание",
+    "ready": "Готов",
+    "inProgress": "В процессе",
+    "completed": "Завершено",
+    "cancelled": "Отменено",
+    "pending": "Ожидание",
+    "active": "Активно",
+    "success": "Успешно",
+    "failed": "Ошибка",
+    "expired": "Истекло",
+    "notReady": "Не готов",
+    "playing": "Играет",
+    "winner": "Победитель",
+    "loser": "Проигрыш",
+    "starting": "Запуск",
+    "running": "Работает",
+    "stopping": "Остановка",
+    "stopped": "Остановлено",
+    "error": "Ошибка",
+    "open": "Открыто",
+    "waitingForUser": "Ожидание ответа",
+    "resolved": "Решено",
+    "closed": "Закрыто",
+    "rejected": "Отклонено",
+    "online": "В сети",
+    "offline": "Не в сети",
+    "verified": "Подтверждён",
+    "solo": "Соло",
+    "team": "Команда",
+    "multiplayer": "Мультиплеер",
+    "published": "Опубликовано",
+    "draft": "Черновик"
+  },
+  "priority": {
+    "low": "Низкий",
+    "medium": "Средний",
+    "high": "Высокий",
+    "critical": "Критический"
+  },
+  "roles": {
+    "admin": "Админ",
+    "moderator": "Модератор",
+    "tester": "Тестер",
+    "member": "Участник"
+  },
+  "time": {
+    "justNow": "Только что",
+    "minutesAgo": "{count} мин. назад",
+    "hoursAgo": "{count} ч. назад",
+    "daysAgo": "{count} дн. назад",
+    "yesterday": "Вчера"
+  },
+  "pagination": {
+    "showing": "Показано {from}–{to} из {total}",
+    "previous": "Назад",
+    "next": "Далее"
+  },
+  "errors": {
+    "somethingWentWrong": "Что-то пошло не так",
+    "notFound": "Не найдено",
+    "unauthorized": "Нет доступа"
+  }
+}

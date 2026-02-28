@@ -1,0 +1,67 @@
+{
+  "title": "Ayarlar",
+  "profile": {
+    "title": "Profil",
+    "platformLogin": "Platform Girişi",
+    "inGameNickname": "Oyun İçi Takma Ad"
+  },
+  "language": {
+    "title": "Dil",
+    "description": "Tercih ettiğin dili seç"
+  },
+  "theme": {
+    "title": "Tema"
+  },
+  "verification": {
+    "title": "Hesap Doğrulama",
+    "verified": "Doğrulandı",
+    "accountVerified": "Hesabın doğrulanmış ve korunuyor",
+    "fullAccess": "Tüm özelliklere tam erişimin var.",
+    "unavailableTitle": "Doğrulama Geçici Olarak Kullanılamıyor",
+    "unavailableDescription": "Hesap doğrulama bakım nedeniyle geçici olarak devre dışı bırakıldı. Lütfen daha sonra tekrar dene veya bir yöneticiyle iletişime geç:",
+    "supportTicket": "destek talebi",
+    "step1Label": "Sunucuya Katıl",
+    "step1Description": "Bir doğrulama sunucusuna bağlan",
+    "step2Label": "Giriş Yap",
+    "step2Description": "Sunucuda /login kullan",
+    "step3Label": "Doğrula",
+    "step3Description": "Bot kimliğini onaylar",
+    "description": "Tüm özelliklerin kilidini açmak için DDNet takma adını doğrula. Aşağıdaki sunuculardan birine katıl, /login ile giriş yap, ardından butona tıkla.",
+    "serversLabel": "Doğrulama Sunucuları",
+    "verifyButton": "Takma Adı Doğrula",
+    "starting": "Doğrulama başlatılıyor...",
+    "verifying": "Kimliğin doğrulanıyor...",
+    "verifyingDescription": "Bot sunucudaki hesabını kontrol ediyor. Bu genellikle birkaç saniye sürer.",
+    "cancelButton": "İptal",
+    "successTitle": "Doğrulama başarılı!",
+    "successDescription": "Takma adın doğrulandı. Hoş geldin!",
+    "expiredTitle": "Doğrulama Süresi Doldu",
+    "failedTitle": "Doğrulama Başarısız Oldu",
+    "tryAgain": "Tekrar Dene",
+    "errors": {
+      "expired": "Doğrulama isteğinin süresi doldu. Lütfen tekrar dene.",
+      "notLoggedIn": "Sunucuda giriş yapmadın. /login ile giriş yap ve tekrar dene.",
+      "notFound": "Oyuncu sunucuda bulunamadı. Bağlı olduğundan emin ol.",
+      "generic": "Doğrulama başarısız oldu. Lütfen tekrar dene.",
+      "offline": "Çevrimiçi değilsin. Lütfen önce bir doğrulama sunucusuna katıl.",
+      "wrongServer": "Yanlış sunucudasın. Lütfen şuraya katıl: {servers}",
+      "startFailed": "Doğrulama başlatılamadı"
+    },
+    "unverifiedTitle": "Hesap doğrulanmadı",
+    "unverifiedWarning": "Hesabını doğrulamadıysan, bu takma adın gerçek sahibi botumuz aracılığıyla kimliğini doğrulayarak geri alabilir. Hesabını korumak için şimdi doğrula."
+  },
+  "pushNotifications": {
+    "title": "Bildirimler",
+    "label": "Anlık Bildirimler",
+    "description": "Oyun davetleri ve arkadaşlık istekleri hakkında bildirim al",
+    "enable": "Etkinleştir",
+    "disable": "Devre Dışı Bırak",
+    "notSupported": "Anlık bildirimler bu tarayıcıda desteklenmiyor.",
+    "errors": {
+      "permissionDenied": "Bildirim izni reddedildi",
+      "notConfigured": "Sunucuda push yapılandırılmamış (VAPID anahtarı yok)",
+      "serviceUnavailable": "Push hizmeti kullanılamıyor. Kontrol et: 1) İnternet bağlantısı 2) Tarayıcı push ayarlardan etkin 3) Güvenlik duvarı/VPN push hizmetlerini engellemiyor. Dene: chrome://settings/content/notifications veya about:preferences#privacy",
+      "generic": "Push hatası: {message}"
+    }
+  }
+}

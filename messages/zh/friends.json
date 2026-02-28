@@ -1,0 +1,38 @@
+{
+  "title": "好友",
+  "pendingCount": "{count} 个待处理",
+  "addFriend": {
+    "placeholder": "输入游戏内昵称...",
+    "button": "添加好友",
+    "sending": "发送中..."
+  },
+  "pending": {
+    "title": "待处理的请求",
+    "wantsToBeYourFriend": "想和你成为好友",
+    "accept": "接受",
+    "requestSent": "请求已发送 — 等待对方回复",
+    "cancel": "取消"
+  },
+  "list": {
+    "title": "你的好友 ({count})",
+    "tabAll": "全部",
+    "tabOnline": "在线 ({count})",
+    "noFriendsToShow": "没有可显示的好友。",
+    "noFriendsYet": "还没有好友。发送好友请求或从下方推荐中添加吧！",
+    "removeFriend": "删除好友"
+  },
+  "status": {
+    "online": "在线",
+    "offline": "离线"
+  },
+  "suggested": {
+    "title": "推荐玩家",
+    "sent": "已发送",
+    "add": "添加"
+  },
+  "unknownUser": "未知",
+  "toast": {
+    "requestSent": "好友请求已发送！",
+    "failedToSend": "发送请求失败"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "lobby": {
+    "title": "Yarış",
+    "inviteCodePlaceholder": "Davet kodu",
+    "createRace": "Yarış Oluştur",
+    "myActiveRaces": "Aktif Yarışlarım",
+    "publicLobby": "Herkese Açık Lobi",
+    "pastRaces": "Geçmiş Yarışlar",
+    "noPublicRaces": "Herkese açık yarış yok. Başlamak için bir tane oluştur!",
+    "joinFailed": "Yarışa katılma başarısız oldu",
+    "joinSuccess": "Yarışa katıldın!",
+    "steps": "adım",
+    "unknownServer": "Bilinmiyor"
+  },
+  "card": {
+    "open": "Aç",
+    "join": "Katıl"
+  },
+  "cancel": {
+    "title": "Yarış iptal edilsin mi?",
+    "description": "Bu, tüm oyuncular için yarışı iptal edecek. Bu işlem geri alınamaz.",
+    "keep": "Yarışa devam et",
+    "confirm": "Yarışı iptal et"
+  },
+  "create": {
+    "defaultTitle": "{nick} adlı kullanıcının Yarışı",
+    "failed": "Yarış oluşturulamadı",
+    "goBack": "Geri Dön"
+  },
+  "game": {
+    "errorLoading": "Yarış yüklenirken hata oluştu",
+    "back": "Geri",
+    "joining": "Katılınıyor...",
+    "joinRace": "Yarışa Katıl",
+    "starting": "Başlatılıyor...",
+    "startRace": "Yarışı Başlat",
+    "ready": "Hazır",
+    "unready": "Hazır Değil",
+    "setServerHint": "Başlamak için sunucu IP'si ayarla",
+    "botMaintenance": {
+      "lobby": "Yarış duyuru botu bakımda. Yarış yine de çalışacak ancak oyun içi duyurular olmayacak.",
+      "game": "Yarış botu bakımda. Puanlama ve ilerleme takibi etkilenmez."
+    },
+    "currentMap": "Mevcut:",
+    "stepProgress": "Adım {current}/{total}"
+  },
+  "leave": {
+    "title": "Yarıştan ayrıl?",
+    "description": "Takımdan çıkarılacaksın. Yarış hala açıksa daha sonra tekrar katılabilirsin.",
+    "stay": "Kal",
+    "leave": "Ayrıl",
+    "failed": "Oyundan ayrılma başarısız oldu",
+    "failedToStart": "Yarış başlatılamadı"
+  },
+  "settings": {
+    "raceTitle": "Yarış Başlığı",
+    "raceTitlePlaceholder": "Yarışım",
+    "category": "Kategori",
+    "categoryMode": "Kategori Modu",
+    "minDifficulty": "Min Zorluk",
+    "maxDifficulty": "Maks Zorluk",
+    "server": "Sunucu",
+    "serverAddressPlaceholder": "127.0.0.1:8303",
+    "serverNamePlaceholder": "Sunucu adı (isteğe bağlı)",
+    "mode": "Mod",
+    "publicRace": "Herkese Açık Yarış",
+    "inviteCode": "Davet Kodu:",
+    "categoryLabel": "Kategori:",
+    "categoryModeLabel": "Kategori Modu:",
+    "pathLengthLabel": "Rota Uzunluğu:",
+    "pathLengthSteps": "adım",
+    "difficultyLabel": "Zorluk:",
+    "stars": "yıldız",
+    "serverLabel": "Sunucu:",
+    "modeLabel": "Mod:",
+    "visibilityLabel": "Görünürlük:",
+    "public": "Herkese Açık",
+    "private": "Özel",
+    "failedToUpdate": "Güncelleme başarısız oldu",
+    "failedToSave": "Ayarlar kaydedilemedi",
+    "preview": "Ön İzleme",
+    "settingsTab": "Ayarlar"
+  },
+  "team": {
+    "host": "Ev Sahibi",
+    "joined": "Katıldı",
+    "invited": "Davet Edildi",
+    "inviteTeammate": "Takım Arkadaşı Davet Et",
+    "inviteOpponent": "Rakip Davet Et",
+    "cancelInvite": "İptal",
+    "waitingForPlayer": "Oyuncu bekleniyor...",
+    "switchTeam": "Bu takıma geç",
+    "pts": "puan",
+    "failedToInvite": "Davet gönderilemedi",
+    "failedToCancelInvite": "Davet iptal edilemedi",
+    "failedToSwitch": "Takım değiştirme başarısız oldu",
+    "cannotSwitchSolo": "Takım 2'de oyuncular veya bekleyen davetler varken solo moda geçilemez",
+    "playerOne": "Oyuncu 1",
+    "playerTwo": "Oyuncu 2"
+  },
+  "surrender": {
+    "title": "Teslim ol?",
+    "description": "Rakibin yarışı kazanacak. Bu işlem geri alınamaz.",
+    "keep": "Oynamaya devam et",
+    "confirm": "Teslim Ol",
+    "failed": "Teslim olma başarısız oldu"
+  },
+  "result": {
+    "winner": "{team} kazandı!",
+    "cancelled": "Yarış İptal Edildi"
+  },
+  "rematch": {
+    "button": "Rövanş",
+    "title": "Rövanş teklifi!",
+    "descriptionNamed": "{name} rövanş istiyor!",
+    "descriptionGeneric": "Rakibin rövanş istiyor!",
+    "decline": "Reddet",
+    "accept": "Rövanşı Kabul Et",
+    "failedToCreate": "Rövanş oluşturulamadı",
+    "failedToJoin": "Rövanşa katılınamadı"
+  }
+}

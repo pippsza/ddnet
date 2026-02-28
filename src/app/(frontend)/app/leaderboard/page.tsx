@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
@@ -34,17 +35,17 @@ import { cn } from '@/lib/utils'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 const BINGO_SORT_OPTIONS = [
-  { value: 'wins', label: 'Most Wins' },
-  { value: 'winRate', label: 'Best Win Rate' },
-  { value: 'games', label: 'Most Games' },
-  { value: 'maps', label: 'Most Maps' },
+  { value: 'wins', labelKey: 'sort.mostWins' as const },
+  { value: 'winRate', labelKey: 'sort.bestWinRate' as const },
+  { value: 'games', labelKey: 'sort.mostGames' as const },
+  { value: 'maps', labelKey: 'sort.mostMaps' as const },
 ]
 
 const RACE_SORT_OPTIONS = [
-  { value: 'wins', label: 'Most Wins' },
-  { value: 'winRate', label: 'Best Win Rate' },
-  { value: 'games', label: 'Most Games' },
-  { value: 'rounds', label: 'Most Rounds Won' },
+  { value: 'wins', labelKey: 'sort.mostWins' as const },
+  { value: 'winRate', labelKey: 'sort.bestWinRate' as const },
+  { value: 'games', labelKey: 'sort.mostGames' as const },
+  { value: 'rounds', labelKey: 'sort.mostRoundsWon' as const },
 ]
 
 function RankBadge({ rank }: { rank: number }) {
@@ -65,6 +66,7 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 function LeaderboardContent() {
+  const t = useTranslations('leaderboard')
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -97,12 +99,12 @@ function LeaderboardContent() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
+      <h1 className="text-2xl font-bold">{t('title')}</h1>
 
       <Tabs value={activeTab} onValueChange={setTab}>
         <TabsList className="w-full h-11">
-          <TabsTrigger value="bingo" className="flex-1">Bingo</TabsTrigger>
-          <TabsTrigger value="race" className="flex-1">Race</TabsTrigger>
+          <TabsTrigger value="bingo" className="flex-1">{t('tabs.bingo')}</TabsTrigger>
+          <TabsTrigger value="race" className="flex-1">{t('tabs.race')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4 mt-4">
@@ -110,10 +112,10 @@ function LeaderboardContent() {
           <div className="flex gap-3 flex-wrap">
             <Select value={category} onValueChange={(v) => setParam('category', v)}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('filters.categoryPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('filters.allCategories')}</SelectItem>
                 {DDNET_CATEGORIES.map((c) => (
                   <SelectItem key={c.value} value={c.value}>
                     {c.label}
@@ -124,12 +126,12 @@ function LeaderboardContent() {
 
             <Select value={sortBy} onValueChange={(v) => setParam('sort', v)}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={t('filters.sortPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {sortOptions.map((s) => (
                   <SelectItem key={s.value} value={s.value}>
-                    {s.label}
+                    {t(s.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -158,16 +160,16 @@ function LeaderboardContent() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">#</TableHead>
-                      <TableHead>Player</TableHead>
-                      <TableHead className="text-right">Games</TableHead>
-                      <TableHead className="text-right">Wins</TableHead>
-                      <TableHead className="text-right">Win Rate</TableHead>
+                      <TableHead className="w-12">{t('columns.rank')}</TableHead>
+                      <TableHead>{t('columns.player')}</TableHead>
+                      <TableHead className="text-right">{t('columns.games')}</TableHead>
+                      <TableHead className="text-right">{t('columns.wins')}</TableHead>
+                      <TableHead className="text-right">{t('columns.winRate')}</TableHead>
                       {activeTab === 'bingo' && (
-                        <TableHead className="text-right">Maps</TableHead>
+                        <TableHead className="text-right">{t('columns.maps')}</TableHead>
                       )}
                       {activeTab === 'race' && (
-                        <TableHead className="text-right">Rounds</TableHead>
+                        <TableHead className="text-right">{t('columns.rounds')}</TableHead>
                       )}
                     </TableRow>
                   </TableHeader>
@@ -243,7 +245,7 @@ function LeaderboardContent() {
           ) : (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
-                No players found{category !== 'all' ? ` for ${getCategoryLabel(category as any)}` : ''}.
+                {category !== 'all' ? t('emptyForCategory', { category: getCategoryLabel(category as any) }) : t('empty')}
               </CardContent>
             </Card>
           )}

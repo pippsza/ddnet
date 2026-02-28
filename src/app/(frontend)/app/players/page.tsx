@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { DebouncedInput } from '@/components/ui/debounced-input'
@@ -15,6 +16,7 @@ import { Search } from 'lucide-react'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function PlayersContent() {
+  const t = useTranslations('players')
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -47,7 +49,7 @@ function PlayersContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Players</h1>
+        <h1 className="text-2xl font-bold">{t('list.title')}</h1>
       </div>
 
       <div className="relative max-w-sm">
@@ -55,7 +57,7 @@ function PlayersContent() {
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
           defaultValue={search}
-          placeholder="Search players..."
+          placeholder={t('list.searchPlaceholder')}
           className="pl-10"
         />
       </div>
@@ -68,7 +70,7 @@ function PlayersContent() {
           {data.registered?.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-muted-foreground">
-                {search ? 'Registered Players' : 'Community Members'}
+                {search ? t('list.registered') : t('list.community')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.registered.map((player: any) => (
@@ -91,7 +93,7 @@ function PlayersContent() {
           {/* DDNet Results */}
           {data.ddnet?.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-muted-foreground">DDNet Players</h2>
+              <h2 className="text-lg font-semibold text-muted-foreground">{t('list.ddnet')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.ddnet.map((player: any) => (
                   <PlayerCard
@@ -109,7 +111,7 @@ function PlayersContent() {
           {data.registered?.length === 0 && data.ddnet?.length === 0 && search && (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
-                No players found for &quot;{search}&quot;. Try a different name.
+                {t('list.noPlayersFound', { search })}
               </CardContent>
             </Card>
           )}

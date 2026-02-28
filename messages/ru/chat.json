@@ -1,0 +1,30 @@
+{
+  "title": "Сообщения",
+  "searchPlaceholder": "Поиск игроков...",
+  "selectAll": "Выбрать все",
+  "selectedCount": "Выбрано: {count}",
+  "deleteSelected": "Удалить ({count})",
+  "deleteConversation": "Удалить переписку",
+  "otherPlayers": "Другие игроки",
+  "noPlayersFound": "Игроки не найдены",
+  "noFriendsYet": "Пока нет друзей.",
+  "addFriendsToChat": "Добавьте друзей, чтобы начать общение!",
+  "selectConversation": "Выберите переписку, чтобы начать общение",
+  "noMessagesPreview": "Пока нет сообщений",
+  "typing": "печатает...",
+  "emptyChat": "Пока нет сообщений. Скажите привет!",
+  "messagePlaceholder": "Введите сообщение...",
+  "unknownUser": "Неизвестный",
+  "yesterday": "Вчера",
+  "deleteError": "Не удалось удалить переписку",
+  "deleteMultipleError": "Не удалось удалить переписки",
+  "input": {
+    "placeholder": "Введите сообщение...",
+    "cooldownPlaceholder": "Подождите...",
+    "attach": "Прикрепить",
+    "send": "Отправить",
+    "sending": "Отправка...",
+    "uploadFailed": "Не удалось загрузить файл",
+    "uploadError": "Ошибка загрузки"
+  }
+}

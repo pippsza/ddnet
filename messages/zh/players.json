@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "玩家",
+    "searchPlaceholder": "搜索玩家...",
+    "registered": "已注册玩家",
+    "community": "社区成员",
+    "ddnet": "DDNet 玩家",
+    "noPlayersFound": "未找到「{search}」相关玩家，请尝试其他名称。"
+  },
+  "detail": {
+    "backToPlayers": "返回玩家列表",
+    "notFound": "未找到玩家「{name}」。",
+    "mapper": "地图制作者",
+    "points": "{count} 积分",
+    "rank": "排名 #{rank}",
+    "played": "已游玩",
+    "playingSince": "游玩始于 {date}",
+    "firstFinish": "首次通关：{date}，地图 {map}",
+    "copyAddress": "复制地址",
+    "tabs": {
+      "service": "平台",
+      "ddnet": "DDNet",
+      "settings": "设置"
+    },
+    "noServiceStats": "暂无平台统计数据",
+    "noServiceStatsDescription": "该玩家尚未参加过任何 Bingo 或竞速对局。",
+    "friend": {
+      "remove": "删除好友",
+      "removing": "删除中...",
+      "cancelRequest": "取消请求",
+      "cancelling": "取消中...",
+      "acceptRequest": "接受请求",
+      "accepting": "接受中...",
+      "add": "添加好友",
+      "sending": "发送中...",
+      "message": "发消息"
+    },
+    "ingameChat": {
+      "button": "游戏内聊天",
+      "connecting": "连接中...",
+      "failed": "无法启动游戏内聊天"
+    },
+    "externalLinks": {
+      "ddnetProfile": "DDNet 主页",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "服务器需要密码",
+      "description": "此服务器设有密码保护。请输入服务器密码以连接。",
+      "placeholder": "服务器密码",
+      "connect": "连接",
+      "cancel": "取消",
+      "securityNote": "你的密码将被安全传输且不会被存储，仅用于将机器人连接到服务器。"
+    }
+  },
+  "online": {
+    "title": "在线玩家",
+    "onlineCount": "{count} 人在线",
+    "addPlayerPlaceholder": "输入 DDNet 玩家昵称...",
+    "adding": "添加中...",
+    "watchPlayer": "关注玩家",
+    "onlineStatus": "在线",
+    "offlineStatus": "离线",
+    "disableNotifications": "关闭通知",
+    "enableNotifications": "开启通知",
+    "removeFromWatchlist": "从关注列表移除",
+    "toast": {
+      "added": "{name} 已加入关注列表",
+      "removed": "{name} 已从关注列表移除",
+      "failedToAdd": "添加玩家失败",
+      "failedToRemove": "移除玩家失败",
+      "failedToUpdateNotification": "更新通知偏好失败"
+    },
+    "empty": {
+      "title": "尚未关注任何玩家。",
+      "description": "添加 DDNet 玩家昵称来追踪他们的在线状态。当他们上线时你会收到通知。"
+    }
+  }
+}

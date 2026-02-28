@@ -1,0 +1,26 @@
+{
+  "fallbackName": "Bilinmiyor",
+  "points": "puan",
+  "rank": "Sıralama #{rank}",
+  "played": "oynandı",
+  "playingSince": "{date} tarihinden beri oynuyor",
+  "tabs": {
+    "service": "Servis",
+    "ddnet": "DDNet"
+  },
+  "bingo": {
+    "title": "Bingo",
+    "description": "DDNet haritalarında yarışmak için bir bingo oyunu oluştur veya katıl",
+    "createButton": "Oyun Oluştur",
+    "browseButton": "Lobiyi Gözat"
+  },
+  "race": {
+    "title": "Yarış",
+    "description": "DDNet sunucularında diğer oyunculara karşı yarış",
+    "createButton": "Yarış Oluştur",
+    "browseButton": "Lobiyi Gözat"
+  },
+  "friends": {
+    "title": "Arkadaşlar"
+  }
+}

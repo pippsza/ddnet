@@ -41,7 +41,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
+        {/* Prevent crashes when browser translation tools modify the DOM */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if(typeof Node!=='undefined'){
+                var rc=Node.prototype.removeChild;
+                Node.prototype.removeChild=function(c){
+                  return c.parentNode!==this?c:rc.apply(this,arguments)
+                };
+                var ib=Node.prototype.insertBefore;
+                Node.prototype.insertBefore=function(n,r){
+                  return r&&r.parentNode!==this?n:ib.apply(this,arguments)
+                }
+              }
+            `,
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="default-dark"
@@ -61,8 +78,8 @@ export default function RootLayout({
             <AuthProvider>
               <Toaster />
               <div className="relative z-10">{children}</div>
-              <div className=" fixed bottom-0 right-0 text-primary bg-secondary p-2 rounded-tl-2xl">
-                v1.0.0
+              <div className="fixed bottom-0 right-0 text-primary bg-secondary p-2 rounded-tl-2xl text-xs">
+                v{process.env.APP_VERSION}
               </div>
             </AuthProvider>
           </NextIntlClientProvider>

@@ -64,6 +64,16 @@ export const Conversations: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
     },
+    {
+      name: 'deletedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Deleted By',
+      admin: {
+        description: 'Users who have hidden this conversation from their list',
+      },
+    },
   ],
   timestamps: true,
 }

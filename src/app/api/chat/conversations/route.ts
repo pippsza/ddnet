@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
     const { docs: conversations } = await payload.find({
       collection: 'conversations',
       where: {
-        'participants.user': { equals: user.id },
+        and: [
+          { 'participants.user': { equals: user.id } },
+          { 'deletedBy': { not_in: [user.id] } },
+        ],
       },
       sort: '-lastMessageAt',
       depth: 1,
@@ -109,7 +112,20 @@ export async function POST(req: NextRequest) {
     })
 
     if (existing.length > 0) {
-      return NextResponse.json({ conversation: { id: existing[0].id } })
+      // Clear deletedBy so the conversation resurfaces for the user who "deleted" it
+      const conv = existing[0]
+      const deletedBy = ((conv as any).deletedBy || []).map((u: any) =>
+        typeof u === 'object' ? u.id : u,
+      )
+      if (deletedBy.includes(user.id)) {
+        await payload.update({
+          collection: 'conversations',
+          id: conv.id,
+          data: { deletedBy: deletedBy.filter((id: string) => id !== user.id) },
+          overrideAccess: true,
+        })
+      }
+      return NextResponse.json({ conversation: { id: conv.id } })
     }
 
     // Create new conversation

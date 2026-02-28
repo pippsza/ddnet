@@ -13,6 +13,7 @@ import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useTranslations } from 'next-intl'
 import { Eye, Heart, Clock, Pencil, ArrowLeft } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -40,6 +41,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 export default function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const t = useTranslations('forum')
   const { slug } = use(params)
   const { data, isLoading, mutate } = useSWR(
     `/api/articles?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
@@ -80,11 +82,11 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
           href="/app/articles"
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Articles
+          <ArrowLeft className="h-4 w-4" /> {t('articleDetail.backToArticles')}
         </Link>
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            Article not found.
+            {t('articleDetail.notFound')}
           </CardContent>
         </Card>
       </div>
@@ -98,13 +100,13 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
           href="/app/articles"
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Articles
+          <ArrowLeft className="h-4 w-4" /> {t('articleDetail.backToArticles')}
         </Link>
         {canEditArticles && (
           <Button asChild size="sm" variant="outline">
             <Link href={`/app/articles/${slug}/edit`}>
               <Pencil className="h-3.5 w-3.5 mr-1.5" />
-              Edit
+              {t('articleDetail.edit')}
             </Link>
           </Button>
         )}
@@ -131,17 +133,17 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
               CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'
             }
           >
-            {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
+            {t(`articles.categories.${article.category}`)}
           </Badge>
-          {article.tags?.map((t: any) => {
-            const tag = t.tag || t
+          {article.tags?.map((tagItem: any) => {
+            const tag = tagItem.tag || tagItem
             return (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag.charAt(0).toUpperCase() + tag.slice(1)}
               </Badge>
             )
           })}
-          {article.featured && <Badge className="bg-amber-500/10 text-amber-500">Featured</Badge>}
+          {article.featured && <Badge className="bg-amber-500/10 text-amber-500">{t('articleDetail.featured')}</Badge>}
         </div>
 
         <h1 className="text-3xl font-bold wrap-break-word">{article.title}</h1>
@@ -176,7 +178,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
                 size="xs"
               />
             </OnlineStatusIndicator>
-            <span>{article.author?.ingameNick || 'Admin'}</span>
+            <span>{article.author?.ingameNick || t('articleDetail.defaultAuthor')}</span>
             <RoleBadge role={(article.author as any)?.primaryRole || article.author?.roles} className="text-[10px] px-1.5 py-0" />
           </div>
           <div className="flex items-center gap-1.5">
@@ -185,7 +187,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
           </div>
           <div className="flex items-center gap-1.5">
             <Eye className="h-4 w-4" />
-            <span>{article.views || 0} views</span>
+            <span>{t('articleDetail.views', { count: article.views || 0 })}</span>
           </div>
           <button
             onClick={handleLike}
@@ -195,7 +197,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
             <Heart
               className={`h-4 w-4 transition-colors ${liked ? 'fill-red-500 text-red-500' : ''}`}
             />
-            <span>{article.likes || 0} likes</span>
+            <span>{t('articleDetail.likes', { count: article.likes || 0 })}</span>
           </button>
         </div>
       </div>

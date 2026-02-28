@@ -1,0 +1,86 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "join": "Join",
+    "open": "Open",
+    "back": "Back",
+    "submit": "Submit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "sending": "Sending...",
+    "creating": "Creating...",
+    "saving": "Saving...",
+    "tryAgain": "Try Again",
+    "enable": "Enable",
+    "disable": "Disable",
+    "copy": "Copy"
+  },
+  "status": {
+    "waiting": "Waiting",
+    "ready": "Ready",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "pending": "Pending",
+    "active": "Active",
+    "success": "Success",
+    "failed": "Failed",
+    "expired": "Expired",
+    "notReady": "Not Ready",
+    "playing": "Playing",
+    "winner": "Winner",
+    "loser": "Lost",
+    "starting": "Starting",
+    "running": "Running",
+    "stopping": "Stopping",
+    "stopped": "Stopped",
+    "error": "Error",
+    "open": "Open",
+    "waitingForUser": "Awaiting Reply",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "rejected": "Rejected",
+    "online": "Online",
+    "offline": "Offline",
+    "verified": "Verified",
+    "solo": "Solo",
+    "team": "Team",
+    "multiplayer": "Multiplayer",
+    "published": "Published",
+    "draft": "Draft"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "roles": {
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "tester": "Tester",
+    "member": "Member"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago",
+    "yesterday": "Yesterday"
+  },
+  "pagination": {
+    "showing": "Showing {from}–{to} of {total}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized"
+  }
+}

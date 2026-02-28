@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Pagination,
   PaginationContent,
@@ -56,6 +57,7 @@ export function PaginationControls({
   onPageChange,
   className,
 }: PaginationControlsProps) {
+  const t = useTranslations('common')
   const pageNumbers = useMemo(() => getPageNumbers(page, totalPages), [page, totalPages])
 
   if (totalPages <= 1) return null
@@ -68,7 +70,7 @@ export function PaginationControls({
     <div className={cn('flex flex-col items-center gap-2', className)}>
       {showInfo && (
         <p className="text-xs text-muted-foreground">
-          Showing {from}–{to} of {totalDocs!.toLocaleString()}
+          {t('pagination.showing', { from, to, total: totalDocs!.toLocaleString() })}
         </p>
       )}
       <Pagination>

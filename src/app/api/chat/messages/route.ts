@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
         lastMessage: preview,
         lastMessageAt: new Date().toISOString(),
         lastMessageBy: user.id,
+        deletedBy: [], // Clear soft-deletes so the conversation resurfaces for all participants
       },
       overrideAccess: true,
     })

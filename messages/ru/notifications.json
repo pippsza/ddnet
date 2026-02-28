@@ -1,0 +1,42 @@
+{
+  "title": "Уведомления",
+  "newCount": "{count} новых",
+  "types": {
+    "gameInvite": "Приглашение в игру",
+    "friendRequest": "Запрос дружбы",
+    "friendAccepted": "Друг добавлен",
+    "gameStarted": "Игра началась",
+    "gameEnded": "Игра завершена",
+    "roundWon": "Раунд выигран",
+    "achievement": "Достижение",
+    "system": "Система",
+    "info": "Инфо",
+    "playerOnline": "Игрок в сети",
+    "chatMention": "Упоминание в чате",
+    "directMessage": "Личное сообщение",
+    "forumReply": "Ответ на форуме",
+    "supportReply": "Ответ поддержки"
+  },
+  "retention": {
+    "1h": "1 час",
+    "24h": "24 часа",
+    "5d": "5 дней",
+    "10d": "10 дней",
+    "updated": "Уведомления будут храниться {duration}",
+    "updateFailed": "Не удалось обновить настройку хранения"
+  },
+  "actions": {
+    "markAllRead": "Прочитать все",
+    "markRead": "Прочитано"
+  },
+  "empty": {
+    "title": "Уведомлений пока нет.",
+    "description": "Здесь будут появляться запросы дружбы, приглашения в игры и другие уведомления."
+  },
+  "time": {
+    "justNow": "Только что",
+    "minutesAgo": "{count} мин. назад",
+    "hoursAgo": "{count} ч. назад",
+    "daysAgo": "{count} дн. назад"
+  }
+}

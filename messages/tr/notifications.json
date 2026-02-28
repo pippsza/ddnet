@@ -1,0 +1,42 @@
+{
+  "title": "Bildirimler",
+  "newCount": "{count} yeni",
+  "types": {
+    "gameInvite": "Oyun Daveti",
+    "friendRequest": "Arkadaşlık İsteği",
+    "friendAccepted": "Arkadaşlık Kabul Edildi",
+    "gameStarted": "Oyun Başladı",
+    "gameEnded": "Oyun Bitti",
+    "roundWon": "Tur Kazanıldı",
+    "achievement": "Başarı",
+    "system": "Sistem",
+    "info": "Bilgi",
+    "playerOnline": "Oyuncu Çevrimiçi",
+    "chatMention": "Sohbet Bahsetmesi",
+    "directMessage": "Doğrudan Mesaj",
+    "forumReply": "Forum Yanıtı",
+    "supportReply": "Destek Yanıtı"
+  },
+  "retention": {
+    "1h": "1 saat",
+    "24h": "24 saat",
+    "5d": "5 gün",
+    "10d": "10 gün",
+    "updated": "Bildirimler {duration} süreyle saklanacak",
+    "updateFailed": "Saklama ayarı güncellenemedi"
+  },
+  "actions": {
+    "markAllRead": "Tümünü okundu işaretle",
+    "markRead": "Okundu işaretle"
+  },
+  "empty": {
+    "title": "Henüz bildirim yok.",
+    "description": "Arkadaşlık istekleri, oyun davetleri ve daha fazlası hakkında bilgilendirileceksin."
+  },
+  "time": {
+    "justNow": "Az önce",
+    "minutesAgo": "{count}dk önce",
+    "hoursAgo": "{count}sa önce",
+    "daysAgo": "{count}g önce"
+  }
+}

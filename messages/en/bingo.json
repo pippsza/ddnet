@@ -1,0 +1,107 @@
+{
+  "lobby": {
+    "title": "Bingo",
+    "inviteCodePlaceholder": "Invite code",
+    "createGame": "Create Game",
+    "myActiveGames": "My Active Games",
+    "publicLobby": "Public Lobby",
+    "pastGames": "Past Games",
+    "noPublicGames": "No public games available. Create one to get started!",
+    "joinFailed": "Failed to join game",
+    "joinSuccess": "Joined game!"
+  },
+  "card": {
+    "invite": "Invite",
+    "by": "by {name}",
+    "viewInvite": "View Invite",
+    "open": "Open",
+    "join": "Join"
+  },
+  "cancel": {
+    "title": "Cancel game?",
+    "description": "This will cancel the game for all players. This action cannot be undone.",
+    "keep": "Keep playing",
+    "confirm": "Cancel game"
+  },
+  "create": {
+    "defaultTitle": "{nick}'s Bingo",
+    "failed": "Failed to create game",
+    "goBack": "Go Back"
+  },
+  "game": {
+    "errorLoading": "Error loading game",
+    "back": "Back",
+    "joining": "Joining...",
+    "joinGame": "Join Game",
+    "starting": "Starting...",
+    "startGame": "Start Game",
+    "ready": "Ready",
+    "unready": "Unready"
+  },
+  "leave": {
+    "title": "Leave game?",
+    "description": "You will be removed from the team. You can rejoin later if the game is still open.",
+    "stay": "Stay",
+    "leave": "Leave",
+    "failed": "Failed to leave game"
+  },
+  "settings": {
+    "gameTitle": "Game Title",
+    "gameTitlePlaceholder": "My Bingo Game",
+    "category": "Category",
+    "minDifficulty": "Min Difficulty",
+    "maxDifficulty": "Max Difficulty",
+    "mode": "Mode",
+    "publicGame": "Public Game",
+    "inviteCode": "Invite Code:",
+    "categoryLabel": "Category:",
+    "difficultyLabel": "Difficulty:",
+    "stars": "stars",
+    "modeLabel": "Mode:",
+    "visibilityLabel": "Visibility:",
+    "public": "Public",
+    "private": "Private",
+    "failedToUpdate": "Failed to update",
+    "failedToSave": "Failed to save settings",
+    "preview": "Preview",
+    "settingsTab": "Settings"
+  },
+  "team": {
+    "host": "Host",
+    "joined": "Joined",
+    "invited": "Invited",
+    "inviteTeammate": "Invite Teammate",
+    "inviteOpponent": "Invite Opponent",
+    "cancelInvite": "Cancel",
+    "waitingForPlayer": "Waiting for player...",
+    "switchTeam": "Switch to this team",
+    "pts": "pts",
+    "failedToInvite": "Failed to send invite",
+    "failedToCancelInvite": "Failed to cancel invite",
+    "failedToSwitch": "Failed to switch team",
+    "cannotSwitchSolo": "Cannot switch to solo while Team 2 has players or pending invites",
+    "playerOne": "Player 1",
+    "playerTwo": "Player 2"
+  },
+  "surrender": {
+    "title": "Surrender?",
+    "description": "Your opponent will win the game. This action cannot be undone.",
+    "keep": "Keep playing",
+    "confirm": "Surrender",
+    "failed": "Failed to surrender"
+  },
+  "result": {
+    "winner": "{team} wins!",
+    "cancelled": "Game Cancelled"
+  },
+  "rematch": {
+    "button": "Rematch",
+    "title": "Rematch offered!",
+    "descriptionNamed": "{name} wants a rematch!",
+    "descriptionGeneric": "Your opponent wants a rematch!",
+    "decline": "Decline",
+    "accept": "Accept Rematch",
+    "failedToCreate": "Failed to create rematch",
+    "failedToJoin": "Failed to join rematch"
+  }
+}

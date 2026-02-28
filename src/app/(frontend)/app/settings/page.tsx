@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
+import { useTranslations, useLocale } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,11 +12,14 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2, Wrench, Check, Sun, Moon } from 'lucide-react'
+import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2, Wrench, Check, Sun, Moon, Globe } from 'lucide-react'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useTheme } from 'next-themes'
 import { themes } from '@/lib/themes'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { setUserLocale } from '@/services/locale'
+import type { Locale } from '@/i18n/config'
 import {
   StepIndicator,
   StepConnector,
@@ -37,9 +41,21 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray
 }
 
+const availableLocales = [
+  { code: 'en', name: 'English' },
+  { code: 'ru', name: 'Русский' },
+  { code: 'uk', name: 'Українська' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'tr', name: 'Türkçe' },
+  { code: 'zh', name: '中文' },
+] as const
+
 type VerificationStep = 'idle' | 'starting' | 'pending' | 'success' | 'failed' | 'expired'
 
 export default function SettingsPage() {
+  const t = useTranslations('settings')
+  const currentLocale = useLocale()
+  const router = useRouter()
   const { data: user, mutate } = useSWR('/api/users/me', fetcher)
   const { data: serversData } = useSWR<{ servers: VerificationServer[] }>('/api/verification/servers', fetcher)
   const [message, setMessage] = useState('')
@@ -86,17 +102,17 @@ export default function SettingsPage() {
 
         if (data.status === 'expired') {
           setVerifyStep('expired')
-          setVerifyError('Verification request expired. Please try again.')
+          setVerifyError(t('verification.errors.expired'))
           clearInterval(interval)
         } else if (data.status === 'failed') {
           setVerifyStep('failed')
           setVerifyMessage(data.message || null)
           if (data.message === 'not_logged_in') {
-            setVerifyError('You are not logged in on the server. Use /login to log in and try again.')
+            setVerifyError(t('verification.errors.notLoggedIn'))
           } else if (data.message === 'not_found') {
-            setVerifyError('Player not found on the server. Make sure you are connected.')
+            setVerifyError(t('verification.errors.notFound'))
           } else {
-            setVerifyError('Verification failed. Please try again.')
+            setVerifyError(t('verification.errors.generic'))
           }
           setCurrentServer(data.currentServer || null)
           clearInterval(interval)
@@ -112,7 +128,7 @@ export default function SettingsPage() {
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [requestId, verifyStep, mutate])
+  }, [requestId, verifyStep, mutate, t])
 
   const handlePushToggle = async () => {
     if (!pushSupported || pushLoading) return
@@ -142,7 +158,7 @@ export default function SettingsPage() {
       const permission = await Notification.requestPermission()
       console.log('[Push] Permission:', permission)
       if (permission !== 'granted') {
-        setMessage('Notification permission denied')
+        setMessage(t('pushNotifications.errors.permissionDenied'))
         return
       }
 
@@ -152,7 +168,7 @@ export default function SettingsPage() {
       console.log('[Push] VAPID key response:', keyRes.status, 'key length:', keyData.vapidPublicKey?.length)
 
       if (!keyData.vapidPublicKey) {
-        setMessage('Push not configured on server (no VAPID key)')
+        setMessage(t('pushNotifications.errors.notConfigured'))
         return
       }
 
@@ -178,11 +194,9 @@ export default function SettingsPage() {
       console.error('[Settings] Push toggle error:', err)
       const msg = err instanceof Error ? err.message : String(err)
       if (msg.includes('push service')) {
-        setMessage(
-          'Push service unavailable. Check: 1) Internet connection 2) Browser push is enabled in settings 3) No firewall/VPN blocking push services. Try: chrome://settings/content/notifications or about:preferences#privacy',
-        )
+        setMessage(t('pushNotifications.errors.serviceUnavailable'))
       } else {
-        setMessage(`Push error: ${msg}`)
+        setMessage(t('pushNotifications.errors.generic', { message: msg }))
       }
     } finally {
       setPushLoading(false)
@@ -204,24 +218,24 @@ export default function SettingsPage() {
 
       if (!res.ok) {
         if (data.error === 'offline') {
-          throw new Error('You are not online. Please join a verification server first.')
+          throw new Error(t('verification.errors.offline'))
         }
         if (data.error === 'wrong_server') {
           const serverList = (data.verificationServers || [])
             .map((s: { name: string; ip: string; port: number }) => `${s.name} (${s.ip}:${s.port})`)
             .join(', ')
-          throw new Error(`You are on the wrong server. Please join: ${serverList}`)
+          throw new Error(t('verification.errors.wrongServer', { servers: serverList }))
         }
-        throw new Error(data.error || 'Failed to start verification')
+        throw new Error(data.error || t('verification.errors.startFailed'))
       }
 
       setRequestId(data.requestId)
       setVerifyStep('pending')
     } catch (err: unknown) {
       setVerifyStep('failed')
-      setVerifyError(err instanceof Error ? err.message : 'Failed to start verification')
+      setVerifyError(err instanceof Error ? err.message : t('verification.errors.startFailed'))
     }
-  }, [])
+  }, [t])
 
   const resetVerification = () => {
     setVerifyStep('idle')
@@ -229,6 +243,11 @@ export default function SettingsPage() {
     setCurrentServer(null)
     setVerifyError(null)
     setVerifyMessage(null)
+  }
+
+  const handleLocaleChange = async (newLocale: string) => {
+    await setUserLocale(newLocale as Locale)
+    router.refresh()
   }
 
   const isLoading = !user
@@ -248,12 +267,12 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t('title')}</h1>
 
       {/* Profile Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle>{t('profile.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
@@ -295,11 +314,11 @@ export default function SettingsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Platform Login</Label>
+                  <Label>{t('profile.platformLogin')}</Label>
                   <Input value={user?.user?.username || ''} disabled />
                 </div>
                 <div>
-                  <Label>In-Game Nickname</Label>
+                  <Label>{t('profile.inGameNickname')}</Label>
                   <Input value={user?.user?.ingameNick || ''} disabled />
                 </div>
               </div>
@@ -311,17 +330,17 @@ export default function SettingsPage() {
       {/* Theme Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Theme</CardTitle>
+          <CardTitle>{t('theme.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {themes.map((t) => {
-              const isSelected = themeMounted && currentTheme === t.id
-              const isDark = t.mode === 'dark'
+            {themes.map((themeItem) => {
+              const isSelected = themeMounted && currentTheme === themeItem.id
+              const isDark = themeItem.mode === 'dark'
               return (
                 <button
-                  key={t.id}
-                  onClick={() => setTheme(t.id)}
+                  key={themeItem.id}
+                  onClick={() => setTheme(themeItem.id)}
                   className={`group relative rounded-lg border-2 p-2 text-left transition-all hover:scale-[1.02] ${
                     isSelected
                       ? 'border-primary ring-2 ring-primary/20'
@@ -332,8 +351,8 @@ export default function SettingsPage() {
                   <div
                     className="rounded-md p-2.5 space-y-1.5 mb-2"
                     style={{
-                      background: t.preview.background,
-                      borderColor: t.preview.border,
+                      background: themeItem.preview.background,
+                      borderColor: themeItem.preview.border,
                       borderWidth: '1px',
                       borderStyle: 'solid',
                     }}
@@ -342,40 +361,40 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-1.5">
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center"
-                        style={{ background: t.preview.primary }}
+                        style={{ background: themeItem.preview.primary }}
                       >
                         {isDark ? (
-                          <Moon className="w-3 h-3" style={{ color: t.preview.background }} />
+                          <Moon className="w-3 h-3" style={{ color: themeItem.preview.background }} />
                         ) : (
-                          <Sun className="w-3 h-3" style={{ color: t.preview.background }} />
+                          <Sun className="w-3 h-3" style={{ color: themeItem.preview.background }} />
                         )}
                       </div>
                       <div
                         className="h-2 flex-1 rounded-full"
-                        style={{ background: t.preview.muted }}
+                        style={{ background: themeItem.preview.muted }}
                       />
                     </div>
                     {/* Card preview */}
                     <div
                       className="rounded p-1.5 space-y-1"
                       style={{
-                        background: t.preview.card,
-                        borderColor: t.preview.border,
+                        background: themeItem.preview.card,
+                        borderColor: themeItem.preview.border,
                         borderWidth: '1px',
                         borderStyle: 'solid',
                       }}
                     >
                       <div
                         className="h-1.5 w-3/4 rounded-full"
-                        style={{ background: t.preview.foreground, opacity: 0.7 }}
+                        style={{ background: themeItem.preview.foreground, opacity: 0.7 }}
                       />
                       <div
                         className="h-1.5 w-1/2 rounded-full"
-                        style={{ background: t.preview.muted }}
+                        style={{ background: themeItem.preview.muted }}
                       />
                       <div
                         className="h-1.5 w-1/3 rounded-full"
-                        style={{ background: t.preview.primary }}
+                        style={{ background: themeItem.preview.primary }}
                       />
                     </div>
                   </div>
@@ -385,9 +404,51 @@ export default function SettingsPage() {
                       isSelected ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    {t.name}
+                    {themeItem.name}
                   </p>
                   {/* Selected indicator */}
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Language Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            {t('language.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">{t('language.description')}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {availableLocales.map((locale) => {
+              const isSelected = currentLocale === locale.code
+              return (
+                <button
+                  key={locale.code}
+                  onClick={() => handleLocaleChange(locale.code)}
+                  className={`relative rounded-lg border-2 p-3 text-center transition-all hover:scale-[1.02] ${
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <p
+                    className={`text-sm font-medium ${
+                      isSelected ? 'text-primary' : 'text-foreground'
+                    }`}
+                  >
+                    {locale.name}
+                  </p>
                   {isSelected && (
                     <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-primary-foreground" />
@@ -404,13 +465,13 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Account Verification
+            {t('verification.title')}
             {isLoading ? (
               <Skeleton className="h-5 w-20 rounded-full" />
             ) : isVerified ? (
               <Badge variant="default" className="bg-green-600">
                 <ShieldCheck className="h-3 w-3 mr-1" />
-                Verified
+                {t('verification.verified')}
               </Badge>
             ) : null}
           </CardTitle>
@@ -430,8 +491,8 @@ export default function SettingsPage() {
                 <ShieldCheck className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-400">Your account is verified and protected</p>
-                <p className="text-sm text-muted-foreground">You have full access to all features.</p>
+                <p className="font-medium text-green-700 dark:text-green-400">{t('verification.accountVerified')}</p>
+                <p className="text-sm text-muted-foreground">{t('verification.fullAccess')}</p>
               </div>
             </div>
           ) : !botSettings.verificationBotEnabled ? (
@@ -440,12 +501,11 @@ export default function SettingsPage() {
                 <Wrench className="h-5 w-5 shrink-0 mt-0.5 text-yellow-500" />
                 <div>
                   <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-                    Verification Temporarily Unavailable
+                    {t('verification.unavailableTitle')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Account verification is temporarily disabled for maintenance.
-                    Please try again later or contact an admin via a{' '}
-                    <Link href="/support" className="text-primary hover:underline">support ticket</Link>.
+                    {t('verification.unavailableDescription')}{' '}
+                    <Link href="/support" className="text-primary hover:underline">{t('verification.supportTicket')}</Link>.
                   </p>
                 </div>
               </div>
@@ -457,24 +517,24 @@ export default function SettingsPage() {
                 <div className="flex items-start px-4">
                   <StepIndicator
                     step={1}
-                    label="Join Server"
-                    description="Connect to a verification server"
+                    label={t('verification.step1Label')}
+                    description={t('verification.step1Description')}
                     active={step1Active}
                     completed={step1Complete}
                   />
                   <StepConnector completed={step1Complete && step2Complete} />
                   <StepIndicator
                     step={2}
-                    label="Login"
-                    description="Use /login on the server"
+                    label={t('verification.step2Label')}
+                    description={t('verification.step2Description')}
                     active={false}
                     completed={step2Complete}
                   />
                   <StepConnector completed={step3Complete} />
                   <StepIndicator
                     step={3}
-                    label="Verify"
-                    description="Bot confirms your identity"
+                    label={t('verification.step3Label')}
+                    description={t('verification.step3Description')}
                     active={step3Active}
                     completed={step3Complete}
                   />
@@ -483,15 +543,14 @@ export default function SettingsPage() {
 
               {verifyStep === 'idle' && (
                 <p className="text-sm text-muted-foreground">
-                  Verify your DDNet nickname to unlock all features. Join one of the servers below,
-                  log in with <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">/login</code>, then click the button.
+                  {t('verification.description')}
                 </p>
               )}
 
               {/* Server List */}
               {(verifyStep === 'idle' || verifyStep === 'failed' || verifyStep === 'expired') && servers.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verification Servers</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('verification.serversLabel')}</p>
                   <div className="space-y-1.5">
                     {servers.map((s, i) => (
                       <ServerListItem key={i} server={s} />
@@ -503,14 +562,14 @@ export default function SettingsPage() {
               {verifyStep === 'idle' && (
                 <Button onClick={startVerification} className="w-full sm:w-auto">
                   <ShieldCheck className="h-4 w-4 mr-2" />
-                  Verify Nickname
+                  {t('verification.verifyButton')}
                 </Button>
               )}
 
               {verifyStep === 'starting' && (
                 <div className="flex items-center gap-3 p-4 rounded-lg bg-muted">
                   <Spinner />
-                  <p className="text-sm">Starting verification...</p>
+                  <p className="text-sm">{t('verification.starting')}</p>
                 </div>
               )}
 
@@ -521,16 +580,16 @@ export default function SettingsPage() {
                       <Spinner className="text-blue-500" />
                       <div>
                         <p className="font-medium text-blue-700 dark:text-blue-400">
-                          Verifying your identity...
+                          {t('verification.verifying')}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Bot is checking your account on the server. This usually takes a few seconds.
+                          {t('verification.verifyingDescription')}
                         </p>
                       </div>
                     </div>
                   </div>
                   <Button variant="outline" size="sm" onClick={resetVerification}>
-                    Cancel
+                    {t('verification.cancelButton')}
                   </Button>
                 </div>
               )}
@@ -542,8 +601,8 @@ export default function SettingsPage() {
                       <ShieldCheck className="w-5 h-5 text-green-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-green-700 dark:text-green-400">Verification successful!</p>
-                      <p className="text-sm text-muted-foreground">Your nickname has been verified. Welcome!</p>
+                      <p className="font-medium text-green-700 dark:text-green-400">{t('verification.successTitle')}</p>
+                      <p className="text-sm text-muted-foreground">{t('verification.successDescription')}</p>
                     </div>
                   </div>
                 </div>
@@ -558,14 +617,14 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <p className="font-medium text-red-700 dark:text-red-400">
-                          {verifyStep === 'expired' ? 'Verification Expired' : 'Verification Failed'}
+                          {verifyStep === 'expired' ? t('verification.expiredTitle') : t('verification.failedTitle')}
                         </p>
                         <p className="text-sm text-muted-foreground">{verifyError}</p>
                       </div>
                     </div>
                   </div>
                   <Button onClick={resetVerification} variant="outline">
-                    Try Again
+                    {t('verification.tryAgain')}
                   </Button>
                 </div>
               )}
@@ -574,10 +633,9 @@ export default function SettingsPage() {
               <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-yellow-500" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Account not verified</p>
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">{t('verification.unverifiedTitle')}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    If you haven&apos;t verified your account, the real owner of this nickname can claim it
-                    by verifying their identity through our bot. Verify now to protect your account.
+                    {t('verification.unverifiedWarning')}
                   </p>
                 </div>
               </div>
@@ -589,25 +647,25 @@ export default function SettingsPage() {
       {/* Notifications Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Notifications</CardTitle>
+          <CardTitle>{t('pushNotifications.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {pushSupported ? (
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Push Notifications</p>
+                <p className="font-medium">{t('pushNotifications.label')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Receive notifications about game invites and friend requests
+                  {t('pushNotifications.description')}
                 </p>
               </div>
               <Button variant={pushSubscribed ? 'secondary' : 'default'} onClick={handlePushToggle} disabled={pushLoading}>
                 {pushLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {pushSubscribed ? 'Disable' : 'Enable'}
+                {pushSubscribed ? t('pushNotifications.disable') : t('pushNotifications.enable')}
               </Button>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Push notifications are not supported in this browser.
+              {t('pushNotifications.notSupported')}
             </p>
           )}
         </CardContent>

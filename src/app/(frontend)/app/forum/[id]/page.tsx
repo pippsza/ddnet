@@ -15,6 +15,7 @@ import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
 import { MessageImages } from '@/components/chat/MessageImages'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { isPlatformOnline } from '@/lib/online-utils'
+import { useTranslations } from 'next-intl'
 import { Eye, MessageSquare, Pin, Lock, EyeOff, ArrowLeft } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -41,7 +42,8 @@ function MessageAvatar({ user, mirrored }: { user: any; mirrored?: boolean }) {
 }
 
 function MessageHeader({ user, timestamp, isOwn }: { user: any; timestamp: string; isOwn: boolean }) {
-  const name = user?.ingameNick || 'Unknown'
+  const t = useTranslations('forum')
+  const name = user?.ingameNick || t('post.unknownAuthor')
   const time = <span className="text-xs text-muted-foreground">{new Date(timestamp).toLocaleString()}</span>
   const role = <RoleBadge role={(user as any)?.primaryRole || user?.roles} className="text-[10px] px-1.5 py-0" />
   const nameEl = <span className="text-sm font-medium">{name}</span>
@@ -52,6 +54,7 @@ function MessageHeader({ user, timestamp, isOwn }: { user: any; timestamp: strin
 }
 
 export default function ForumPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('forum')
   const { id } = use(params)
   const { data, isLoading, mutate } = useSWR(`/api/forum/${id}`, fetcher)
   const { data: meData } = useSWR('/api/users/me', fetcher)
@@ -68,7 +71,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
     scopeId: id,
   })
   const typingText = typingUsers.length > 0
-    ? `${typingUsers.map((u) => u.userName).join(', ')} typing...`
+    ? `${typingUsers.map((u) => u.userName).join(', ')} ${t('post.typing')}`
     : null
 
   if (isLoading) return <DetailPageSkeleton />
@@ -77,11 +80,11 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
     return (
       <div className="space-y-4">
         <Link href="/app/forum" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Back to Forum
+          <ArrowLeft className="h-4 w-4" /> {t('post.backToForum')}
         </Link>
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            Post not found.
+            {t('post.notFound')}
           </CardContent>
         </Card>
       </div>
@@ -160,12 +163,12 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
             {post.isPinned && <Pin className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
             <h1 className="text-base font-semibold truncate">{post.title}</h1>
             <Badge variant="secondary" className="text-[10px] shrink-0">
-              {post.category}
+              {t(`list.categories.${post.category}`)}
             </Badge>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
             <span className="hidden sm:inline">
-              {author?.ingameNick || 'Unknown'} &middot; {new Date(post.createdAt).toLocaleDateString()}
+              {author?.ingameNick || t('post.unknownAuthor')} &middot; {new Date(post.createdAt).toLocaleDateString()}
             </span>
             <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" />{post.views || 0}</span>
             <span className="flex items-center gap-0.5"><MessageSquare className="h-3 w-3" />{post.replies?.length || 0}</span>
@@ -177,7 +180,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
         {/* Moderation Panel */}
         {data?.isModeratorOrAdmin && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10px] font-medium text-muted-foreground mr-1">Mod:</span>
+            <span className="text-[10px] font-medium text-muted-foreground mr-1">{t('post.mod.label')}</span>
             <Button
               size="sm"
               variant={post.isPinned ? 'default' : 'outline'}
@@ -186,7 +189,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
               className="h-6 text-xs px-2"
             >
               <Pin className="h-3 w-3 mr-1" />
-              {post.isPinned ? 'Unpin' : 'Pin'}
+              {post.isPinned ? t('post.mod.unpin') : t('post.mod.pin')}
             </Button>
             <Button
               size="sm"
@@ -196,7 +199,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
               className="h-6 text-xs px-2"
             >
               <Lock className="h-3 w-3 mr-1" />
-              {isLocked ? 'Unlock' : 'Lock'}
+              {isLocked ? t('post.mod.unlock') : t('post.mod.lock')}
             </Button>
             <Button
               size="sm"
@@ -206,7 +209,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
               className="h-6 text-xs px-2"
             >
               <EyeOff className="h-3 w-3 mr-1" />
-              {post.status === 'hidden' ? 'Unhide' : 'Hide'}
+              {post.status === 'hidden' ? t('post.mod.unhide') : t('post.mod.hide')}
             </Button>
           </div>
         )}
@@ -252,10 +255,10 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
       <ChatInput
         richText
         onSend={handleReply}
-        placeholder="Write a reply..."
+        placeholder={t('post.replyPlaceholder')}
         sending={sending}
         disabled={isLocked}
-        disabledMessage="This post is locked. No new replies can be added."
+        disabledMessage={t('post.lockedMessage')}
         onTyping={notifyTyping}
       />
     </div>

@@ -1,0 +1,84 @@
+{
+  "navigation": {
+    "title": "DDashBoard",
+    "login": "登录",
+    "adminPanel": "管理面板"
+  },
+  "hero": {
+    "badge": "全新游戏模式",
+    "title": "DDashBoard",
+    "subtitle": "在 DDraceNetwork 中竞速完成地图",
+    "description": "比对手更快地完成行、对角线或全板。每个格子都是一个挑战！",
+    "learnMore": "了解 Bingo 玩法",
+    "startPlaying": "开始游戏"
+  },
+  "preview": {
+    "caption": "5×5 游戏棋盘示例"
+  },
+  "howItWorks": {
+    "title": "Bingo 怎么玩？",
+    "subtitle": "简单规则，无限可能",
+    "steps": {
+      "chooseMode": {
+        "title": "选择模式",
+        "description": "单人游玩或与其他玩家实时竞技"
+      },
+      "completeMaps": {
+        "title": "完成地图",
+        "description": "棋盘上的每个格子对应一张 DDNet 地图，完成即可标记"
+      },
+      "getCombination": {
+        "title": "达成组合",
+        "description": "比对手更快地完成一行、一列、对角线或全板！"
+      }
+    }
+  },
+  "modes": {
+    "solo": {
+      "title": "单人模式",
+      "description": "刷新个人纪录",
+      "features": {
+        "ownPace": "按自己的节奏完成地图",
+        "trackStats": "追踪你的统计数据",
+        "improveAchievements": "提升个人成就"
+      }
+    },
+    "competitive": {
+      "title": "竞技模式",
+      "description": "实时对决",
+      "features": {
+        "competeWithPlayers": "与其他玩家一较高下",
+        "onlineProgress": "在线进度同步",
+        "ratingSystem": "积分排名系统"
+      }
+    }
+  },
+  "additionalFeatures": {
+    "title": "更多功能",
+    "subtitle": "不只是一款游戏",
+    "onlineFriends": {
+      "title": "在线好友",
+      "description": "添加好友，实时关注他们的动态。加入他们的对局，一起组队闯关"
+    },
+    "accountSystem": {
+      "title": "账户系统",
+      "description": "创建个人资料，追踪统计数据，个性化你的游戏体验。所有成就随时随地相伴"
+    },
+    "eventServers": {
+      "title": "赛事服务器（即将推出）",
+      "description": "未来将支持为特殊活动和锦标赛部署专属服务器"
+    }
+  },
+  "cta": {
+    "badge": "立即加入",
+    "title": "准备好迎接挑战了吗？",
+    "description": "加入 DDashBoard 社区，展示你的实力",
+    "createAccount": "创建账户"
+  },
+  "footer": {
+    "about": "关于",
+    "rules": "规则",
+    "support": "支持",
+    "copyright": "© 2026 DDashBoard"
+  }
+}

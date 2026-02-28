@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "Forum",
+    "newPost": "Neuer Beitrag",
+    "searchPlaceholder": "Beiträge suchen...",
+    "categories": {
+      "all": "Alle",
+      "general": "Allgemein",
+      "help": "Hilfe",
+      "suggestions": "Vorschläge",
+      "bugs": "Fehler",
+      "maps": "Maps",
+      "clans": "Clans",
+      "offtopic": "Off-Topic"
+    },
+    "locked": "Gesperrt",
+    "unknownAuthor": "Unbekannt",
+    "noPosts": "Keine Beiträge gefunden. Starte als Erster eine Diskussion!"
+  },
+  "create": {
+    "backToForum": "Zurück zum Forum",
+    "cardTitle": "Neuen Beitrag erstellen",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Beitragstitel",
+    "categoryLabel": "Kategorie",
+    "contentLabel": "Inhalt",
+    "contentPlaceholder": "Schreibe deinen Beitrag...",
+    "attachmentsLabel": "Anhänge",
+    "createButton": "Beitrag erstellen",
+    "creating": "Wird erstellt...",
+    "cancelButton": "Abbrechen",
+    "failed": "Beitrag konnte nicht erstellt werden"
+  },
+  "post": {
+    "backToForum": "Zurück zum Forum",
+    "notFound": "Beitrag nicht gefunden.",
+    "unknownAuthor": "Unbekannt",
+    "typing": "schreibt...",
+    "replyPlaceholder": "Antwort schreiben...",
+    "lockedMessage": "Dieser Beitrag ist gesperrt. Es können keine neuen Antworten hinzugefügt werden.",
+    "mod": {
+      "label": "Mod:",
+      "pin": "Anheften",
+      "unpin": "Loslösen",
+      "lock": "Sperren",
+      "unlock": "Entsperren",
+      "hide": "Verbergen",
+      "unhide": "Einblenden"
+    }
+  },
+  "articles": {
+    "title": "Artikel",
+    "newArticle": "Neuer Artikel",
+    "searchPlaceholder": "Artikel suchen...",
+    "categories": {
+      "all": "Alle",
+      "news": "Neuigkeiten",
+      "tutorial": "Tutorial",
+      "guide": "Anleitung",
+      "update": "Update",
+      "event": "Event",
+      "announcement": "Ankündigung"
+    },
+    "featured": "Empfohlen",
+    "defaultAuthor": "Admin",
+    "noArticles": "Keine Artikel gefunden."
+  },
+  "articleCreate": {
+    "backToArticles": "Zurück zu Artikel",
+    "cardTitle": "Artikel erstellen",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Artikeltitel",
+    "excerptLabel": "Auszug",
+    "excerptPlaceholder": "Kurzbeschreibung für die Vorschau...",
+    "categoryLabel": "Kategorie",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Tag1, Tag2, Tag3",
+    "tagsHelp": "Kommagetrennt",
+    "featured": "Empfohlener Artikel",
+    "contentLabel": "Inhalt",
+    "contentPlaceholder": "Schreibe deinen Artikel...",
+    "publishButton": "Artikel veröffentlichen",
+    "publishing": "Wird veröffentlicht...",
+    "cancelButton": "Abbrechen",
+    "failed": "Artikel konnte nicht erstellt werden"
+  },
+  "articleDetail": {
+    "backToArticles": "Zurück zu Artikel",
+    "edit": "Bearbeiten",
+    "featured": "Empfohlen",
+    "defaultAuthor": "Admin",
+    "views": "{count} Aufrufe",
+    "likes": "{count} Likes",
+    "notFound": "Artikel nicht gefunden."
+  }
+}

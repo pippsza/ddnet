@@ -20,7 +20,7 @@ export function SupportHeader() {
       <div className="flex items-center gap-3">
         {isLoggedIn ? (
           <Link
-            href="/"
+            href="/app"
             className="text-muted-foreground hover:text-foreground transition-colors"
             title="Home"
           >

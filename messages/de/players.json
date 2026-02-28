@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "Spieler",
+    "searchPlaceholder": "Spieler suchen...",
+    "registered": "Registrierte Spieler",
+    "community": "Community-Mitglieder",
+    "ddnet": "DDNet-Spieler",
+    "noPlayersFound": "Keine Spieler für \"{search}\" gefunden. Versuche einen anderen Namen."
+  },
+  "detail": {
+    "backToPlayers": "Zurück zu Spieler",
+    "notFound": "Spieler \"{name}\" nicht gefunden.",
+    "mapper": "Mapper",
+    "points": "{count} Punkte",
+    "rank": "Rang #{rank}",
+    "played": "gespielt",
+    "playingSince": "Spielt seit {date}",
+    "firstFinish": "Erster Abschluss: {date} auf {map}",
+    "copyAddress": "Adresse kopieren",
+    "tabs": {
+      "service": "Service",
+      "ddnet": "DDNet",
+      "settings": "Einstellungen"
+    },
+    "noServiceStats": "Keine Service-Statistiken verfügbar",
+    "noServiceStatsDescription": "Dieser Spieler hat noch an keinem Bingo- oder Rennspiel teilgenommen.",
+    "friend": {
+      "remove": "Freund entfernen",
+      "removing": "Wird entfernt...",
+      "cancelRequest": "Anfrage abbrechen",
+      "cancelling": "Wird abgebrochen...",
+      "acceptRequest": "Anfrage annehmen",
+      "accepting": "Wird angenommen...",
+      "add": "Freund hinzufügen",
+      "sending": "Wird gesendet...",
+      "message": "Nachricht"
+    },
+    "ingameChat": {
+      "button": "Ingame chatten",
+      "connecting": "Verbinde...",
+      "failed": "Ingame-Chat konnte nicht gestartet werden"
+    },
+    "externalLinks": {
+      "ddnetProfile": "DDNet-Profil",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "Server benötigt ein Passwort",
+      "description": "Dieser Server ist passwortgeschützt. Gib das Server-Passwort ein, um dich zu verbinden.",
+      "placeholder": "Server-Passwort",
+      "connect": "Verbinden",
+      "cancel": "Abbrechen",
+      "securityNote": "Dein Passwort wird sicher übertragen und nicht gespeichert. Es wird nur verwendet, um den Bot mit dem Server zu verbinden."
+    }
+  },
+  "online": {
+    "title": "Online-Spieler",
+    "onlineCount": "{count} online",
+    "addPlayerPlaceholder": "DDNet-Spieler-Nickname eingeben...",
+    "adding": "Wird hinzugefügt...",
+    "watchPlayer": "Spieler beobachten",
+    "onlineStatus": "Online",
+    "offlineStatus": "Offline",
+    "disableNotifications": "Benachrichtigungen deaktivieren",
+    "enableNotifications": "Benachrichtigungen aktivieren",
+    "removeFromWatchlist": "Von Beobachtungsliste entfernen",
+    "toast": {
+      "added": "{name} zur Beobachtungsliste hinzugefügt",
+      "removed": "{name} von Beobachtungsliste entfernt",
+      "failedToAdd": "Spieler konnte nicht hinzugefügt werden",
+      "failedToRemove": "Spieler konnte nicht entfernt werden",
+      "failedToUpdateNotification": "Benachrichtigungseinstellung konnte nicht aktualisiert werden"
+    },
+    "empty": {
+      "title": "Noch keine Spieler beobachtet.",
+      "description": "Füge DDNet-Spieler-Nicknames hinzu, um ihren Online-Status zu verfolgen. Du wirst benachrichtigt, wenn sie online kommen."
+    }
+  }
+}

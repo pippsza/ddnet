@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { StatusBadge, RoleBadge } from '@/components/ui/status-badge'
@@ -23,6 +24,7 @@ const TAB_TRIGGER_CLASSES =
   'flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground dark:data-[state=active]:border-primary'
 
 function DashboardContent() {
+  const t = useTranslations('dashboard')
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -77,7 +79,7 @@ function DashboardContent() {
           </OnlineStatusIndicator>
           <div className="flex-1 min-w-0 text-center sm:text-left">
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-              <h1 className="text-2xl font-bold truncate">{userData?.ingameNick || 'Unknown'}</h1>
+              <h1 className="text-2xl font-bold truncate">{userData?.ingameNick || t('fallbackName')}</h1>
               {userData?.isSystemVerified && (
                 <StatusBadge status="verified" />
               )}
@@ -86,17 +88,17 @@ function DashboardContent() {
             {userData?.ingameStats?.points !== undefined && (
               <div className="flex items-center gap-4 mt-2 justify-center sm:justify-start text-muted-foreground flex-wrap">
                 <span className="text-lg font-semibold text-foreground">
-                  {userData.ingameStats.points.toLocaleString()} points
+                  {userData.ingameStats.points.toLocaleString()} {t('points')}
                 </span>
-                {userData.ingameStats.rank && <span>Rank #{userData.ingameStats.rank}</span>}
+                {userData.ingameStats.rank && <span>{t('rank', { rank: userData.ingameStats.rank })}</span>}
                 {totalPlaytime ? (
-                  <span>{formatPlaytime(totalPlaytime)} played</span>
+                  <span>{formatPlaytime(totalPlaytime)} {t('played')}</span>
                 ) : null}
               </div>
             )}
             {playingSince && (
               <p className="text-sm text-muted-foreground mt-1">
-                Playing since {formatDateShort(playingSince)}
+                {t('playingSince', { date: formatDateShort(playingSince) })}
               </p>
             )}
           </div>
@@ -107,10 +109,10 @@ function DashboardContent() {
       <Tabs value={activeTab} onValueChange={setTab}>
         <TabsList className="w-full h-11">
           <TabsTrigger value="service" className={TAB_TRIGGER_CLASSES}>
-            Service
+            {t('tabs.service')}
           </TabsTrigger>
           <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
-            DDNet
+            {t('tabs.ddnet')}
           </TabsTrigger>
         </TabsList>
 
@@ -122,19 +124,19 @@ function DashboardContent() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">B</span>
-                  Bingo
+                  {t('bingo.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Create or join a bingo game to compete on DDNet maps
+                  {t('bingo.description')}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Link href="/app/bingo/create" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
-                    Create Game
+                    {t('bingo.createButton')}
                   </Link>
                   <Link href="/app/bingo" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
-                    Browse Lobby
+                    {t('bingo.browseButton')}
                   </Link>
                 </div>
               </CardContent>
@@ -143,19 +145,19 @@ function DashboardContent() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <span className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold">R</span>
-                  Race
+                  {t('race.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Race against other players on DDNet servers
+                  {t('race.description')}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Link href="/app/race/create" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
-                    Create Race
+                    {t('race.createButton')}
                   </Link>
                   <Link href="/app/race" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
-                    Browse Lobby
+                    {t('race.browseButton')}
                   </Link>
                 </div>
               </CardContent>
@@ -177,7 +179,7 @@ function DashboardContent() {
             totalPlaytime={totalPlaytime}
             currentMonthHours={currentMonthHours}
             playingSince={playingSince}
-            fourthStat={{ title: 'Friends', value: userData?.friend?.length || 0 }}
+            fourthStat={{ title: t('friends.title'), value: userData?.friend?.length || 0 }}
             recentFinishesLimit={10}
             showMostPlayedMaps={false}
           />

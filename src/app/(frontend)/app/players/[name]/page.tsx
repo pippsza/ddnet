@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState, useMemo, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
@@ -42,17 +43,19 @@ const TAB_TRIGGER_CLASSES =
   'flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground dark:data-[state=active]:border-primary'
 
 function PlayerDetailContent({ name }: { name: string }) {
+  const t = useTranslations('players')
   const decodedName = decodeURIComponent(name)
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'service'
 
-  const { data, isLoading, error, mutate: mutatePlayer } = useSWR(
-    `/api/players/${encodeURIComponent(decodedName)}`,
-    fetcher,
-    { refreshInterval: 30000 },
-  )
+  const {
+    data,
+    isLoading,
+    error,
+    mutate: mutatePlayer,
+  } = useSWR(`/api/players/${encodeURIComponent(decodedName)}`, fetcher, { refreshInterval: 30000 })
   const { data: meData, mutate: mutateMe } = useSWR('/api/users/me', fetcher)
   const { data: pendingData, mutate: mutatePending } = useSWR('/api/friends/pending', fetcher)
 
@@ -253,10 +256,10 @@ function PlayerDetailContent({ name }: { name: string }) {
         // Server requires password — show password dialog
         setPasswordPrompt(true)
       } else {
-        toast.error(data.error || 'Failed to start in-game chat')
+        toast.error(data.error || t('detail.ingameChat.failed'))
       }
     } catch {
-      toast.error('Failed to start in-game chat')
+      toast.error(t('detail.ingameChat.failed'))
     } finally {
       setChatStarting(false)
     }
@@ -277,13 +280,13 @@ function PlayerDetailContent({ name }: { name: string }) {
       <div className="space-y-4">
         <Link
           href="/app/players"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center  gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Players
+          <ArrowLeft className="h-4 w-4" /> {t('detail.backToPlayers')}
         </Link>
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            Player &quot;{decodedName}&quot; not found.
+            {t('detail.notFound', { name: decodedName })}
           </CardContent>
         </Card>
       </div>
@@ -322,9 +325,9 @@ function PlayerDetailContent({ name }: { name: string }) {
     <div className="space-y-6">
       <Link
         href="/app/players"
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className=" items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Players
+        <ArrowLeft className="h-4 w-4" /> {t('detail.backToPlayers')}
       </Link>
 
       {/* Profile Hero Card */}
@@ -370,42 +373,41 @@ function PlayerDetailContent({ name }: { name: string }) {
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
               <h1 className="text-3xl font-bold truncate">{playerName}</h1>
               {reg?.isVerified && <StatusBadge status="verified" />}
-              {reg && (
-                <RoleBadge role={(reg as any).primaryRole || reg.roles || 'player'} />
-              )}
+              {reg && <RoleBadge role={(reg as any).primaryRole || reg.roles || 'player'} />}
               {ddstats?.is_mapper && (
                 <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-medium">
-                  Mapper
+                  {t('detail.mapper')}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-4 mt-2 justify-center sm:justify-start text-muted-foreground flex-wrap">
               <span className="text-lg font-semibold text-foreground">
-                {totalPoints.toLocaleString()} points
+                {t('detail.points', { count: totalPoints.toLocaleString() })}
               </span>
-              {rank && <span>Rank #{rank}</span>}
+              {rank && <span>{t('detail.rank', { rank })}</span>}
               {totalPlaytime ? (
-                <span>{formatPlaytime(totalPlaytime)} played</span>
+                <span>{formatPlaytime(totalPlaytime)} {t('detail.played')}</span>
               ) : ddnet?.hoursPlayed ? (
-                <span>{ddnet.hoursPlayed}h played</span>
+                <span>{ddnet.hoursPlayed}h {t('detail.played')}</span>
               ) : null}
             </div>
             {playingSince && (
               <p className="text-sm text-muted-foreground mt-1">
-                Playing since {formatDateShort(playingSince)}
+                {t('detail.playingSince', { date: formatDateShort(playingSince) })}
               </p>
             )}
             {!playingSince && ddnet?.firstFinish && (
               <p className="text-sm text-muted-foreground mt-1">
-                First finish: {new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString()} on{' '}
-                {ddnet.firstFinish.map}
+                {t('detail.firstFinish', { date: new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString(), map: ddnet.firstFinish.map })}
               </p>
             )}
 
             {/* Currently playing — inline */}
             {online?.server && (
               <div className="flex items-center gap-4 mt-2 text-sm flex-wrap">
-                <span className={`flex items-center gap-1.5 ${online.afk ? 'text-yellow-500' : 'text-green-500'}`}>
+                <span
+                  className={`flex items-center gap-1.5 ${online.afk ? 'text-yellow-500' : 'text-green-500'}`}
+                >
                   <Map className="h-3.5 w-3.5" />
                   <span className="font-medium">{online.server.map}</span>
                   {online.afk && <AfkBadge />}
@@ -420,7 +422,7 @@ function PlayerDetailContent({ name }: { name: string }) {
                       navigator.clipboard.writeText(`${online.server.ip}:${online.server.port}`)
                     }
                     className="text-muted-foreground hover:text-foreground transition-colors"
-                    title="Copy address"
+                    title={t('detail.copyAddress')}
                   >
                     <Copy className="h-3 w-3" />
                   </button>
@@ -432,29 +434,44 @@ function PlayerDetailContent({ name }: { name: string }) {
               {reg?.id && !isOwnProfile && (
                 <>
                   {friendStatus === 'friends' ? (
-                    <Button size="sm" variant="secondary" disabled={friendSending} onClick={handleRemoveFriend}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={friendSending}
+                      onClick={handleRemoveFriend}
+                    >
                       <UserMinus className="h-4 w-4 mr-1" />
-                      {friendSending ? 'Removing...' : 'Remove Friend'}
+                      {friendSending ? t('detail.friend.removing') : t('detail.friend.remove')}
                     </Button>
                   ) : friendStatus === 'pending_sent' ? (
-                    <Button size="sm" variant="secondary" disabled={friendSending} onClick={handleCancelRequest}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={friendSending}
+                      onClick={handleCancelRequest}
+                    >
                       <X className="h-4 w-4 mr-1" />
-                      {friendSending ? 'Cancelling...' : 'Cancel Request'}
+                      {friendSending ? t('detail.friend.cancelling') : t('detail.friend.cancelRequest')}
                     </Button>
                   ) : friendStatus === 'pending_received' ? (
-                    <Button size="sm" variant="default" disabled={friendSending} onClick={handleAcceptRequest}>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      disabled={friendSending}
+                      onClick={handleAcceptRequest}
+                    >
                       <UserPlus className="h-4 w-4 mr-1" />
-                      {friendSending ? 'Accepting...' : 'Accept Request'}
+                      {friendSending ? t('detail.friend.accepting') : t('detail.friend.acceptRequest')}
                     </Button>
                   ) : (
                     <Button size="sm" disabled={friendSending} onClick={handleAddFriend}>
                       <UserPlus className="h-4 w-4 mr-1" />
-                      {friendSending ? 'Sending...' : 'Add Friend'}
+                      {friendSending ? t('detail.friend.sending') : t('detail.friend.add')}
                     </Button>
                   )}
                   <Button size="sm" variant="outline" onClick={handleSendMessage}>
                     <MessageCircle className="h-4 w-4 mr-1" />
-                    Message
+                    {t('detail.friend.message')}
                   </Button>
                 </>
               )}
@@ -470,7 +487,7 @@ function PlayerDetailContent({ name }: { name: string }) {
                     disabled={chatStarting}
                   >
                     <Gamepad2 className="h-4 w-4 mr-1" />
-                    {chatStarting ? 'Connecting...' : 'Chat In-Game'}
+                    {chatStarting ? t('detail.ingameChat.connecting') : t('detail.ingameChat.button')}
                   </Button>
                 )}
               <Button variant="outline" size="sm" asChild>
@@ -479,7 +496,7 @@ function PlayerDetailContent({ name }: { name: string }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  DDNet Profile
+                  {t('detail.externalLinks.ddnetProfile')}
                 </a>
               </Button>
               <Button variant="outline" size="sm" asChild>
@@ -488,7 +505,7 @@ function PlayerDetailContent({ name }: { name: string }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  DDStats
+                  {t('detail.externalLinks.ddstats')}
                 </a>
               </Button>
             </div>
@@ -498,10 +515,10 @@ function PlayerDetailContent({ name }: { name: string }) {
               <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-yellow-500">
                   <Lock className="h-4 w-4" />
-                  <span className="text-sm font-medium">Server requires a password</span>
+                  <span className="text-sm font-medium">{t('detail.passwordPrompt.title')}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  This server is password-protected. Enter the server password to connect.
+                  {t('detail.passwordPrompt.description')}
                 </p>
                 <form
                   onSubmit={(e) => {
@@ -512,14 +529,14 @@ function PlayerDetailContent({ name }: { name: string }) {
                 >
                   <Input
                     type="password"
-                    placeholder="Server password"
+                    placeholder={t('detail.passwordPrompt.placeholder')}
                     value={serverPassword}
                     onChange={(e) => setServerPassword(e.target.value)}
                     className="flex-1"
                     autoFocus
                   />
                   <Button size="sm" type="submit" disabled={chatStarting || !serverPassword.trim()}>
-                    {chatStarting ? 'Connecting...' : 'Connect'}
+                    {chatStarting ? t('detail.ingameChat.connecting') : t('detail.passwordPrompt.connect')}
                   </Button>
                   <Button
                     size="sm"
@@ -530,14 +547,13 @@ function PlayerDetailContent({ name }: { name: string }) {
                       setServerPassword('')
                     }}
                   >
-                    Cancel
+                    {t('detail.passwordPrompt.cancel')}
                   </Button>
                 </form>
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0 text-green-500" />
                   <span>
-                    Your password is sent securely and is not stored. It is only used to connect the
-                    bot to the server.
+                    {t('detail.passwordPrompt.securityNote')}
                   </span>
                 </div>
               </div>
@@ -551,15 +567,15 @@ function PlayerDetailContent({ name }: { name: string }) {
         <Tabs value={activeTab} onValueChange={setTab}>
           <TabsList className="w-full h-11">
             <TabsTrigger value="service" className={TAB_TRIGGER_CLASSES}>
-              Service
+              {t('detail.tabs.service')}
             </TabsTrigger>
             <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
-              DDNet
+              {t('detail.tabs.ddnet')}
             </TabsTrigger>
             {(isAdmin || permissions?.adminPages?.includes('manage_users')) && (
               <TabsTrigger value="settings" className={TAB_TRIGGER_CLASSES}>
                 <Settings className="h-4 w-4 mr-1.5" />
-                Settings
+                {t('detail.tabs.settings')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -571,9 +587,9 @@ function PlayerDetailContent({ name }: { name: string }) {
             ) : (
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  <p className="text-lg font-medium mb-2">No service stats available</p>
+                  <p className="text-lg font-medium mb-2">{t('detail.noServiceStats')}</p>
                   <p className="text-sm">
-                    This player hasn&apos;t participated in any bingo or race games yet.
+                    {t('detail.noServiceStatsDescription')}
                   </p>
                 </CardContent>
               </Card>

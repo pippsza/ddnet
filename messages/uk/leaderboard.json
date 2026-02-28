@@ -1,0 +1,30 @@
+{
+  "title": "Таблиця лідерів",
+  "tabs": {
+    "bingo": "Бінго",
+    "race": "Перегони"
+  },
+  "filters": {
+    "categoryPlaceholder": "Категорія",
+    "sortPlaceholder": "Сортувати за",
+    "allCategories": "Усі категорії"
+  },
+  "sort": {
+    "mostWins": "Найбільше перемог",
+    "bestWinRate": "Найкращий відсоток перемог",
+    "mostGames": "Найбільше ігор",
+    "mostMaps": "Найбільше мап",
+    "mostRoundsWon": "Найбільше виграних раундів"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "Гравець",
+    "games": "Ігри",
+    "wins": "Перемоги",
+    "winRate": "% перемог",
+    "maps": "Мапи",
+    "rounds": "Раунди"
+  },
+  "empty": "Гравців не знайдено",
+  "emptyForCategory": "Гравців не знайдено для категорії {category}."
+}

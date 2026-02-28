@@ -1,0 +1,38 @@
+{
+  "title": "Friends",
+  "pendingCount": "{count} pending",
+  "addFriend": {
+    "placeholder": "Enter in-game nickname...",
+    "button": "Add Friend",
+    "sending": "Sending..."
+  },
+  "pending": {
+    "title": "Pending Requests",
+    "wantsToBeYourFriend": "wants to be your friend",
+    "accept": "Accept",
+    "requestSent": "Request sent — waiting for response",
+    "cancel": "Cancel"
+  },
+  "list": {
+    "title": "Your Friends ({count})",
+    "tabAll": "All",
+    "tabOnline": "Online ({count})",
+    "noFriendsToShow": "No friends to show.",
+    "noFriendsYet": "No friends yet. Send a friend request or add from suggestions below!",
+    "removeFriend": "Remove friend"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "suggested": {
+    "title": "Suggested Players",
+    "sent": "Sent",
+    "add": "Add"
+  },
+  "unknownUser": "Unknown",
+  "toast": {
+    "requestSent": "Friend request sent!",
+    "failedToSend": "Failed to send request"
+  }
+}

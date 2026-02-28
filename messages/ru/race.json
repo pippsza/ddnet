@@ -1,0 +1,122 @@
+{
+  "lobby": {
+    "title": "Гонка",
+    "inviteCodePlaceholder": "Код приглашения",
+    "createRace": "Создать гонку",
+    "myActiveRaces": "Мои активные гонки",
+    "publicLobby": "Публичное лобби",
+    "pastRaces": "Прошедшие гонки",
+    "noPublicRaces": "Нет доступных публичных гонок. Создайте свою!",
+    "joinFailed": "Не удалось присоединиться к гонке",
+    "joinSuccess": "Вы присоединились к гонке!",
+    "steps": "шагов",
+    "unknownServer": "Неизвестный"
+  },
+  "card": {
+    "open": "Открыть",
+    "join": "Присоединиться"
+  },
+  "cancel": {
+    "title": "Отменить гонку?",
+    "description": "Это отменит гонку для всех участников. Действие нельзя отменить.",
+    "keep": "Продолжить гонку",
+    "confirm": "Отменить гонку"
+  },
+  "create": {
+    "defaultTitle": "Гонка {nick}",
+    "failed": "Не удалось создать гонку",
+    "goBack": "Назад"
+  },
+  "game": {
+    "errorLoading": "Ошибка загрузки гонки",
+    "back": "Назад",
+    "joining": "Подключение...",
+    "joinRace": "Присоединиться к гонке",
+    "starting": "Запуск...",
+    "startRace": "Начать гонку",
+    "ready": "Готов",
+    "unready": "Не готов",
+    "setServerHint": "Укажите IP сервера для начала",
+    "botMaintenance": {
+      "lobby": "Бот для объявлений на техобслуживании. Гонка будет работать, но без объявлений в игре.",
+      "game": "Бот гонки на техобслуживании. Подсчёт очков и отслеживание прогресса работают."
+    },
+    "currentMap": "Текущая:",
+    "stepProgress": "Этап {current}/{total}"
+  },
+  "leave": {
+    "title": "Покинуть гонку?",
+    "description": "Вы будете удалены из команды. Вы сможете вернуться позже, если гонка ещё открыта.",
+    "stay": "Остаться",
+    "leave": "Покинуть",
+    "failed": "Не удалось покинуть игру",
+    "failedToStart": "Не удалось запустить гонку"
+  },
+  "settings": {
+    "raceTitle": "Название гонки",
+    "raceTitlePlaceholder": "Моя гонка",
+    "category": "Категория",
+    "categoryMode": "Режим категории",
+    "minDifficulty": "Мин. сложность",
+    "maxDifficulty": "Макс. сложность",
+    "server": "Сервер",
+    "serverAddressPlaceholder": "127.0.0.1:8303",
+    "serverNamePlaceholder": "Название сервера (необязательно)",
+    "mode": "Режим",
+    "publicRace": "Публичная гонка",
+    "inviteCode": "Код приглашения:",
+    "categoryLabel": "Категория:",
+    "categoryModeLabel": "Режим категории:",
+    "pathLengthLabel": "Длина маршрута:",
+    "pathLengthSteps": "шагов",
+    "difficultyLabel": "Сложность:",
+    "stars": "звёзд",
+    "serverLabel": "Сервер:",
+    "modeLabel": "Режим:",
+    "visibilityLabel": "Видимость:",
+    "public": "Публичная",
+    "private": "Приватная",
+    "failedToUpdate": "Не удалось обновить",
+    "failedToSave": "Не удалось сохранить настройки",
+    "preview": "Предпросмотр",
+    "settingsTab": "Настройки"
+  },
+  "team": {
+    "host": "Хост",
+    "joined": "Присоединился",
+    "invited": "Приглашён",
+    "inviteTeammate": "Пригласить тиммейта",
+    "inviteOpponent": "Пригласить соперника",
+    "cancelInvite": "Отмена",
+    "waitingForPlayer": "Ожидание игрока...",
+    "switchTeam": "Перейти в эту команду",
+    "pts": "очк.",
+    "failedToInvite": "Не удалось отправить приглашение",
+    "failedToCancelInvite": "Не удалось отменить приглашение",
+    "failedToSwitch": "Не удалось сменить команду",
+    "cannotSwitchSolo": "Нельзя перейти в соло, пока в Команде 2 есть игроки или ожидающие приглашения",
+    "playerOne": "Игрок 1",
+    "playerTwo": "Игрок 2"
+  },
+  "surrender": {
+    "title": "Сдаться?",
+    "description": "Ваш соперник выиграет гонку. Действие нельзя отменить.",
+    "keep": "Продолжить игру",
+    "confirm": "Сдаться",
+    "failed": "Не удалось сдаться"
+  },
+  "result": {
+    "winner": "{team} побеждает!",
+    "cancelled": "Гонка отменена"
+  },
+  "rematch": {
+    "button": "Реванш",
+    "title": "Предложен реванш!",
+    "descriptionNamed": "{name} хочет сыграть снова!",
+    "descriptionGeneric": "Ваш соперник хочет реванш!",
+    "decline": "Отклонить",
+    "accept": "Принять реванш",
+    "failedToCreate": "Не удалось создать реванш",
+    "failedToJoin": "Не удалось присоединиться к реваншу"
+  }
+}

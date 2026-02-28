@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "Forum",
+    "newPost": "Yeni Gönderi",
+    "searchPlaceholder": "Gönderi ara...",
+    "categories": {
+      "all": "Tümü",
+      "general": "Genel",
+      "help": "Yardım",
+      "suggestions": "Öneriler",
+      "bugs": "Hatalar",
+      "maps": "Haritalar",
+      "clans": "Klanlar",
+      "offtopic": "Konu Dışı"
+    },
+    "locked": "Kilitli",
+    "unknownAuthor": "Bilinmiyor",
+    "noPosts": "Gönderi bulunamadı. Bir tartışma başlatan ilk kişi ol!"
+  },
+  "create": {
+    "backToForum": "Foruma Dön",
+    "cardTitle": "Yeni Gönderi Oluştur",
+    "titleLabel": "Başlık",
+    "titlePlaceholder": "Gönderi başlığı",
+    "categoryLabel": "Kategori",
+    "contentLabel": "İçerik",
+    "contentPlaceholder": "Gönderini yaz...",
+    "attachmentsLabel": "Ekler",
+    "createButton": "Gönderi Oluştur",
+    "creating": "Oluşturuluyor...",
+    "cancelButton": "İptal",
+    "failed": "Gönderi oluşturulamadı"
+  },
+  "post": {
+    "backToForum": "Foruma Dön",
+    "notFound": "Gönderi bulunamadı.",
+    "unknownAuthor": "Bilinmiyor",
+    "typing": "yazıyor...",
+    "replyPlaceholder": "Bir yanıt yaz...",
+    "lockedMessage": "Bu gönderi kilitli. Yeni yanıt eklenemez.",
+    "mod": {
+      "label": "Mod:",
+      "pin": "Sabitle",
+      "unpin": "Sabitlemeden Kaldır",
+      "lock": "Kilitle",
+      "unlock": "Kilidi Aç",
+      "hide": "Gizle",
+      "unhide": "Göster"
+    }
+  },
+  "articles": {
+    "title": "Makaleler",
+    "newArticle": "Yeni Makale",
+    "searchPlaceholder": "Makale ara...",
+    "categories": {
+      "all": "Tümü",
+      "news": "Haberler",
+      "tutorial": "Eğitim",
+      "guide": "Rehber",
+      "update": "Güncelleme",
+      "event": "Etkinlik",
+      "announcement": "Duyuru"
+    },
+    "featured": "Öne Çıkan",
+    "defaultAuthor": "Yönetici",
+    "noArticles": "Makale bulunamadı."
+  },
+  "articleCreate": {
+    "backToArticles": "Makalelere Dön",
+    "cardTitle": "Makale Oluştur",
+    "titleLabel": "Başlık",
+    "titlePlaceholder": "Makale başlığı",
+    "excerptLabel": "Özet",
+    "excerptPlaceholder": "Ön izleme için kısa açıklama...",
+    "categoryLabel": "Kategori",
+    "tagsLabel": "Etiketler",
+    "tagsPlaceholder": "etiket1, etiket2, etiket3",
+    "tagsHelp": "Virgülle ayrılmış",
+    "featured": "Öne çıkan makale",
+    "contentLabel": "İçerik",
+    "contentPlaceholder": "Makaleni yaz...",
+    "publishButton": "Makaleyi Yayınla",
+    "publishing": "Yayınlanıyor...",
+    "cancelButton": "İptal",
+    "failed": "Makale oluşturulamadı"
+  },
+  "articleDetail": {
+    "backToArticles": "Makalelere Dön",
+    "edit": "Düzenle",
+    "featured": "Öne Çıkan",
+    "defaultAuthor": "Yönetici",
+    "views": "{count} görüntülenme",
+    "likes": "{count} beğeni",
+    "notFound": "Makale bulunamadı."
+  }
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { useSearchParams, useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +18,9 @@ import { isPlatformOnline } from '@/lib/online-utils'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { ArrowLeft, MessageCircle, Search } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
+import { ArrowLeft, MessageCircle, Search, Trash2, X } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -30,6 +33,7 @@ export default function ChatPage() {
 }
 
 function ChatContent() {
+  const t = useTranslations('chat')
   const searchParams = useSearchParams()
   const router = useRouter()
   const targetUserId = searchParams.get('user')
@@ -40,6 +44,8 @@ function ChatContent() {
   // searchQuery is the debounced value — updated by PlayerSearchInput after 300ms
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResetToken, setSearchResetToken] = useState(0)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Fetch current user
   const { data: meData } = useSWR('/api/users/me', fetcher)
@@ -342,6 +348,89 @@ function ChatContent() {
     [activeConversation, currentUserId, mutateMessages, mutateConversations],
   )
 
+  const handleDeleteConversation = useCallback(
+    async (convId: string) => {
+      const prevData = convData
+      mutateConversations(
+        (prev: any) => ({
+          ...prev,
+          conversations: (prev?.conversations || []).filter((c: any) => c.id !== convId),
+        }),
+        { revalidate: false },
+      )
+      if (activeConversation === convId) {
+        setActiveConversation(null)
+        router.replace('/app/chat', { scroll: false })
+      }
+      try {
+        const res = await fetch(`/api/chat/conversations/${convId}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error()
+        mutateConversations()
+      } catch {
+        mutateConversations(prevData, { revalidate: false })
+        toast.error(t('deleteError'))
+      }
+    },
+    [convData, activeConversation, mutateConversations, router],
+  )
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return
+    const ids = Array.from(selectedIds)
+    const prevData = convData
+    mutateConversations(
+      (prev: any) => ({
+        ...prev,
+        conversations: (prev?.conversations || []).filter((c: any) => !selectedIds.has(c.id)),
+      }),
+      { revalidate: false },
+    )
+    if (activeConversation && selectedIds.has(activeConversation)) {
+      setActiveConversation(null)
+      router.replace('/app/chat', { scroll: false })
+    }
+    setSelectedIds(new Set())
+    setSelectMode(false)
+    try {
+      const res = await fetch('/api/chat/conversations/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      })
+      if (!res.ok) throw new Error()
+      mutateConversations()
+    } catch {
+      mutateConversations(prevData, { revalidate: false })
+      toast.error(t('deleteMultipleError'))
+    }
+  }, [selectedIds, convData, activeConversation, mutateConversations, router])
+
+  const toggleSelect = useCallback((convId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(convId)) next.delete(convId)
+      else next.add(convId)
+      return next
+    })
+  }, [])
+
+  const selectableConvIds = useMemo(
+    () => filteredEntries.filter((e) => e.conversationId).map((e) => e.conversationId!),
+    [filteredEntries],
+  )
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === selectableConvIds.length) return new Set()
+      return new Set(selectableConvIds)
+    })
+  }, [selectableConvIds])
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+  }, [])
+
   const activeConvData = activeConversation
     ? conversations.find((c: any) => c.id === activeConversation)
     : null
@@ -352,7 +441,7 @@ function ChatContent() {
     scope: 'conversation',
     scopeId: activeConversation,
   })
-  const typingText = typingUsers.length > 0 ? 'typing...' : null
+  const typingText = typingUsers.length > 0 ? t('typing') : null
 
   const getUserStatus = (userId: string, lastSeenAt?: string | null) => {
     const friend = onlineFriends.find((f: any) => f.userId === userId)
@@ -379,11 +468,54 @@ function ChatContent() {
         >
           <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none shadow-none py-0 gap-0 lg:border lg:rounded-xl lg:shadow-sm lg:py-6 lg:gap-6">
             <CardHeader className="shrink-0 px-4 py-0 gap-2">
-              <CardTitle className="text-lg py-6 md:py-2">Messages</CardTitle>
-              <PlayerSearchInput
-                onSearch={setSearchQuery}
-                resetToken={searchResetToken}
-              />
+              {selectMode ? (
+                <div className="flex items-center justify-between py-6 md:py-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedIds.size === selectableConvIds.length && selectableConvIds.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {selectedIds.size > 0 ? t('selectedCount', { count: selectedIds.size }) : t('selectAll')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {selectedIds.size > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDelete}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        {t('deleteSelected', { count: selectedIds.size })}
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={exitSelectMode}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between py-6 md:py-2">
+                  <CardTitle className="text-lg">{t('title')}</CardTitle>
+                  {conversations.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectMode(true)}
+                      className="text-muted-foreground"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+              {!selectMode && (
+                <PlayerSearchInput
+                  onSearch={setSearchQuery}
+                  resetToken={searchResetToken}
+                />
+              )}
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-0">
               {convLoading && !searchQuery ? (
@@ -404,15 +536,30 @@ function ChatContent() {
                   {filteredEntries.map((entry) => {
                     const isTyping =
                       entry.conversationId && typingAll[entry.conversationId]?.length > 0
+                    const isSelected = entry.conversationId ? selectedIds.has(entry.conversationId) : false
                     return (
                       <button
                         key={entry.key}
-                        onClick={() => selectEntry(entry)}
+                        onClick={() => {
+                          if (selectMode && entry.conversationId) {
+                            toggleSelect(entry.conversationId)
+                          } else {
+                            selectEntry(entry)
+                          }
+                        }}
                         className={cn(
-                          'w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors',
-                          activeConversation === entry.conversationId && 'bg-muted',
+                          'w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors group',
+                          activeConversation === entry.conversationId && !selectMode && 'bg-muted',
+                          selectMode && isSelected && 'bg-muted/50',
                         )}
                       >
+                        {selectMode && entry.conversationId ? (
+                          <Checkbox
+                            checked={isSelected}
+                            className="shrink-0"
+                            tabIndex={-1}
+                          />
+                        ) : null}
                         <OnlineStatusIndicator
                           status={
                             entry.userId ? getUserStatus(entry.userId, entry.lastSeenAt) : null
@@ -441,7 +588,7 @@ function ChatContent() {
                                 className="text-[10px] px-1 py-0"
                               />
                             </span>
-                            {entry.unreadCount > 0 && (
+                            {!selectMode && entry.unreadCount > 0 && (
                               <Badge className="text-[10px] h-5 min-w-[20px] justify-center">
                                 {entry.unreadCount}
                               </Badge>
@@ -450,20 +597,41 @@ function ChatContent() {
                           <div className="flex items-center justify-between mt-0.5">
                             {isTyping ? (
                               <span className="text-xs text-green-500 italic truncate">
-                                typing...
+                                {t('typing')}
                               </span>
                             ) : (
                               <span className="text-xs text-muted-foreground truncate">
-                                {entry.lastMessage || 'No messages yet'}
+                                {entry.lastMessage || t('noMessagesPreview')}
                               </span>
                             )}
                             {entry.lastMessageAt && !isTyping && (
                               <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                                {formatTime(entry.lastMessageAt)}
+                                {formatTime(entry.lastMessageAt, t('yesterday'))}
                               </span>
                             )}
                           </div>
                         </div>
+                        {!selectMode && entry.conversationId && (
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteConversation(entry.conversationId!)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleDeleteConversation(entry.conversationId!)
+                              }
+                            }}
+                            className="shrink-0 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer"
+                            title={t('deleteConversation')}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </div>
+                        )}
                       </button>
                     )
                   })}
@@ -472,7 +640,7 @@ function ChatContent() {
                   {searchQuery.length >= 2 && (searchLoading || otherPlayers.length > 0) && (
                     <>
                       <div className="px-4 py-2 text-xs font-medium text-muted-foreground bg-muted/30">
-                        Other players
+                        {t('otherPlayers')}
                       </div>
                       {searchLoading ? (
                         <div className="space-y-2 p-4">
@@ -520,13 +688,13 @@ function ChatContent() {
                   {filteredEntries.length === 0 && otherPlayers.length === 0 && !searchLoading && (
                     <div className="p-8 text-center text-muted-foreground text-sm">
                       {searchQuery ? (
-                        <p>No players found</p>
+                        <p>{t('noPlayersFound')}</p>
                       ) : (
                         <>
                           <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          No friends yet.
+                          {t('noFriendsYet')}
                           <br />
-                          Add friends to start chatting!
+                          {t('addFriendsToChat')}
                         </>
                       )}
                     </div>
@@ -582,7 +750,7 @@ function ChatContent() {
                         )
                       })()}
                     </OnlineStatusIndicator>
-                    <span className="font-medium">{activeOtherUser?.ingameNick || 'Unknown'}</span>
+                    <span className="font-medium">{activeOtherUser?.ingameNick || t('unknownUser')}</span>
                     <RoleBadge
                       role={(activeOtherUser as any)?.primaryRole || activeOtherUser?.roles}
                       className="text-[10px] px-1.5 py-0"
@@ -594,7 +762,7 @@ function ChatContent() {
               {/* Messages */}
               <ChatMessages
                 scrollKey={messages.length}
-                emptyText="No messages yet. Say hello!"
+                emptyText={t('emptyChat')}
                 className="px-3 lg:px-4"
                 typingText={typingText}
               >
@@ -641,7 +809,7 @@ function ChatContent() {
               <div className="shrink-0 px-3 pb-3 lg:px-4 lg:pb-4">
                 <ChatInput
                   onSend={handleSendMessage}
-                  placeholder="Type a message..."
+                  placeholder={t('messagePlaceholder')}
                   sending={sending}
                   onTyping={notifyTyping}
                 />
@@ -651,7 +819,7 @@ function ChatContent() {
             <Card className="flex-1 flex items-center justify-center border-0 rounded-none shadow-none lg:border lg:rounded-xl lg:shadow-sm">
               <div className="text-center text-muted-foreground">
                 <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Select a conversation to start chatting</p>
+                <p className="text-sm">{t('selectConversation')}</p>
               </div>
             </Card>
           )}
@@ -668,6 +836,7 @@ function PlayerSearchInput({
   onSearch: (q: string) => void
   resetToken: number
 }) {
+  const t = useTranslations('chat')
   const [value, setValue] = useState('')
 
   // Reset local state when parent requests it
@@ -687,7 +856,7 @@ function PlayerSearchInput({
     <div className="relative pb-2">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       <Input
-        placeholder="Search players..."
+        placeholder={t('searchPlaceholder')}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         className="pl-9 h-9 text-sm"
@@ -696,7 +865,7 @@ function PlayerSearchInput({
   )
 }
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, yesterdayLabel: string): string {
   const date = new Date(dateStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
@@ -705,7 +874,7 @@ function formatTime(dateStr: string): string {
   if (days === 0) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
-  if (days === 1) return 'Yesterday'
+  if (days === 1) return yesterdayLabel
   if (days < 7) return date.toLocaleDateString([], { weekday: 'short' })
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }

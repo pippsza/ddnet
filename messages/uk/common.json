@@ -1,0 +1,86 @@
+{
+  "buttons": {
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "create": "Створити",
+    "join": "Приєднатися",
+    "open": "Відкрити",
+    "back": "Назад",
+    "submit": "Надіслати",
+    "close": "Закрити",
+    "confirm": "Підтвердити",
+    "edit": "Редагувати",
+    "loading": "Завантаження...",
+    "sending": "Надсилання...",
+    "creating": "Створення...",
+    "saving": "Збереження...",
+    "tryAgain": "Спробувати знову",
+    "enable": "Увімкнути",
+    "disable": "Вимкнути",
+    "copy": "Копіювати"
+  },
+  "status": {
+    "waiting": "Очікування",
+    "ready": "Готово",
+    "inProgress": "У процесі",
+    "completed": "Завершено",
+    "cancelled": "Скасовано",
+    "pending": "Очікує",
+    "active": "Активно",
+    "success": "Успішно",
+    "failed": "Не вдалося",
+    "expired": "Закінчилось",
+    "notReady": "Не готово",
+    "playing": "Грає",
+    "winner": "Переможець",
+    "loser": "Програв",
+    "starting": "Запуск",
+    "running": "Працює",
+    "stopping": "Зупинка",
+    "stopped": "Зупинено",
+    "error": "Помилка",
+    "open": "Відкрито",
+    "waitingForUser": "Очікує відповіді",
+    "resolved": "Вирішено",
+    "closed": "Закрито",
+    "rejected": "Відхилено",
+    "online": "Онлайн",
+    "offline": "Офлайн",
+    "verified": "Верифіковано",
+    "solo": "Одиночна",
+    "team": "Командна",
+    "multiplayer": "Мультиплеєр",
+    "published": "Опубліковано",
+    "draft": "Чернетка"
+  },
+  "priority": {
+    "low": "Низький",
+    "medium": "Середній",
+    "high": "Високий",
+    "critical": "Критичний"
+  },
+  "roles": {
+    "admin": "Адмін",
+    "moderator": "Модератор",
+    "tester": "Тестувальник",
+    "member": "Учасник"
+  },
+  "time": {
+    "justNow": "Щойно",
+    "minutesAgo": "{count} хв тому",
+    "hoursAgo": "{count} год тому",
+    "daysAgo": "{count} дн тому",
+    "yesterday": "Вчора"
+  },
+  "pagination": {
+    "showing": "Показано {from}–{to} з {total}",
+    "previous": "Попередня",
+    "next": "Наступна"
+  },
+  "errors": {
+    "somethingWentWrong": "Щось пішло не так",
+    "notFound": "Не знайдено",
+    "unauthorized": "Немає доступу"
+  }
+}

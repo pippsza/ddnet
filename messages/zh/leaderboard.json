@@ -1,0 +1,30 @@
+{
+  "title": "排行榜",
+  "tabs": {
+    "bingo": "Bingo",
+    "race": "竞速"
+  },
+  "filters": {
+    "categoryPlaceholder": "分类",
+    "sortPlaceholder": "排序方式",
+    "allCategories": "全部分类"
+  },
+  "sort": {
+    "mostWins": "最多胜场",
+    "bestWinRate": "最高胜率",
+    "mostGames": "最多对局",
+    "mostMaps": "最多地图",
+    "mostRoundsWon": "最多回合胜利"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "玩家",
+    "games": "对局",
+    "wins": "胜场",
+    "winRate": "胜率",
+    "maps": "地图",
+    "rounds": "回合"
+  },
+  "empty": "未找到玩家",
+  "emptyForCategory": "未找到 {category} 分类的玩家。"
+}

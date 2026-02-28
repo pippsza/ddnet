@@ -1,0 +1,86 @@
+{
+  "buttons": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "create": "Erstellen",
+    "join": "Beitreten",
+    "open": "Öffnen",
+    "back": "Zurück",
+    "submit": "Absenden",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "edit": "Bearbeiten",
+    "loading": "Laden...",
+    "sending": "Wird gesendet...",
+    "creating": "Wird erstellt...",
+    "saving": "Wird gespeichert...",
+    "tryAgain": "Erneut versuchen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "copy": "Kopieren"
+  },
+  "status": {
+    "waiting": "Wartend",
+    "ready": "Bereit",
+    "inProgress": "Laufend",
+    "completed": "Abgeschlossen",
+    "cancelled": "Abgebrochen",
+    "pending": "Ausstehend",
+    "active": "Aktiv",
+    "success": "Erfolgreich",
+    "failed": "Fehlgeschlagen",
+    "expired": "Abgelaufen",
+    "notReady": "Nicht bereit",
+    "playing": "Spielt",
+    "winner": "Gewinner",
+    "loser": "Verloren",
+    "starting": "Startet",
+    "running": "Läuft",
+    "stopping": "Wird gestoppt",
+    "stopped": "Gestoppt",
+    "error": "Fehler",
+    "open": "Offen",
+    "waitingForUser": "Wartet auf Antwort",
+    "resolved": "Gelöst",
+    "closed": "Geschlossen",
+    "rejected": "Abgelehnt",
+    "online": "Online",
+    "offline": "Offline",
+    "verified": "Verifiziert",
+    "solo": "Solo",
+    "team": "Team",
+    "multiplayer": "Mehrspieler",
+    "published": "Veröffentlicht",
+    "draft": "Entwurf"
+  },
+  "priority": {
+    "low": "Niedrig",
+    "medium": "Mittel",
+    "high": "Hoch",
+    "critical": "Kritisch"
+  },
+  "roles": {
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "tester": "Tester",
+    "member": "Mitglied"
+  },
+  "time": {
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {count} Min.",
+    "hoursAgo": "vor {count} Std.",
+    "daysAgo": "vor {count} T.",
+    "yesterday": "Gestern"
+  },
+  "pagination": {
+    "showing": "{from}–{to} von {total}",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "errors": {
+    "somethingWentWrong": "Etwas ist schiefgelaufen",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert"
+  }
+}

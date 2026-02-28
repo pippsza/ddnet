@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "Players",
+    "searchPlaceholder": "Search players...",
+    "registered": "Registered Players",
+    "community": "Community Members",
+    "ddnet": "DDNet Players",
+    "noPlayersFound": "No players found for \"{search}\". Try a different name."
+  },
+  "detail": {
+    "backToPlayers": "Back to Players",
+    "notFound": "Player \"{name}\" not found.",
+    "mapper": "Mapper",
+    "points": "{count} points",
+    "rank": "Rank #{rank}",
+    "played": "played",
+    "playingSince": "Playing since {date}",
+    "firstFinish": "First finish: {date} on {map}",
+    "copyAddress": "Copy address",
+    "tabs": {
+      "service": "Service",
+      "ddnet": "DDNet",
+      "settings": "Settings"
+    },
+    "noServiceStats": "No service stats available",
+    "noServiceStatsDescription": "This player hasn't participated in any bingo or race games yet.",
+    "friend": {
+      "remove": "Remove Friend",
+      "removing": "Removing...",
+      "cancelRequest": "Cancel Request",
+      "cancelling": "Cancelling...",
+      "acceptRequest": "Accept Request",
+      "accepting": "Accepting...",
+      "add": "Add Friend",
+      "sending": "Sending...",
+      "message": "Message"
+    },
+    "ingameChat": {
+      "button": "Chat In-Game",
+      "connecting": "Connecting...",
+      "failed": "Failed to start in-game chat"
+    },
+    "externalLinks": {
+      "ddnetProfile": "DDNet Profile",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "Server requires a password",
+      "description": "This server is password-protected. Enter the server password to connect.",
+      "placeholder": "Server password",
+      "connect": "Connect",
+      "cancel": "Cancel",
+      "securityNote": "Your password is sent securely and is not stored. It is only used to connect the bot to the server."
+    }
+  },
+  "online": {
+    "title": "Online Players",
+    "onlineCount": "{count} online",
+    "addPlayerPlaceholder": "Enter DDNet player nickname...",
+    "adding": "Adding...",
+    "watchPlayer": "Watch Player",
+    "onlineStatus": "Online",
+    "offlineStatus": "Offline",
+    "disableNotifications": "Disable notifications",
+    "enableNotifications": "Enable notifications",
+    "removeFromWatchlist": "Remove from watchlist",
+    "toast": {
+      "added": "{name} added to watchlist",
+      "removed": "{name} removed from watchlist",
+      "failedToAdd": "Failed to add player",
+      "failedToRemove": "Failed to remove player",
+      "failedToUpdateNotification": "Failed to update notification preference"
+    },
+    "empty": {
+      "title": "No players watched yet.",
+      "description": "Add DDNet player nicknames to track their online status. You'll get notified when they come online."
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "Форум",
+    "newPost": "Нова публікація",
+    "searchPlaceholder": "Пошук публікацій...",
+    "categories": {
+      "all": "Усі",
+      "general": "Загальне",
+      "help": "Допомога",
+      "suggestions": "Пропозиції",
+      "bugs": "Баги",
+      "maps": "Мапи",
+      "clans": "Клани",
+      "offtopic": "Офтопік"
+    },
+    "locked": "Заблоковано",
+    "unknownAuthor": "Невідомий",
+    "noPosts": "Публікацій не знайдено. Будьте першим, хто розпочне обговорення!"
+  },
+  "create": {
+    "backToForum": "Назад до форуму",
+    "cardTitle": "Створити нову публікацію",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Заголовок публікації",
+    "categoryLabel": "Категорія",
+    "contentLabel": "Зміст",
+    "contentPlaceholder": "Напишіть свою публікацію...",
+    "attachmentsLabel": "Вкладення",
+    "createButton": "Створити публікацію",
+    "creating": "Створення...",
+    "cancelButton": "Скасувати",
+    "failed": "Не вдалося створити публікацію"
+  },
+  "post": {
+    "backToForum": "Назад до форуму",
+    "notFound": "Публікацію не знайдено.",
+    "unknownAuthor": "Невідомий",
+    "typing": "друкує...",
+    "replyPlaceholder": "Напишіть відповідь...",
+    "lockedMessage": "Цю публікацію заблоковано. Нові відповіді неможливі.",
+    "mod": {
+      "label": "Мод:",
+      "pin": "Закріпити",
+      "unpin": "Відкріпити",
+      "lock": "Заблокувати",
+      "unlock": "Розблокувати",
+      "hide": "Приховати",
+      "unhide": "Показати"
+    }
+  },
+  "articles": {
+    "title": "Статті",
+    "newArticle": "Нова стаття",
+    "searchPlaceholder": "Пошук статей...",
+    "categories": {
+      "all": "Усі",
+      "news": "Новини",
+      "tutorial": "Туторіал",
+      "guide": "Гайд",
+      "update": "Оновлення",
+      "event": "Подія",
+      "announcement": "Оголошення"
+    },
+    "featured": "Рекомендовані",
+    "defaultAuthor": "Адмін",
+    "noArticles": "Статей не знайдено."
+  },
+  "articleCreate": {
+    "backToArticles": "Назад до статей",
+    "cardTitle": "Створити статтю",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Заголовок статті",
+    "excerptLabel": "Короткий опис",
+    "excerptPlaceholder": "Короткий опис для попереднього перегляду...",
+    "categoryLabel": "Категорія",
+    "tagsLabel": "Теги",
+    "tagsPlaceholder": "тег1, тег2, тег3",
+    "tagsHelp": "Через кому",
+    "featured": "Рекомендована стаття",
+    "contentLabel": "Зміст",
+    "contentPlaceholder": "Напишіть свою статтю...",
+    "publishButton": "Опублікувати статтю",
+    "publishing": "Публікація...",
+    "cancelButton": "Скасувати",
+    "failed": "Не вдалося створити статтю"
+  },
+  "articleDetail": {
+    "backToArticles": "Назад до статей",
+    "edit": "Редагувати",
+    "featured": "Рекомендована",
+    "defaultAuthor": "Адмін",
+    "views": "{count} переглядів",
+    "likes": "{count} вподобань",
+    "notFound": "Статтю не знайдено."
+  }
+}

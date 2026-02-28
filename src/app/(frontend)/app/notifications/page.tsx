@@ -1,11 +1,20 @@
 'use client'
 
 import { Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { CardListSkeleton } from '@/components/ui/page-skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
@@ -24,28 +33,30 @@ import {
   MessageCircle,
   MessageSquare,
   LifeBuoy,
+  Clock,
 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  game_invite: { icon: Gamepad2, color: 'text-blue-500 bg-blue-500/10', label: 'Game Invite' },
-  friend_request: { icon: UserPlus, color: 'text-purple-500 bg-purple-500/10', label: 'Friend Request' },
-  friend_accepted: { icon: UserCheck, color: 'text-green-500 bg-green-500/10', label: 'Friend Accepted' },
-  game_started: { icon: Gamepad2, color: 'text-cyan-500 bg-cyan-500/10', label: 'Game Started' },
-  game_ended: { icon: Trophy, color: 'text-amber-500 bg-amber-500/10', label: 'Game Ended' },
-  round_won: { icon: Trophy, color: 'text-green-500 bg-green-500/10', label: 'Round Won' },
-  achievement: { icon: Star, color: 'text-amber-500 bg-amber-500/10', label: 'Achievement' },
-  system: { icon: Info, color: 'text-gray-500 bg-gray-500/10', label: 'System' },
-  info: { icon: Info, color: 'text-blue-500 bg-blue-500/10', label: 'Info' },
-  player_online: { icon: Wifi, color: 'text-green-500 bg-green-500/10', label: 'Player Online' },
-  chat_mention: { icon: AtSign, color: 'text-sky-500 bg-sky-500/10', label: 'Chat Mention' },
-  direct_message: { icon: MessageCircle, color: 'text-indigo-500 bg-indigo-500/10', label: 'Direct Message' },
-  forum_reply: { icon: MessageSquare, color: 'text-orange-500 bg-orange-500/10', label: 'Forum Reply' },
-  support_reply: { icon: LifeBuoy, color: 'text-rose-500 bg-rose-500/10', label: 'Support Reply' },
+const TYPE_CONFIG: Record<string, { icon: any; color: string; labelKey: string }> = {
+  game_invite: { icon: Gamepad2, color: 'text-blue-500 bg-blue-500/10', labelKey: 'types.gameInvite' },
+  friend_request: { icon: UserPlus, color: 'text-purple-500 bg-purple-500/10', labelKey: 'types.friendRequest' },
+  friend_accepted: { icon: UserCheck, color: 'text-green-500 bg-green-500/10', labelKey: 'types.friendAccepted' },
+  game_started: { icon: Gamepad2, color: 'text-cyan-500 bg-cyan-500/10', labelKey: 'types.gameStarted' },
+  game_ended: { icon: Trophy, color: 'text-amber-500 bg-amber-500/10', labelKey: 'types.gameEnded' },
+  round_won: { icon: Trophy, color: 'text-green-500 bg-green-500/10', labelKey: 'types.roundWon' },
+  achievement: { icon: Star, color: 'text-amber-500 bg-amber-500/10', labelKey: 'types.achievement' },
+  system: { icon: Info, color: 'text-gray-500 bg-gray-500/10', labelKey: 'types.system' },
+  info: { icon: Info, color: 'text-blue-500 bg-blue-500/10', labelKey: 'types.info' },
+  player_online: { icon: Wifi, color: 'text-green-500 bg-green-500/10', labelKey: 'types.playerOnline' },
+  chat_mention: { icon: AtSign, color: 'text-sky-500 bg-sky-500/10', labelKey: 'types.chatMention' },
+  direct_message: { icon: MessageCircle, color: 'text-indigo-500 bg-indigo-500/10', labelKey: 'types.directMessage' },
+  forum_reply: { icon: MessageSquare, color: 'text-orange-500 bg-orange-500/10', labelKey: 'types.forumReply' },
+  support_reply: { icon: LifeBuoy, color: 'text-rose-500 bg-rose-500/10', labelKey: 'types.supportReply' },
 }
 
 function NotificationsContent() {
+  const t = useTranslations('notifications')
   const { page, setPage, buildUrl } = usePagination({ defaultLimit: 20 })
 
   const { data, isLoading, mutate } = useSWR(
@@ -54,10 +65,34 @@ function NotificationsContent() {
     { refreshInterval: 10000 },
   )
 
+  const { data: meData, mutate: mutateMe } = useSWR('/api/users/me', fetcher)
+
   const notifications = data?.docs || []
   const totalPages = data?.totalPages || 1
   const totalDocs = data?.totalDocs || 0
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
+
+  const currentRetention = meData?.user?.notificationRetention || '5d'
+
+  const handleRetentionChange = async (value: string) => {
+    if (!meData?.user?.id) return
+    const prevRetention = currentRetention
+    // Optimistic update
+    mutateMe({ ...meData, user: { ...meData.user, notificationRetention: value } }, false)
+    try {
+      const res = await fetch(`/api/users/${meData.user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationRetention: value }),
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      mutateMe()
+      toast.success(t('retention.updated', { duration: t(`retention.${value}` as any) }))
+    } catch {
+      mutateMe({ ...meData, user: { ...meData.user, notificationRetention: prevRetention } }, false)
+      toast.error(t('retention.updateFailed'))
+    }
+  }
 
   const markAsRead = async (id: string) => {
     await fetch(`/api/notifications/${id}`, {
@@ -88,17 +123,31 @@ function NotificationsContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">Notifications</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           {unreadCount > 0 && (
-            <Badge className="bg-blue-500 text-white">{unreadCount} new</Badge>
+            <Badge className="bg-blue-500 text-white">{t('newCount', { count: unreadCount })}</Badge>
           )}
         </div>
-        {unreadCount > 0 && (
-          <Button variant="outline" size="sm" onClick={markAllAsRead}>
-            <CheckCheck className="h-4 w-4 mr-2" />
-            Mark all read
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <Select value={currentRetention} onValueChange={handleRetentionChange}>
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <Clock className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1h">{t('retention.1h')}</SelectItem>
+              <SelectItem value="24h">{t('retention.24h')}</SelectItem>
+              <SelectItem value="5d">{t('retention.5d')}</SelectItem>
+              <SelectItem value="10d">{t('retention.10d')}</SelectItem>
+            </SelectContent>
+          </Select>
+          {unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={markAllAsRead}>
+              <CheckCheck className="h-4 w-4 mr-2" />
+              {t('actions.markAllRead')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {notifications.length > 0 ? (
@@ -129,10 +178,10 @@ function NotificationsContent() {
                     <p className="text-sm text-muted-foreground mt-0.5">{notif.message}</p>
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[10px] text-muted-foreground">
-                        {formatTimeAgo(notif.createdAt)}
+                        {formatTimeAgo(notif.createdAt, t)}
                       </span>
                       <Badge variant="outline" className="text-[10px]">
-                        {config.label}
+                        {t(config.labelKey as any)}
                       </Badge>
                     </div>
                   </div>
@@ -147,7 +196,7 @@ function NotificationsContent() {
                         markAsRead(notif.id)
                       }}
                     >
-                      Mark read
+                      {t('actions.markRead')}
                     </Button>
                   )}
                 </CardContent>
@@ -176,8 +225,8 @@ function NotificationsContent() {
         <Card>
           <CardContent className="p-12 text-center text-muted-foreground">
             <Bell className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p>No notifications yet.</p>
-            <p className="text-xs mt-1">You&apos;ll be notified about friend requests, game invites, and more.</p>
+            <p>{t('empty.title')}</p>
+            <p className="text-xs mt-1">{t('empty.description')}</p>
           </CardContent>
         </Card>
       )}
@@ -193,7 +242,7 @@ function NotificationsContent() {
   )
 }
 
-function formatTimeAgo(dateStr: string): string {
+function formatTimeAgo(dateStr: string, t: (key: string, values?: Record<string, any>) => string): string {
   const date = new Date(dateStr)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
@@ -201,10 +250,10 @@ function formatTimeAgo(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMin < 1) return 'Just now'
-  if (diffMin < 60) return `${diffMin}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMin < 1) return t('time.justNow')
+  if (diffMin < 60) return t('time.minutesAgo', { count: diffMin })
+  if (diffHours < 24) return t('time.hoursAgo', { count: diffHours })
+  if (diffDays < 7) return t('time.daysAgo', { count: diffDays })
   return date.toLocaleDateString()
 }
 

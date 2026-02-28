@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "论坛",
+    "newPost": "发帖",
+    "searchPlaceholder": "搜索帖子...",
+    "categories": {
+      "all": "全部",
+      "general": "综合",
+      "help": "求助",
+      "suggestions": "建议",
+      "bugs": "漏洞",
+      "maps": "地图",
+      "clans": "战队",
+      "offtopic": "灌水"
+    },
+    "locked": "已锁定",
+    "unknownAuthor": "未知",
+    "noPosts": "暂无帖子。来发起第一个讨论吧！"
+  },
+  "create": {
+    "backToForum": "返回论坛",
+    "cardTitle": "发布新帖",
+    "titleLabel": "标题",
+    "titlePlaceholder": "帖子标题",
+    "categoryLabel": "分类",
+    "contentLabel": "内容",
+    "contentPlaceholder": "撰写你的帖子...",
+    "attachmentsLabel": "附件",
+    "createButton": "发布帖子",
+    "creating": "发布中...",
+    "cancelButton": "取消",
+    "failed": "发布帖子失败"
+  },
+  "post": {
+    "backToForum": "返回论坛",
+    "notFound": "帖子未找到。",
+    "unknownAuthor": "未知",
+    "typing": "输入中...",
+    "replyPlaceholder": "撰写回复...",
+    "lockedMessage": "此帖已锁定，无法添加新回复。",
+    "mod": {
+      "label": "管理：",
+      "pin": "置顶",
+      "unpin": "取消置顶",
+      "lock": "锁定",
+      "unlock": "解锁",
+      "hide": "隐藏",
+      "unhide": "取消隐藏"
+    }
+  },
+  "articles": {
+    "title": "文章",
+    "newArticle": "写文章",
+    "searchPlaceholder": "搜索文章...",
+    "categories": {
+      "all": "全部",
+      "news": "新闻",
+      "tutorial": "教程",
+      "guide": "攻略",
+      "update": "更新",
+      "event": "活动",
+      "announcement": "公告"
+    },
+    "featured": "精选",
+    "defaultAuthor": "管理员",
+    "noArticles": "暂无文章。"
+  },
+  "articleCreate": {
+    "backToArticles": "返回文章列表",
+    "cardTitle": "撰写文章",
+    "titleLabel": "标题",
+    "titlePlaceholder": "文章标题",
+    "excerptLabel": "摘要",
+    "excerptPlaceholder": "用于预览的简短描述...",
+    "categoryLabel": "分类",
+    "tagsLabel": "标签",
+    "tagsPlaceholder": "标签1, 标签2, 标签3",
+    "tagsHelp": "用逗号分隔",
+    "featured": "精选文章",
+    "contentLabel": "内容",
+    "contentPlaceholder": "撰写你的文章...",
+    "publishButton": "发布文章",
+    "publishing": "发布中...",
+    "cancelButton": "取消",
+    "failed": "发布文章失败"
+  },
+  "articleDetail": {
+    "backToArticles": "返回文章列表",
+    "edit": "编辑",
+    "featured": "精选",
+    "defaultAuthor": "管理员",
+    "views": "{count} 次浏览",
+    "likes": "{count} 个赞",
+    "notFound": "文章未找到。"
+  }
+}

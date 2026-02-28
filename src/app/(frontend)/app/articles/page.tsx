@@ -18,19 +18,12 @@ import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useTranslations } from 'next-intl'
 import { Eye, Heart, Search, Clock, Plus } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const CATEGORIES = [
-  { value: 'all', label: 'All' },
-  { value: 'news', label: 'News' },
-  { value: 'tutorial', label: 'Tutorial' },
-  { value: 'guide', label: 'Guide' },
-  { value: 'update', label: 'Update' },
-  { value: 'event', label: 'Event' },
-  { value: 'announcement', label: 'Announcement' },
-]
+const CATEGORY_KEYS = ['all', 'news', 'tutorial', 'guide', 'update', 'event', 'announcement'] as const
 
 const CATEGORY_COLORS: Record<string, string> = {
   news: 'bg-blue-500/20 text-blue-400',
@@ -42,6 +35,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function ArticlesContent() {
+  const t = useTranslations('forum')
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -107,12 +101,12 @@ function ArticlesContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Articles</h1>
+        <h1 className="text-2xl font-bold">{t('articles.title')}</h1>
         {canCreateArticles && (
           <Button asChild>
             <Link href="/app/articles/create">
               <Plus className="h-4 w-4 mr-2" />
-              New Article
+              {t('articles.newArticle')}
             </Link>
           </Button>
         )}
@@ -124,7 +118,7 @@ function ArticlesContent() {
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
           defaultValue={search}
-          placeholder="Search articles..."
+          placeholder={t('articles.searchPlaceholder')}
           className="pl-10"
         />
       </div>
@@ -132,9 +126,9 @@ function ArticlesContent() {
       {/* Category Tabs */}
       <Tabs value={category} onValueChange={handleCategoryChange}>
         <TabsList className="flex-wrap gap-1 h-auto">
-          {CATEGORIES.map((c) => (
-            <TabsTrigger className="" key={c.value} value={c.value}>
-              {c.label}
+          {CATEGORY_KEYS.map((key) => (
+            <TabsTrigger className="" key={key} value={key}>
+              {t(`articles.categories.${key}`)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -143,7 +137,7 @@ function ArticlesContent() {
       {/* Featured Articles */}
       {featured.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Featured</h2>
+          <h2 className="text-lg font-semibold">{t('articles.featured')}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {featured.map((article: any) => (
               <Link key={article.id} href={`/app/articles/${article.slug}`} className="block">
@@ -162,7 +156,7 @@ function ArticlesContent() {
                     <Badge
                       className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}
                     >
-                      {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
+                      {t(`articles.categories.${article.category}`)}
                     </Badge>
                     <h3 className="font-semibold text-sm line-clamp-2 wrap-break-word">
                       {article.title}
@@ -209,10 +203,10 @@ function ArticlesContent() {
                     <Badge
                       className={`text-[10px] ${CATEGORY_COLORS[article.category] || 'bg-secondary text-secondary-foreground'}`}
                     >
-                      {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
+                      {t(`articles.categories.${article.category}`)}
                     </Badge>
-                    {article.tags?.map((t: any) => {
-                      const tag = t.tag || t
+                    {article.tags?.map((tagItem: any) => {
+                      const tag = tagItem.tag || tagItem
                       return (
                         <Badge key={tag} variant="secondary" className="text-[10px]">
                           {tag.charAt(0).toUpperCase() + tag.slice(1)}
@@ -250,7 +244,7 @@ function ArticlesContent() {
                           size="xs"
                         />
                       </OnlineStatusIndicator>
-                      <span>{article.author?.ingameNick || 'Admin'}</span>
+                      <span>{article.author?.ingameNick || t('articles.defaultAuthor')}</span>
                       <RoleBadge role={(article.author as any)?.primaryRole || article.author?.roles} className="text-[10px] px-1 py-0" />
                     </div>
                     <div className="flex items-center gap-1">
@@ -274,7 +268,7 @@ function ArticlesContent() {
       ) : featured.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            No articles found.
+            {t('articles.noArticles')}
           </CardContent>
         </Card>
       ) : null}

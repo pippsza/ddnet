@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
@@ -46,7 +47,7 @@ interface ChatInputProps {
 
 export function ChatInput({
   onSend,
-  placeholder = 'Type a message...',
+  placeholder,
   disabled,
   sending,
   richText,
@@ -54,6 +55,8 @@ export function ChatInput({
   onTyping,
   cooldownMs,
 }: ChatInputProps) {
+  const t = useTranslations('chat')
+  const resolvedPlaceholder = placeholder ?? t('input.placeholder')
   if (disabled && disabledMessage) {
     return (
       <div className="shrink-0 pt-4 border-t text-center text-sm text-muted-foreground">
@@ -66,7 +69,7 @@ export function ChatInput({
     return (
       <RichTextInput
         onSend={onSend}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         sending={sending}
         onTyping={onTyping}
       />
@@ -76,7 +79,7 @@ export function ChatInput({
   return (
     <PlainTextInput
       onSend={onSend}
-      placeholder={placeholder}
+      placeholder={resolvedPlaceholder}
       sending={sending}
       onTyping={onTyping}
       cooldownMs={cooldownMs}
@@ -129,6 +132,7 @@ function AttachmentPreviews({
 }
 
 function useFileUpload() {
+  const t = useTranslations('chat')
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -140,7 +144,7 @@ function useFileUpload() {
       const results = await Promise.all(Array.from(fileList).map((f) => uploadFile(f)))
       setFiles((prev) => [...prev, ...results])
     } catch {
-      toast.error('Failed to upload file')
+      toast.error(t('input.uploadFailed'))
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -195,6 +199,7 @@ function PlainTextInput({
   onTyping?: () => void
   cooldownMs?: number
 }) {
+  const t = useTranslations('chat')
   const [text, setText] = useState('')
   const [cooldown, setCooldown] = useState(false)
   const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -262,7 +267,7 @@ function PlainTextInput({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder={cooldown ? 'Wait...' : placeholder}
+          placeholder={cooldown ? t('input.cooldownPlaceholder') : placeholder}
           className="flex-1 min-h-[40px] max-h-[120px] resize-none"
           rows={1}
           disabled={cooldown}
@@ -291,6 +296,7 @@ function RichTextInput({
   sending?: boolean
   onTyping?: () => void
 }) {
+  const t = useTranslations('chat')
   const contentRef = useRef<any>(null)
   const editorAreaRef = useRef<HTMLDivElement>(null)
   const [key, setKey] = useState(0)
@@ -345,11 +351,11 @@ function RichTextInput({
           disabled={uploading}
         >
           <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-          Attach
+          {t('input.attach')}
         </Button>
         <Button size="sm" onClick={handleSubmit} disabled={sending || uploading}>
           <Send className="h-3.5 w-3.5 mr-1.5" />
-          {sending ? 'Sending...' : 'Send'}
+          {sending ? t('input.sending') : t('input.send')}
         </Button>
       </div>
     </div>

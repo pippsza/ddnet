@@ -358,6 +358,31 @@ export function LeaderboardSkeleton() {
   )
 }
 
+export function GameCardSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="rounded-xl border bg-card p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-lg" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-5 w-12" />
+              <Skeleton className="h-6 w-16 rounded" />
+              <Skeleton className="h-8 w-16 rounded-md" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
 export function GamePageSkeleton() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

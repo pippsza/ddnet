@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "Форум",
+    "newPost": "Новый пост",
+    "searchPlaceholder": "Поиск постов...",
+    "categories": {
+      "all": "Все",
+      "general": "Общее",
+      "help": "Помощь",
+      "suggestions": "Предложения",
+      "bugs": "Баги",
+      "maps": "Карты",
+      "clans": "Кланы",
+      "offtopic": "Оффтоп"
+    },
+    "locked": "Закрыт",
+    "unknownAuthor": "Неизвестный",
+    "noPosts": "Постов не найдено. Будьте первым, кто начнёт обсуждение!"
+  },
+  "create": {
+    "backToForum": "На форум",
+    "cardTitle": "Создать новый пост",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Заголовок поста",
+    "categoryLabel": "Категория",
+    "contentLabel": "Содержание",
+    "contentPlaceholder": "Напишите ваш пост...",
+    "attachmentsLabel": "Вложения",
+    "createButton": "Создать пост",
+    "creating": "Создание...",
+    "cancelButton": "Отмена",
+    "failed": "Не удалось создать пост"
+  },
+  "post": {
+    "backToForum": "На форум",
+    "notFound": "Пост не найден.",
+    "unknownAuthor": "Неизвестный",
+    "typing": "печатает...",
+    "replyPlaceholder": "Написать ответ...",
+    "lockedMessage": "Этот пост закрыт. Новые ответы невозможны.",
+    "mod": {
+      "label": "Мод:",
+      "pin": "Закрепить",
+      "unpin": "Открепить",
+      "lock": "Закрыть",
+      "unlock": "Открыть",
+      "hide": "Скрыть",
+      "unhide": "Показать"
+    }
+  },
+  "articles": {
+    "title": "Статьи",
+    "newArticle": "Новая статья",
+    "searchPlaceholder": "Поиск статей...",
+    "categories": {
+      "all": "Все",
+      "news": "Новости",
+      "tutorial": "Обучение",
+      "guide": "Гайд",
+      "update": "Обновление",
+      "event": "Событие",
+      "announcement": "Объявление"
+    },
+    "featured": "Избранное",
+    "defaultAuthor": "Админ",
+    "noArticles": "Статей не найдено."
+  },
+  "articleCreate": {
+    "backToArticles": "К статьям",
+    "cardTitle": "Создать статью",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Заголовок статьи",
+    "excerptLabel": "Краткое описание",
+    "excerptPlaceholder": "Краткое описание для предпросмотра...",
+    "categoryLabel": "Категория",
+    "tagsLabel": "Теги",
+    "tagsPlaceholder": "тег1, тег2, тег3",
+    "tagsHelp": "Через запятую",
+    "featured": "Избранная статья",
+    "contentLabel": "Содержание",
+    "contentPlaceholder": "Напишите вашу статью...",
+    "publishButton": "Опубликовать статью",
+    "publishing": "Публикация...",
+    "cancelButton": "Отмена",
+    "failed": "Не удалось создать статью"
+  },
+  "articleDetail": {
+    "backToArticles": "К статьям",
+    "edit": "Редактировать",
+    "featured": "Избранное",
+    "defaultAuthor": "Админ",
+    "views": "{count} просмотров",
+    "likes": "{count} лайков",
+    "notFound": "Статья не найдена."
+  }
+}

@@ -58,44 +58,45 @@ import { useState, useEffect } from 'react'
 import { APP_SHORT_NAME, APP_SECONDARY_NAME } from '@/lib/constants'
 import type { ResolvedPermissions } from '@/lib/permissions'
 import { Shield, Swords } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
-const mainItems = [{ title: 'Dashboard', url: '/app/dashboard', icon: LayoutDashboard }]
+const mainItems = [{ titleKey: 'dashboard', url: '/app/dashboard', icon: LayoutDashboard }]
 
 const gameItems = [
-  { title: 'Bingo', url: '/app/bingo', icon: Grid3X3, requiredPage: 'bingo' },
-  { title: 'Race', url: '/app/race', icon: Trophy, requiredPage: 'race' },
-  { title: 'Leaderboard', url: '/app/leaderboard', icon: Medal, requiredPage: 'leaderboard' },
+  { titleKey: 'bingo', url: '/app/bingo', icon: Grid3X3, requiredPage: 'bingo' },
+  { titleKey: 'race', url: '/app/race', icon: Trophy, requiredPage: 'race' },
+  { titleKey: 'leaderboard', url: '/app/leaderboard', icon: Medal, requiredPage: 'leaderboard' },
 ]
 
 const socialItems = [
-  { title: 'Players', url: '/app/players', icon: Users, requiredPage: 'players' },
-  { title: 'Friends', url: '/app/friends', icon: UserPlus, requiredPage: 'friends' },
+  { titleKey: 'players', url: '/app/players', icon: Users, requiredPage: 'players' },
+  { titleKey: 'friends', url: '/app/friends', icon: UserPlus, requiredPage: 'friends' },
   {
-    title: 'Online Players',
+    titleKey: 'onlinePlayers',
     url: '/app/online-players',
     icon: Eye,
     requiredPage: 'online_players',
   },
-  { title: 'Chat', url: '/app/chat', icon: MessageCircle, requiredPage: 'chat' },
-  { title: 'Forum', url: '/app/forum', icon: MessageSquare, requiredPage: 'forum' },
-  { title: 'Articles', url: '/app/articles', icon: FileText, requiredPage: 'articles' },
+  { titleKey: 'chat', url: '/app/chat', icon: MessageCircle, requiredPage: 'chat' },
+  { titleKey: 'forum', url: '/app/forum', icon: MessageSquare, requiredPage: 'forum' },
+  { titleKey: 'articles', url: '/app/articles', icon: FileText, requiredPage: 'articles' },
 ]
 
 const otherItems = [
   {
-    title: 'Notifications',
+    titleKey: 'notifications',
     url: '/app/notifications',
     icon: Bell,
     requiredPage: 'notifications' as string | undefined,
   },
   {
-    title: 'Support',
+    titleKey: 'support',
     url: '/support',
     icon: LifeBuoy,
     requiredPage: 'support' as string | undefined,
   },
   {
-    title: 'Settings',
+    titleKey: 'settings',
     url: '/app/settings',
     icon: Settings,
     requiredPage: undefined as string | undefined,
@@ -103,32 +104,32 @@ const otherItems = [
 ]
 
 const adminItems = [
-  { title: 'Bot Management', url: '/app/admin/bots', icon: Bot, requiredPage: 'bots' },
+  { titleKey: 'botManagement', url: '/app/admin/bots', icon: Bot, requiredPage: 'bots' },
   {
-    title: 'Container Test',
+    titleKey: 'containerTest',
     url: '/app/admin/container-test',
     icon: Container,
     requiredPage: 'container_test',
   },
   {
-    title: 'Notifications',
+    titleKey: 'adminNotifications',
     url: '/app/admin/notifications',
     icon: Megaphone,
     requiredPage: 'notifications',
   },
-  { title: 'Debug', url: '/app/admin/debug', icon: Bug, requiredPage: 'debug' },
+  { titleKey: 'debug', url: '/app/admin/debug', icon: Bug, requiredPage: 'debug' },
   {
-    title: 'Categories',
+    titleKey: 'categories',
     url: '/app/admin/categories',
     icon: FolderOpen,
     requiredPage: 'categories',
   },
-  { title: 'Tickets', url: '/app/admin/tickets', icon: Ticket, requiredPage: 'tickets' },
-  { title: 'Stats', url: '/app/admin/stats', icon: BarChart3, requiredPage: 'stats' },
-  { title: 'Roles', url: '/app/admin/roles', icon: Shield, requiredPage: 'roles' },
+  { titleKey: 'tickets', url: '/app/admin/tickets', icon: Ticket, requiredPage: 'tickets' },
+  { titleKey: 'stats', url: '/app/admin/stats', icon: BarChart3, requiredPage: 'stats' },
+  { titleKey: 'roles', url: '/app/admin/roles', icon: Shield, requiredPage: 'roles' },
 ]
 
-const devItems = [{ title: 'Dev Tools', url: '/app/dev', icon: Wrench }]
+const devItems = [{ titleKey: 'devTools', url: '/app/dev', icon: Wrench }]
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -152,6 +153,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const router = useRouter()
   const { isMobile, setOpenMobile } = useSidebar()
   const { notifications, unreadCount } = useNotifications()
+  const t = useTranslations('nav')
 
   const dmCount = notifications.filter((n) => !n.isRead && n.type === 'direct_message').length
   const forumCount = notifications.filter((n) => !n.isRead && n.type === 'forum_reply').length
@@ -249,7 +251,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                     <Link href={item.url} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -275,7 +277,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       onClick={handleNavClick}
                     >
                       <Swords className="h-4 w-4" />
-                      <span>Current Game</span>
+                      <span>{t('currentGame')}</span>
                     </Link>
                   </SidebarMenuButton>
                   <SidebarMenuBadge>
@@ -292,7 +294,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
         {gameItems.some((item) => hasPage(item.requiredPage)) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Games</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('games')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {gameItems
@@ -302,7 +304,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                         <Link href={item.url} onClick={handleNavClick}>
                           <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                          <span>{t(item.titleKey)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -315,7 +317,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         {(socialItems.some((item) => hasPage(item.requiredPage)) ||
           (activeChat && hasPage('ingame_chat'))) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Community</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('community')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {socialItems
@@ -327,7 +329,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                         <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                           <Link href={item.url} onClick={handleNavClick}>
                             <item.icon className="h-4 w-4" />
-                            <span>{item.title}</span>
+                            <span>{t(item.titleKey)}</span>
                           </Link>
                         </SidebarMenuButton>
                         {badge !== null && (
@@ -346,7 +348,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                         onClick={handleNavClick}
                       >
                         <Gamepad2 className="h-4 w-4" />
-                        <span>Ingame Chat</span>
+                        <span>{t('ingameChat')}</span>
                       </Link>
                     </SidebarMenuButton>
                     <SidebarMenuBadge>
@@ -370,7 +372,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
         {(user.permissions.isAdmin || user.permissions.adminPages.length > 0) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('admin')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems
@@ -384,7 +386,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                         <Link href={item.url} onClick={handleNavClick}>
                           <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                          <span>{t(item.titleKey)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -396,7 +398,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
         {isDev && (
           <SidebarGroup>
-            <SidebarGroupLabel>Development</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('development')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {devItems.map((item) => (
@@ -404,7 +406,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                       <Link href={item.url} onClick={handleNavClick}>
                         <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
+                        <span>{t(item.titleKey)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -424,7 +426,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
                   <Link href={item.url} onClick={handleNavClick}>
                     <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
+                    <span>{t(item.titleKey)}</span>
                   </Link>
                 </SidebarMenuButton>
                 {item.url === '/app/notifications' && mounted && unreadCount > 0 && (
@@ -469,13 +471,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/app/settings" onClick={handleNavClick}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    {t('userMenu.settings')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  {t('userMenu.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,0 +1,30 @@
+{
+  "title": "Рейтинг",
+  "tabs": {
+    "bingo": "Бинго",
+    "race": "Гонка"
+  },
+  "filters": {
+    "categoryPlaceholder": "Категория",
+    "sortPlaceholder": "Сортировка",
+    "allCategories": "Все категории"
+  },
+  "sort": {
+    "mostWins": "Больше всего побед",
+    "bestWinRate": "Лучший процент побед",
+    "mostGames": "Больше всего игр",
+    "mostMaps": "Больше всего карт",
+    "mostRoundsWon": "Больше всего раундов"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "Игрок",
+    "games": "Игры",
+    "wins": "Победы",
+    "winRate": "Процент побед",
+    "maps": "Карты",
+    "rounds": "Раунды"
+  },
+  "empty": "Игроки не найдены",
+  "emptyForCategory": "Нет игроков в категории {category}."
+}

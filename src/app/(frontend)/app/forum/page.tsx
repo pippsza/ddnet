@@ -16,20 +16,12 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
+import { useTranslations } from 'next-intl'
 import { MessageSquare, Eye, Pin, Search, Plus } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const CATEGORIES = [
-  { value: 'all', label: 'All' },
-  { value: 'general', label: 'General' },
-  { value: 'help', label: 'Help' },
-  { value: 'suggestions', label: 'Suggestions' },
-  { value: 'bugs', label: 'Bugs' },
-  { value: 'maps', label: 'Maps' },
-  { value: 'clans', label: 'Clans' },
-  { value: 'offtopic', label: 'Off-topic' },
-]
+const CATEGORY_KEYS = ['all', 'general', 'help', 'suggestions', 'bugs', 'maps', 'clans', 'offtopic'] as const
 
 const CATEGORY_COLORS: Record<string, string> = {
   general: 'bg-blue-500/10 text-blue-500',
@@ -42,6 +34,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function ForumContent() {
+  const t = useTranslations('forum')
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -95,11 +88,11 @@ function ForumContent() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Forum</h1>
+        <h1 className="text-2xl font-bold">{t('list.title')}</h1>
         <Button asChild>
           <Link href="/app/forum/create">
             <Plus className="h-4 w-4 mr-2" />
-            New Post
+            {t('list.newPost')}
           </Link>
         </Button>
       </div>
@@ -110,7 +103,7 @@ function ForumContent() {
         <DebouncedInput
           onDebouncedChange={handleSearchChange}
           defaultValue={search}
-          placeholder="Search posts..."
+          placeholder={t('list.searchPlaceholder')}
           className="pl-10"
         />
       </div>
@@ -118,9 +111,9 @@ function ForumContent() {
       {/* Category Tabs */}
       <Tabs value={category} onValueChange={handleCategoryChange}>
         <TabsList className="flex-wrap h-auto">
-          {CATEGORIES.map((c) => (
-            <TabsTrigger key={c.value} value={c.value}>
-              {c.label}
+          {CATEGORY_KEYS.map((key) => (
+            <TabsTrigger key={key} value={key}>
+              {t(`list.categories.${key}`)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -156,15 +149,15 @@ function ForumContent() {
                       )}
                       <span className="font-semibold text-sm truncate">{post.title}</span>
                       {post.status === 'locked' && (
-                        <Badge variant="outline" className="text-xs shrink-0">Locked</Badge>
+                        <Badge variant="outline" className="text-xs shrink-0">{t('list.locked')}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <span>{post.author?.ingameNick || 'Unknown'}</span>
+                      <span>{post.author?.ingameNick || t('list.unknownAuthor')}</span>
                       <RoleBadge role={(post.author as any)?.primaryRole || post.author?.roles} className="text-[10px] px-1.5 py-0" />
                       <span>&middot;</span>
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CATEGORY_COLORS[post.category] || ''}`}>
-                        {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
+                        {CATEGORY_KEYS.includes(post.category) ? t(`list.categories.${post.category}`) : post.category}
                       </span>
                       <span>&middot;</span>
                       <span>{new Date(post.createdAt).toLocaleDateString()}</span>
@@ -190,7 +183,7 @@ function ForumContent() {
       ) : (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            No posts found. Be the first to start a discussion!
+            {t('list.noPosts')}
           </CardContent>
         </Card>
       )}

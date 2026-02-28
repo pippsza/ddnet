@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button'
 export default function CreateBingoPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const t = useTranslations('bingo')
   const [error, setError] = useState('')
   const creatingRef = useRef(false)
 
@@ -21,7 +23,7 @@ export default function CreateBingoPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: `${user.ingameNick}'s Bingo`,
+        title: t('create.defaultTitle', { nick: user.ingameNick }),
         mode: 'solo',
         category: 'novice',
         gridSize: '3x3',
@@ -36,12 +38,12 @@ export default function CreateBingoPage() {
         if (data.game?.id) {
           router.replace(`/app/bingo/${data.game.id}`)
         } else {
-          setError(data.error || 'Failed to create game')
+          setError(data.error || t('create.failed'))
           creatingRef.current = false
         }
       })
       .catch(() => {
-        setError('Failed to create game')
+        setError(t('create.failed'))
         creatingRef.current = false
       })
   }, [user, router])
@@ -51,7 +53,7 @@ export default function CreateBingoPage() {
       <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-red-500">{error}</p>
         <Button variant="outline" onClick={() => router.back()}>
-          Go Back
+          {t('create.goBack')}
         </Button>
       </div>
     )

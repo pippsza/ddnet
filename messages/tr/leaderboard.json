@@ -1,0 +1,30 @@
+{
+  "title": "Skor Tablosu",
+  "tabs": {
+    "bingo": "Bingo",
+    "race": "Yarış"
+  },
+  "filters": {
+    "categoryPlaceholder": "Kategori",
+    "sortPlaceholder": "Sırala",
+    "allCategories": "Tüm Kategoriler"
+  },
+  "sort": {
+    "mostWins": "En Çok Galibiyet",
+    "bestWinRate": "En İyi Kazanma Oranı",
+    "mostGames": "En Çok Oyun",
+    "mostMaps": "En Çok Harita",
+    "mostRoundsWon": "En Çok Tur Kazanılan"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "Oyuncu",
+    "games": "Oyunlar",
+    "wins": "Galibiyetler",
+    "winRate": "Kazanma Oranı",
+    "maps": "Haritalar",
+    "rounds": "Turlar"
+  },
+  "empty": "Oyuncu bulunamadı",
+  "emptyForCategory": "{category} için oyuncu bulunamadı."
+}

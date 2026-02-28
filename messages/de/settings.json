@@ -1,0 +1,67 @@
+{
+  "title": "Einstellungen",
+  "profile": {
+    "title": "Profil",
+    "platformLogin": "Plattform-Login",
+    "inGameNickname": "In-Game-Nickname"
+  },
+  "language": {
+    "title": "Sprache",
+    "description": "Wähle deine bevorzugte Sprache"
+  },
+  "theme": {
+    "title": "Design"
+  },
+  "verification": {
+    "title": "Kontoverifizierung",
+    "verified": "Verifiziert",
+    "accountVerified": "Dein Konto ist verifiziert und geschützt",
+    "fullAccess": "Du hast vollen Zugriff auf alle Funktionen.",
+    "unavailableTitle": "Verifizierung vorübergehend nicht verfügbar",
+    "unavailableDescription": "Die Kontoverifizierung ist vorübergehend wegen Wartungsarbeiten deaktiviert. Bitte versuche es später erneut oder kontaktiere einen Admin über ein",
+    "supportTicket": "Support-Ticket",
+    "step1Label": "Server beitreten",
+    "step1Description": "Verbinde dich mit einem Verifizierungsserver",
+    "step2Label": "Einloggen",
+    "step2Description": "Benutze /login auf dem Server",
+    "step3Label": "Verifizieren",
+    "step3Description": "Bot bestätigt deine Identität",
+    "description": "Verifiziere deinen DDNet-Nickname, um alle Funktionen freizuschalten. Tritt einem der Server unten bei, logge dich mit /login ein und klicke dann auf den Button.",
+    "serversLabel": "Verifizierungsserver",
+    "verifyButton": "Nickname verifizieren",
+    "starting": "Verifizierung wird gestartet...",
+    "verifying": "Identität wird überprüft...",
+    "verifyingDescription": "Bot überprüft dein Konto auf dem Server. Dies dauert normalerweise einige Sekunden.",
+    "cancelButton": "Abbrechen",
+    "successTitle": "Verifizierung erfolgreich!",
+    "successDescription": "Dein Nickname wurde verifiziert. Willkommen!",
+    "expiredTitle": "Verifizierung abgelaufen",
+    "failedTitle": "Verifizierung fehlgeschlagen",
+    "tryAgain": "Erneut versuchen",
+    "errors": {
+      "expired": "Verifizierungsanfrage abgelaufen. Bitte versuche es erneut.",
+      "notLoggedIn": "Du bist nicht auf dem Server eingeloggt. Benutze /login zum Einloggen und versuche es erneut.",
+      "notFound": "Spieler nicht auf dem Server gefunden. Stelle sicher, dass du verbunden bist.",
+      "generic": "Verifizierung fehlgeschlagen. Bitte versuche es erneut.",
+      "offline": "Du bist nicht online. Bitte tritt zuerst einem Verifizierungsserver bei.",
+      "wrongServer": "Du bist auf dem falschen Server. Bitte tritt bei: {servers}",
+      "startFailed": "Verifizierung konnte nicht gestartet werden"
+    },
+    "unverifiedTitle": "Konto nicht verifiziert",
+    "unverifiedWarning": "Wenn du dein Konto nicht verifiziert hast, kann der echte Besitzer dieses Nicknames ihn beanspruchen, indem er seine Identität über unseren Bot verifiziert. Verifiziere jetzt, um dein Konto zu schützen."
+  },
+  "pushNotifications": {
+    "title": "Benachrichtigungen",
+    "label": "Push-Benachrichtigungen",
+    "description": "Erhalte Benachrichtigungen über Spieleinladungen und Freundschaftsanfragen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "notSupported": "Push-Benachrichtigungen werden in diesem Browser nicht unterstützt.",
+    "errors": {
+      "permissionDenied": "Benachrichtigungsberechtigung verweigert",
+      "notConfigured": "Push nicht auf dem Server konfiguriert (kein VAPID-Schlüssel)",
+      "serviceUnavailable": "Push-Dienst nicht verfügbar. Prüfe: 1) Internetverbindung 2) Browser-Push ist in den Einstellungen aktiviert 3) Keine Firewall/VPN blockiert Push-Dienste. Versuche: chrome://settings/content/notifications oder about:preferences#privacy",
+      "generic": "Push-Fehler: {message}"
+    }
+  }
+}

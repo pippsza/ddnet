@@ -1,0 +1,67 @@
+{
+  "title": "设置",
+  "profile": {
+    "title": "个人资料",
+    "platformLogin": "平台登录名",
+    "inGameNickname": "游戏内昵称"
+  },
+  "language": {
+    "title": "语言",
+    "description": "选择你偏好的语言"
+  },
+  "theme": {
+    "title": "主题"
+  },
+  "verification": {
+    "title": "账户验证",
+    "verified": "已验证",
+    "accountVerified": "你的账户已通过验证并受到保护",
+    "fullAccess": "你已拥有所有功能的完整访问权限。",
+    "unavailableTitle": "验证暂时不可用",
+    "unavailableDescription": "账户验证因维护暂时关闭。请稍后重试或通过提交",
+    "supportTicket": "工单",
+    "step1Label": "加入服务器",
+    "step1Description": "连接到验证服务器",
+    "step2Label": "登录",
+    "step2Description": "在服务器上使用 /login",
+    "step3Label": "验证",
+    "step3Description": "机器人确认你的身份",
+    "description": "验证你的 DDNet 昵称以解锁全部功能。加入以下服务器之一，使用 /login 登录，然后点击按钮。",
+    "serversLabel": "验证服务器",
+    "verifyButton": "验证昵称",
+    "starting": "正在启动验证...",
+    "verifying": "正在验证你的身份...",
+    "verifyingDescription": "机器人正在服务器上检查你的账户，通常只需几秒钟。",
+    "cancelButton": "取消",
+    "successTitle": "验证成功！",
+    "successDescription": "你的昵称已通过验证，欢迎！",
+    "expiredTitle": "验证已过期",
+    "failedTitle": "验证失败",
+    "tryAgain": "重试",
+    "errors": {
+      "expired": "验证请求已过期，请重试。",
+      "notLoggedIn": "你尚未在服务器上登录。请使用 /login 登录后重试。",
+      "notFound": "在服务器上未找到该玩家。请确认你已连接。",
+      "generic": "验证失败，请重试。",
+      "offline": "你当前不在线。请先加入验证服务器。",
+      "wrongServer": "你在错误的服务器上。请加入：{servers}",
+      "startFailed": "无法启动验证"
+    },
+    "unverifiedTitle": "账户未验证",
+    "unverifiedWarning": "如果你尚未验证账户，该昵称的真正拥有者可以通过我们的机器人验证身份来找回。立即验证以保护你的账户。"
+  },
+  "pushNotifications": {
+    "title": "通知",
+    "label": "推送通知",
+    "description": "接收对局邀请和好友请求的通知",
+    "enable": "启用",
+    "disable": "禁用",
+    "notSupported": "此浏览器不支持推送通知。",
+    "errors": {
+      "permissionDenied": "通知权限被拒绝",
+      "notConfigured": "服务器未配置推送功能（缺少 VAPID 密钥）",
+      "serviceUnavailable": "推送服务不可用。请检查：1) 网络连接 2) 浏览器推送已在设置中启用 3) 防火墙/VPN 未阻止推送服务。尝试：chrome://settings/content/notifications 或 about:preferences#privacy",
+      "generic": "推送错误：{message}"
+    }
+  }
+}

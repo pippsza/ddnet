@@ -1,0 +1,67 @@
+{
+  "title": "Settings",
+  "profile": {
+    "title": "Profile",
+    "platformLogin": "Platform Login",
+    "inGameNickname": "In-Game Nickname"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Choose your preferred language"
+  },
+  "theme": {
+    "title": "Theme"
+  },
+  "verification": {
+    "title": "Account Verification",
+    "verified": "Verified",
+    "accountVerified": "Your account is verified and protected",
+    "fullAccess": "You have full access to all features.",
+    "unavailableTitle": "Verification Temporarily Unavailable",
+    "unavailableDescription": "Account verification is temporarily disabled for maintenance. Please try again later or contact an admin via a",
+    "supportTicket": "support ticket",
+    "step1Label": "Join Server",
+    "step1Description": "Connect to a verification server",
+    "step2Label": "Login",
+    "step2Description": "Use /login on the server",
+    "step3Label": "Verify",
+    "step3Description": "Bot confirms your identity",
+    "description": "Verify your DDNet nickname to unlock all features. Join one of the servers below, log in with /login, then click the button.",
+    "serversLabel": "Verification Servers",
+    "verifyButton": "Verify Nickname",
+    "starting": "Starting verification...",
+    "verifying": "Verifying your identity...",
+    "verifyingDescription": "Bot is checking your account on the server. This usually takes a few seconds.",
+    "cancelButton": "Cancel",
+    "successTitle": "Verification successful!",
+    "successDescription": "Your nickname has been verified. Welcome!",
+    "expiredTitle": "Verification Expired",
+    "failedTitle": "Verification Failed",
+    "tryAgain": "Try Again",
+    "errors": {
+      "expired": "Verification request expired. Please try again.",
+      "notLoggedIn": "You are not logged in on the server. Use /login to log in and try again.",
+      "notFound": "Player not found on the server. Make sure you are connected.",
+      "generic": "Verification failed. Please try again.",
+      "offline": "You are not online. Please join a verification server first.",
+      "wrongServer": "You are on the wrong server. Please join: {servers}",
+      "startFailed": "Failed to start verification"
+    },
+    "unverifiedTitle": "Account not verified",
+    "unverifiedWarning": "If you haven't verified your account, the real owner of this nickname can claim it by verifying their identity through our bot. Verify now to protect your account."
+  },
+  "pushNotifications": {
+    "title": "Notifications",
+    "label": "Push Notifications",
+    "description": "Receive notifications about game invites and friend requests",
+    "enable": "Enable",
+    "disable": "Disable",
+    "notSupported": "Push notifications are not supported in this browser.",
+    "errors": {
+      "permissionDenied": "Notification permission denied",
+      "notConfigured": "Push not configured on server (no VAPID key)",
+      "serviceUnavailable": "Push service unavailable. Check: 1) Internet connection 2) Browser push is enabled in settings 3) No firewall/VPN blocking push services. Try: chrome://settings/content/notifications or about:preferences#privacy",
+      "generic": "Push error: {message}"
+    }
+  }
+}

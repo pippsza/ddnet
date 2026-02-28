@@ -1,0 +1,42 @@
+{
+  "title": "Notifications",
+  "newCount": "{count} new",
+  "types": {
+    "gameInvite": "Game Invite",
+    "friendRequest": "Friend Request",
+    "friendAccepted": "Friend Accepted",
+    "gameStarted": "Game Started",
+    "gameEnded": "Game Ended",
+    "roundWon": "Round Won",
+    "achievement": "Achievement",
+    "system": "System",
+    "info": "Info",
+    "playerOnline": "Player Online",
+    "chatMention": "Chat Mention",
+    "directMessage": "Direct Message",
+    "forumReply": "Forum Reply",
+    "supportReply": "Support Reply"
+  },
+  "retention": {
+    "1h": "1 hour",
+    "24h": "24 hours",
+    "5d": "5 days",
+    "10d": "10 days",
+    "updated": "Notifications will be kept for {duration}",
+    "updateFailed": "Failed to update retention setting"
+  },
+  "actions": {
+    "markAllRead": "Mark all read",
+    "markRead": "Mark read"
+  },
+  "empty": {
+    "title": "No notifications yet.",
+    "description": "You'll be notified about friend requests, game invites, and more."
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago"
+  }
+}

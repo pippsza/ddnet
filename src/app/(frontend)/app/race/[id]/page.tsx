@@ -63,6 +63,7 @@ import { CategoryIcon } from '@/components/bingo/CategoryIcon'
 import { ModeSelector } from '@/components/bingo/ModePreview'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -104,6 +105,7 @@ interface Team {
 export default function RaceGamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const t = useTranslations('race')
   const [countdownDone, setCountdownDone] = useState(false)
 
   const [inviteTeamIndex, setInviteTeamIndex] = useState<number | undefined>(undefined)
@@ -121,7 +123,7 @@ export default function RaceGamePage({ params }: { params: Promise<{ id: string 
     refreshInterval: 3000,
   })
 
-  if (error) return <div className="p-8 text-center text-red-500">Error loading race</div>
+  if (error) return <div className="p-8 text-center text-red-500">{t('game.errorLoading')}</div>
   if (!game) return <GamePageSkeleton />
 
   const isWaiting = game.gameStatus === 'waiting' || game.gameStatus === 'ready'
@@ -169,6 +171,7 @@ function LobbyView({
   router: ReturnType<typeof useRouter>
   inviteTeamIndex?: number
 }) {
+  const t = useTranslations('race')
   const { botSettings } = useBotSettings()
   const [actionLoading, setActionLoading] = useState(false)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
@@ -362,7 +365,7 @@ function LobbyView({
       })
       if (!res.ok) {
         const data = await res.json()
-        setSettingsError(data.error || 'Failed to update')
+        setSettingsError(data.error || t('settings.failedToUpdate'))
         setTimeout(() => setSettingsError(''), 4000)
         revertFromServer(batchKeys)
         mutate() // revalidate to get server truth
@@ -386,7 +389,7 @@ function LobbyView({
         mutate() // revalidate to pick up server-side changes (e.g. regenerated maps)
       }
     } catch {
-      setSettingsError('Failed to save settings')
+      setSettingsError(t('settings.failedToSave'))
       setTimeout(() => setSettingsError(''), 4000)
       revertFromServer(batchKeys)
       mutate()
@@ -453,7 +456,7 @@ function LobbyView({
       const hasPlayers = team2.players.length > 0
       const hasPending = (team2.pendingInvites?.length || 0) > 0
       if (hasPlayers || hasPending) {
-        toast.error('Cannot switch to solo while Team 2 has players or pending invites')
+        toast.error(t('team.cannotSwitchSolo'))
         return
       }
     }
@@ -504,10 +507,10 @@ function LobbyView({
       const res = await fetch(`/api/race/${gameId}/start`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || 'Failed to start race')
+        toast.error(data.error || t('leave.failedToStart'))
       }
     } catch {
-      toast.error('Failed to start race')
+      toast.error(t('leave.failedToStart'))
     } finally {
       mutate()
       setActionLoading(false)
@@ -537,7 +540,7 @@ function LobbyView({
       router.push('/app/race')
     } else {
       const data = await res.json()
-      toast.error(data.error || 'Failed to leave game')
+      toast.error(data.error || t('leave.failed'))
       setActionLoading(false)
     }
   }
@@ -560,10 +563,10 @@ function LobbyView({
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || 'Failed to switch team')
+        toast.error(data.error || t('team.failedToSwitch'))
       }
     } catch {
-      toast.error('Failed to switch team')
+      toast.error(t('team.failedToSwitch'))
     } finally {
       mutate()
       setActionLoading(false)
@@ -577,12 +580,12 @@ function LobbyView({
       {/* Title */}
       {isCreator ? (
         <div>
-          <Label htmlFor="title">Race Title</Label>
+          <Label htmlFor="title">{t('settings.raceTitle')}</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="My Race"
+            placeholder={t('settings.raceTitlePlaceholder')}
           />
         </div>
       ) : (
@@ -596,7 +599,7 @@ function LobbyView({
       {(isCreator ? categoryMode : game.categoryMode) !== 'free' &&
         (isCreator ? (
           <div>
-            <Label>Category</Label>
+            <Label>{t('settings.category')}</Label>
             <CategorySelect
               name="category"
               value={category}
@@ -606,7 +609,7 @@ function LobbyView({
           </div>
         ) : (
           <div className="text-sm flex items-center gap-1.5">
-            <span className="text-muted-foreground">Category:</span>
+            <span className="text-muted-foreground">{t('settings.categoryLabel')}</span>
             <CategoryIcon
               category={game.category}
               iconName={game.categoryIcon}
@@ -619,8 +622,8 @@ function LobbyView({
       {/* Path Length (read-only for non-creator; interactive preview controls it for creator) */}
       {!isCreator && (
         <div className="text-sm">
-          <span className="text-muted-foreground">Path Length:</span>{' '}
-          <span className="font-medium">{game.pathLength} steps</span>
+          <span className="text-muted-foreground">{t('settings.pathLengthLabel')}</span>{' '}
+          <span className="font-medium">{game.pathLength} {t('settings.pathLengthSteps')}</span>
         </div>
       )}
 
@@ -629,7 +632,7 @@ function LobbyView({
         (isCreator ? (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Min Difficulty</Label>
+              <Label>{t('settings.minDifficulty')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -640,7 +643,7 @@ function LobbyView({
               />
             </div>
             <div>
-              <Label>Max Difficulty</Label>
+              <Label>{t('settings.maxDifficulty')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -653,9 +656,9 @@ function LobbyView({
           </div>
         ) : (
           <div className="text-sm">
-            <span className="text-muted-foreground">Difficulty:</span>{' '}
+            <span className="text-muted-foreground">{t('settings.difficultyLabel')}</span>{' '}
             <span className="font-medium">
-              {game.difficultyRange?.min ?? 0} – {game.difficultyRange?.max ?? 5} stars
+              {game.difficultyRange?.min ?? 0} – {game.difficultyRange?.max ?? 5} {t('settings.stars')}
             </span>
           </div>
         ))}
@@ -665,23 +668,23 @@ function LobbyView({
         <div className="space-y-2">
           <Label className="flex items-center gap-1.5">
             <Server className="h-3.5 w-3.5" />
-            Server
+            {t('settings.server')}
           </Label>
           <Input
             value={serverAddress}
             onChange={(e) => handleServerAddressChange(e.target.value)}
-            placeholder="127.0.0.1:8303"
+            placeholder={t('settings.serverAddressPlaceholder')}
           />
           <Input
             value={serverName}
             onChange={(e) => handleServerNameChange(e.target.value)}
-            placeholder="Server name (optional)"
+            placeholder={t('settings.serverNamePlaceholder')}
           />
         </div>
       ) : (
         <div className="text-sm flex items-center gap-1.5">
           <Server className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-muted-foreground">Server:</span>{' '}
+          <span className="text-muted-foreground">{t('settings.serverLabel')}</span>{' '}
           <span className="font-medium">
             {game.server?.name || `${game.server?.ip}:${game.server?.port}`}
           </span>
@@ -691,7 +694,7 @@ function LobbyView({
       {/* Mode */}
       {isCreator ? (
         <div>
-          <Label>Mode</Label>
+          <Label>{t('settings.mode')}</Label>
           <ModeSelector
             mode={mode}
             onModeChange={handleModeChange}
@@ -700,7 +703,7 @@ function LobbyView({
         </div>
       ) : (
         <div className="text-sm">
-          <span className="text-muted-foreground">Mode:</span>{' '}
+          <span className="text-muted-foreground">{t('settings.modeLabel')}</span>{' '}
           <span className="font-medium capitalize">{game.mode}</span>
         </div>
       )}
@@ -715,20 +718,20 @@ function LobbyView({
             disabled={savingFields.has('isPublic')}
           />
           <Label htmlFor="isPublic" className="mb-0">
-            Public Race
+            {t('settings.publicRace')}
           </Label>
         </div>
       ) : (
         <div className="text-sm">
-          <span className="text-muted-foreground">Visibility:</span>{' '}
-          <span className="font-medium">{game.isPublic ? 'Public' : 'Private'}</span>
+          <span className="text-muted-foreground">{t('settings.visibilityLabel')}</span>{' '}
+          <span className="font-medium">{game.isPublic ? t('settings.public') : t('settings.private')}</span>
         </div>
       )}
 
       {/* Invite code */}
       {game.inviteCode && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Invite Code:</span>
+          <span className="text-muted-foreground">{t('settings.inviteCode')}</span>
           <code className="font-mono font-bold bg-muted px-2 py-0.5 rounded">
             {game.inviteCode}
           </code>
@@ -807,7 +810,7 @@ function LobbyView({
 
   const categoryModeContent = isCreator ? (
     <div className="w-full max-w-sm">
-      <Label>Category Mode</Label>
+      <Label>{t('settings.categoryMode')}</Label>
       <CategoryModeSelector
         mode={categoryMode}
         onModeChange={handleCategoryModeChange}
@@ -816,7 +819,7 @@ function LobbyView({
     </div>
   ) : (
     <div className="text-sm">
-      <span className="text-muted-foreground">Category Mode:</span>{' '}
+      <span className="text-muted-foreground">{t('settings.categoryModeLabel')}</span>{' '}
       <span className="font-medium capitalize">{game.categoryMode}</span>
     </div>
   )
@@ -852,7 +855,7 @@ function LobbyView({
         <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shrink-0 mb-2">
           <Wrench className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
           <p className="text-xs text-yellow-700 dark:text-yellow-400">
-            Race announcement bot is on maintenance. The race will still work, but there won&apos;t be in-game announcements.
+            {t('game.botMaintenance.lobby')}
           </p>
         </div>
       )}
@@ -867,7 +870,7 @@ function LobbyView({
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('game.back')}
           </Button>
 
           <div className="flex items-center gap-2">
@@ -883,14 +886,14 @@ function LobbyView({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel race?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('cancel.title')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will cancel the race for all players. This action cannot be undone.
+                      {t('cancel.description')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Keep playing</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancel}>Cancel race</AlertDialogAction>
+                    <AlertDialogCancel>{t('cancel.keep')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleCancel}>{t('cancel.confirm')}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -898,7 +901,7 @@ function LobbyView({
             {!isInGame && (
               <Button size="sm" onClick={handleJoin} disabled={actionLoading}>
                 <LogIn className="h-4 w-4 mr-1.5" />
-                {actionLoading ? 'Joining...' : 'Join Race'}
+                {actionLoading ? t('game.joining') : t('game.joinRace')}
               </Button>
             )}
             {isInGame && !isCreator && (
@@ -916,15 +919,14 @@ function LobbyView({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Leave race?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        You will be removed from the team. You can rejoin later if the race is still
-                        open.
+                        {t('leave.description')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Stay</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLeave}>Leave</AlertDialogAction>
+                      <AlertDialogCancel>{t('leave.stay')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLeave}>{t('leave.leave')}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -935,7 +937,7 @@ function LobbyView({
                   disabled={actionLoading}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                  {actionLoading ? '...' : amReady ? 'Unready' : 'Ready'}
+                  {actionLoading ? '...' : amReady ? t('game.unready') : t('game.ready')}
                 </Button>
               </>
             )}
@@ -943,12 +945,12 @@ function LobbyView({
               <>
                 {!hasServerIp && (
                   <span className="text-xs text-muted-foreground hidden sm:inline">
-                    Set server IP to start
+                    {t('game.setServerHint')}
                   </span>
                 )}
                 <Button size="sm" onClick={handleStart} disabled={!canStart || actionLoading}>
                   <Play className="h-4 w-4 mr-1.5" />
-                  {actionLoading ? 'Starting...' : 'Start Race'}
+                  {actionLoading ? t('game.starting') : t('game.startRace')}
                 </Button>
               </>
             )}
@@ -994,12 +996,12 @@ function LobbyView({
           {mobileTab === 'settings' ? (
             <>
               <Map className="h-4 w-4" />
-              Preview
+              {t('settings.preview')}
             </>
           ) : (
             <>
               <Settings2 className="h-4 w-4" />
-              Settings
+              {t('settings.settingsTab')}
             </>
           )}
         </Button>
@@ -1031,6 +1033,7 @@ function LobbyTeamCard({
   onSwitchTeam?: (teamIndex: number) => void
   mutate: () => void
 }) {
+  const t = useTranslations('race')
   const [inviting, setInviting] = useState(false)
   const [inviteLoading, setInviteLoading] = useState(false)
   const [optimisticPending, setOptimisticPending] = useState<PendingInvite[]>(
@@ -1077,11 +1080,11 @@ function LobbyTeamCard({
       const data = await res.json()
       if (!res.ok) {
         setOptimisticPending((prev) => prev.filter((p) => p.id !== player.id))
-        toast.error(data.error || 'Failed to send invite')
+        toast.error(data.error || t('team.failedToInvite'))
       }
     } catch {
       setOptimisticPending((prev) => prev.filter((p) => p.id !== player.id))
-      toast.error('Failed to send invite')
+      toast.error(t('team.failedToInvite'))
     } finally {
       setInviteLoading(false)
       mutate()
@@ -1101,11 +1104,11 @@ function LobbyTeamCard({
       const data = await res.json()
       if (!res.ok) {
         if (removed) setOptimisticPending((prev) => [...prev, removed])
-        toast.error(data.error || 'Failed to cancel invite')
+        toast.error(data.error || t('team.failedToCancelInvite'))
       }
     } catch {
       if (removed) setOptimisticPending((prev) => [...prev, removed])
-      toast.error('Failed to cancel invite')
+      toast.error(t('team.failedToCancelInvite'))
     } finally {
       mutate()
     }
@@ -1145,7 +1148,7 @@ function LobbyTeamCard({
                   <span className="text-sm font-medium truncate block">{player.ingameNick}</span>
                   {player.points !== undefined && player.points > 0 && (
                     <span className="text-xs text-muted-foreground">
-                      {player.points.toLocaleString()} pts
+                      {player.points.toLocaleString()} {t('team.pts')}
                     </span>
                   )}
                 </div>
@@ -1154,7 +1157,7 @@ function LobbyTeamCard({
                     variant="outline"
                     className="text-[10px] border-muted-foreground/30 text-muted-foreground"
                   >
-                    Host
+                    {t('team.host')}
                   </Badge>
                 ) : player.isReady ? (
                   <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -1163,7 +1166,7 @@ function LobbyTeamCard({
                     variant="outline"
                     className="text-[10px] border-green-500/50 text-green-600 dark:text-green-400"
                   >
-                    Joined
+                    {t('team.joined')}
                   </Badge>
                 )}
               </div>
@@ -1192,7 +1195,7 @@ function LobbyTeamCard({
                   variant="outline"
                   className="text-[10px] border-yellow-500/50 text-yellow-600 dark:text-yellow-400"
                 >
-                  Invited
+                  {t('team.invited')}
                 </Badge>
                 {canCancelInvite && (
                   <button
@@ -1218,7 +1221,7 @@ function LobbyTeamCard({
                 <UserPlus className="h-3.5 w-3.5 text-muted-foreground/50" />
               </div>
               <span className="text-sm text-muted-foreground">
-                {isMyTeam ? 'Invite Teammate' : 'Invite Opponent'}
+                {isMyTeam ? t('team.inviteTeammate') : t('team.inviteOpponent')}
               </span>
             </button>
           )}
@@ -1233,7 +1236,7 @@ function LobbyTeamCard({
                 onClick={() => setInviting(false)}
                 disabled={inviteLoading}
               >
-                Cancel
+                {t('team.cancelInvite')}
               </Button>
             </div>
           )}
@@ -1244,7 +1247,7 @@ function LobbyTeamCard({
               <div className="w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
                 <UserPlus className="h-3.5 w-3.5 text-muted-foreground/30" />
               </div>
-              <span className="text-xs text-muted-foreground/50">Waiting for player...</span>
+              <span className="text-xs text-muted-foreground/50">{t('team.waitingForPlayer')}</span>
             </div>
           )}
 
@@ -1258,7 +1261,7 @@ function LobbyTeamCard({
               <div className="w-8 h-8 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center">
                 <ArrowLeftRight className="h-3.5 w-3.5 text-primary/50" />
               </div>
-              <span className="text-sm text-primary/70">Switch to this team</span>
+              <span className="text-sm text-primary/70">{t('team.switchTeam')}</span>
             </button>
           )}
         </div>
@@ -1280,6 +1283,7 @@ function GameView({
   mutate: () => void
   router: ReturnType<typeof useRouter>
 }) {
+  const t = useTranslations('race')
   const { botSettings } = useBotSettings()
   const teams: Team[] = game.teams || []
   const confettiFired = useRef(false)
@@ -1341,7 +1345,7 @@ function GameView({
       mutate()
     } else {
       const data = await res.json()
-      toast.error(data.error || 'Failed to surrender')
+      toast.error(data.error || t('surrender.failed'))
     }
     setActionLoading(false)
   }
@@ -1355,7 +1359,7 @@ function GameView({
       rematchInitiatedByMe.current = true
       router.push(`/app/race/${data.gameId}`)
     } else {
-      toast.error(data.error || 'Failed to create rematch')
+      toast.error(data.error || t('rematch.failedToCreate'))
       setActionLoading(false)
     }
   }
@@ -1368,7 +1372,7 @@ function GameView({
     if (res.ok && data.gameId) {
       router.push(`/app/race/${data.gameId}`)
     } else {
-      toast.error(data.error || 'Failed to join rematch')
+      toast.error(data.error || t('rematch.failedToJoin'))
       setRematchAcceptLoading(false)
     }
   }
@@ -1412,21 +1416,21 @@ function GameView({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              Rematch offered!
+              {t('rematch.title')}
             </DialogTitle>
             <DialogDescription>
               {rematchInitiatorName
-                ? `${rematchInitiatorName} wants a rematch!`
-                : 'Your opponent wants a rematch!'}
+                ? t('rematch.descriptionNamed', { name: rematchInitiatorName })
+                : t('rematch.descriptionGeneric')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRematchDismissed(true)}>
-              Decline
+              {t('rematch.decline')}
             </Button>
             <Button onClick={handleAcceptRematch} disabled={rematchAcceptLoading}>
               {rematchAcceptLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Accept Rematch
+              {t('rematch.accept')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1435,7 +1439,7 @@ function GameView({
         <div className="flex items-start gap-3 p-3 mb-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shrink-0">
           <Wrench className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
           <p className="text-xs text-yellow-700 dark:text-yellow-400">
-            Race bot is on maintenance. Scoring and progress tracking are unaffected.
+            {t('game.botMaintenance.game')}
           </p>
         </div>
       )}
@@ -1451,7 +1455,7 @@ function GameView({
             />
             <span className="capitalize">{game.category}</span>
             <span>&middot;</span>
-            <span>{game.pathLength} steps</span>
+            <span>{game.pathLength} {t('settings.pathLengthSteps')}</span>
             <span>&middot;</span>
             <span className="capitalize">{game.categoryMode}</span>
           </p>
@@ -1459,11 +1463,11 @@ function GameView({
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
               <Server className="h-3 w-3" />
               <span>
-                Current: <strong>{game.currentMap}</strong>
+                {t('game.currentMap')} <strong>{game.currentMap}</strong>
               </span>
               <span>&middot;</span>
               <span>
-                Step {(game.currentStep || 0) + 1}/{game.pathLength}
+                {t('game.stepProgress', { current: (game.currentStep || 0) + 1, total: game.pathLength })}
               </span>
             </p>
           )}
@@ -1487,14 +1491,14 @@ function GameView({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Surrender?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('surrender.title')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your opponent will win the race. This action cannot be undone.
+                    {t('surrender.description')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep playing</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSurrender}>Surrender</AlertDialogAction>
+                  <AlertDialogCancel>{t('surrender.keep')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSurrender}>{t('surrender.confirm')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -1509,7 +1513,7 @@ function GameView({
                 disabled={actionLoading}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                Rematch
+                {t('rematch.button')}
               </Button>
             )}
         </div>
@@ -1518,14 +1522,14 @@ function GameView({
       {/* Victory banner */}
       {game.gameStatus === 'completed' && winnerTeam && (
         <div className="rounded-lg px-3 py-1.5 text-center border shrink-0 mb-1 bg-primary/10 border-primary/30">
-          <p className="text-base font-bold text-primary">{winnerTeam.name} wins!</p>
+          <p className="text-base font-bold text-primary">{t('result.winner', { team: winnerTeam.name })}</p>
         </div>
       )}
 
       {/* Cancelled */}
       {game.gameStatus === 'cancelled' && (
         <div className="rounded-lg px-3 py-1.5 text-center border border-muted bg-muted/30 shrink-0 mb-1">
-          <p className="text-base font-bold text-muted-foreground">Race Cancelled</p>
+          <p className="text-base font-bold text-muted-foreground">{t('result.cancelled')}</p>
         </div>
       )}
 
@@ -1536,7 +1540,7 @@ function GameView({
             team={topBar}
             totalCells={game.pathLength}
             isWinner={winnerTeamIndex === 0 || (isSolo && winnerTeamIndex === 0)}
-            label={isSolo ? 'Player 1' : undefined}
+            label={isSolo ? t('team.playerOne') : undefined}
             creatorId={game.createdBy?.id}
             score={topBar.score}
           />
@@ -1571,7 +1575,7 @@ function GameView({
                 ? winnerTeamIndex === 0 && teams[0]?.players?.length > 1
                 : winnerTeamIndex === 1
             }
-            label={isSolo ? 'Player 2' : undefined}
+            label={isSolo ? t('team.playerTwo') : undefined}
             creatorId={game.createdBy?.id}
             score={isSolo ? 0 : bottomBar.score}
           />

@@ -1,0 +1,122 @@
+{
+  "lobby": {
+    "title": "Race",
+    "inviteCodePlaceholder": "Invite code",
+    "createRace": "Create Race",
+    "myActiveRaces": "My Active Races",
+    "publicLobby": "Public Lobby",
+    "pastRaces": "Past Races",
+    "noPublicRaces": "No public races available. Create one to get started!",
+    "joinFailed": "Failed to join race",
+    "joinSuccess": "Joined race!",
+    "steps": "steps",
+    "unknownServer": "Unknown"
+  },
+  "card": {
+    "open": "Open",
+    "join": "Join"
+  },
+  "cancel": {
+    "title": "Cancel race?",
+    "description": "This will cancel the race for all players. This action cannot be undone.",
+    "keep": "Keep racing",
+    "confirm": "Cancel race"
+  },
+  "create": {
+    "defaultTitle": "{nick}'s Race",
+    "failed": "Failed to create race",
+    "goBack": "Go Back"
+  },
+  "game": {
+    "errorLoading": "Error loading race",
+    "back": "Back",
+    "joining": "Joining...",
+    "joinRace": "Join Race",
+    "starting": "Starting...",
+    "startRace": "Start Race",
+    "ready": "Ready",
+    "unready": "Unready",
+    "setServerHint": "Set server IP to start",
+    "botMaintenance": {
+      "lobby": "Race announcement bot is on maintenance. The race will still work, but there won't be in-game announcements.",
+      "game": "Race bot is on maintenance. Scoring and progress tracking are unaffected."
+    },
+    "currentMap": "Current:",
+    "stepProgress": "Step {current}/{total}"
+  },
+  "leave": {
+    "title": "Leave race?",
+    "description": "You will be removed from the team. You can rejoin later if the race is still open.",
+    "stay": "Stay",
+    "leave": "Leave",
+    "failed": "Failed to leave game",
+    "failedToStart": "Failed to start race"
+  },
+  "settings": {
+    "raceTitle": "Race Title",
+    "raceTitlePlaceholder": "My Race",
+    "category": "Category",
+    "categoryMode": "Category Mode",
+    "minDifficulty": "Min Difficulty",
+    "maxDifficulty": "Max Difficulty",
+    "server": "Server",
+    "serverAddressPlaceholder": "127.0.0.1:8303",
+    "serverNamePlaceholder": "Server name (optional)",
+    "mode": "Mode",
+    "publicRace": "Public Race",
+    "inviteCode": "Invite Code:",
+    "categoryLabel": "Category:",
+    "categoryModeLabel": "Category Mode:",
+    "pathLengthLabel": "Path Length:",
+    "pathLengthSteps": "steps",
+    "difficultyLabel": "Difficulty:",
+    "stars": "stars",
+    "serverLabel": "Server:",
+    "modeLabel": "Mode:",
+    "visibilityLabel": "Visibility:",
+    "public": "Public",
+    "private": "Private",
+    "failedToUpdate": "Failed to update",
+    "failedToSave": "Failed to save settings",
+    "preview": "Preview",
+    "settingsTab": "Settings"
+  },
+  "team": {
+    "host": "Host",
+    "joined": "Joined",
+    "invited": "Invited",
+    "inviteTeammate": "Invite Teammate",
+    "inviteOpponent": "Invite Opponent",
+    "cancelInvite": "Cancel",
+    "waitingForPlayer": "Waiting for player...",
+    "switchTeam": "Switch to this team",
+    "pts": "pts",
+    "failedToInvite": "Failed to send invite",
+    "failedToCancelInvite": "Failed to cancel invite",
+    "failedToSwitch": "Failed to switch team",
+    "cannotSwitchSolo": "Cannot switch to solo while Team 2 has players or pending invites",
+    "playerOne": "Player 1",
+    "playerTwo": "Player 2"
+  },
+  "surrender": {
+    "title": "Surrender?",
+    "description": "Your opponent will win the race. This action cannot be undone.",
+    "keep": "Keep playing",
+    "confirm": "Surrender",
+    "failed": "Failed to surrender"
+  },
+  "result": {
+    "winner": "{team} wins!",
+    "cancelled": "Race Cancelled"
+  },
+  "rematch": {
+    "button": "Rematch",
+    "title": "Rematch offered!",
+    "descriptionNamed": "{name} wants a rematch!",
+    "descriptionGeneric": "Your opponent wants a rematch!",
+    "decline": "Decline",
+    "accept": "Accept Rematch",
+    "failedToCreate": "Failed to create rematch",
+    "failedToJoin": "Failed to join rematch"
+  }
+}

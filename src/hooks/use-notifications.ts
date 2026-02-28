@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import useSWR from 'swr'
 import { toast } from 'sonner'
 
@@ -16,6 +16,10 @@ export interface Notification {
   createdAt: string
 }
 
+// Global singleton to prevent duplicate toasts when multiple components use useNotifications()
+const globalKnownIds = new Set<string>()
+let globalInitialized = false
+
 /**
  * Shared hook for notification data. SWR deduplicates requests,
  * so multiple components using this hook result in a single fetch.
@@ -28,24 +32,24 @@ export function useNotifications() {
     { refreshInterval: 10000 },
   )
 
-  const knownIdsRef = useRef<Set<string>>(new Set())
-  const initializedRef = useRef(false)
-
   const notifications = data?.docs || []
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
   useEffect(() => {
     if (!data?.docs) return
 
-    if (!initializedRef.current) {
+    if (!globalInitialized) {
       // First load — seed known IDs without toasting the backlog
-      knownIdsRef.current = new Set(data.docs.map((n) => n.id))
-      initializedRef.current = true
+      for (const n of data.docs) {
+        globalKnownIds.add(n.id)
+      }
+      globalInitialized = true
       return
     }
 
     for (const n of data.docs) {
-      if (!knownIdsRef.current.has(n.id) && !n.isRead) {
+      if (!globalKnownIds.has(n.id) && !n.isRead) {
+        globalKnownIds.add(n.id)
         toast(n.title, {
           description: n.message,
           action: n.actionUrl
@@ -53,7 +57,6 @@ export function useNotifications() {
             : undefined,
         })
       }
-      knownIdsRef.current.add(n.id)
     }
   }, [data])
 

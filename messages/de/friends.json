@@ -1,0 +1,38 @@
+{
+  "title": "Freunde",
+  "pendingCount": "{count} ausstehend",
+  "addFriend": {
+    "placeholder": "In-Game-Nickname eingeben...",
+    "button": "Freund hinzufügen",
+    "sending": "Wird gesendet..."
+  },
+  "pending": {
+    "title": "Ausstehende Anfragen",
+    "wantsToBeYourFriend": "möchte dein Freund sein",
+    "accept": "Annehmen",
+    "requestSent": "Anfrage gesendet — wartet auf Antwort",
+    "cancel": "Abbrechen"
+  },
+  "list": {
+    "title": "Deine Freunde ({count})",
+    "tabAll": "Alle",
+    "tabOnline": "Online ({count})",
+    "noFriendsToShow": "Keine Freunde anzuzeigen.",
+    "noFriendsYet": "Noch keine Freunde. Sende eine Freundschaftsanfrage oder füge jemanden aus den Vorschlägen unten hinzu!",
+    "removeFriend": "Freund entfernen"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "suggested": {
+    "title": "Vorgeschlagene Spieler",
+    "sent": "Gesendet",
+    "add": "Hinzufügen"
+  },
+  "unknownUser": "Unbekannt",
+  "toast": {
+    "requestSent": "Freundschaftsanfrage gesendet!",
+    "failedToSend": "Anfrage konnte nicht gesendet werden"
+  }
+}

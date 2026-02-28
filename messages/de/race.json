@@ -1,0 +1,122 @@
+{
+  "lobby": {
+    "title": "Rennen",
+    "inviteCodePlaceholder": "Einladungscode",
+    "createRace": "Rennen erstellen",
+    "myActiveRaces": "Meine aktiven Rennen",
+    "publicLobby": "Öffentliche Lobby",
+    "pastRaces": "Vergangene Rennen",
+    "noPublicRaces": "Keine öffentlichen Rennen verfügbar. Erstelle eins, um loszulegen!",
+    "joinFailed": "Beitritt fehlgeschlagen",
+    "joinSuccess": "Rennen beigetreten!",
+    "steps": "Schritte",
+    "unknownServer": "Unbekannt"
+  },
+  "card": {
+    "open": "Öffnen",
+    "join": "Beitreten"
+  },
+  "cancel": {
+    "title": "Rennen abbrechen?",
+    "description": "Das Rennen wird für alle Spieler abgebrochen. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "keep": "Weiterfahren",
+    "confirm": "Rennen abbrechen"
+  },
+  "create": {
+    "defaultTitle": "{nick}s Rennen",
+    "failed": "Rennen konnte nicht erstellt werden",
+    "goBack": "Zurück"
+  },
+  "game": {
+    "errorLoading": "Fehler beim Laden des Rennens",
+    "back": "Zurück",
+    "joining": "Beitritt...",
+    "joinRace": "Rennen beitreten",
+    "starting": "Startet...",
+    "startRace": "Rennen starten",
+    "ready": "Bereit",
+    "unready": "Nicht bereit",
+    "setServerHint": "Server-IP eingeben, um zu starten",
+    "botMaintenance": {
+      "lobby": "Der Renn-Ankündigungsbot wird gewartet. Das Rennen funktioniert weiterhin, aber es gibt keine Ingame-Ankündigungen.",
+      "game": "Der Renn-Bot wird gewartet. Punktevergabe und Fortschrittsverfolgung sind nicht betroffen."
+    },
+    "currentMap": "Aktuell:",
+    "stepProgress": "Schritt {current}/{total}"
+  },
+  "leave": {
+    "title": "Rennen verlassen?",
+    "description": "Du wirst aus dem Team entfernt. Du kannst später wieder beitreten, wenn das Rennen noch offen ist.",
+    "stay": "Bleiben",
+    "leave": "Verlassen",
+    "failed": "Spiel konnte nicht verlassen werden",
+    "failedToStart": "Rennen konnte nicht gestartet werden"
+  },
+  "settings": {
+    "raceTitle": "Renntitel",
+    "raceTitlePlaceholder": "Mein Rennen",
+    "category": "Kategorie",
+    "categoryMode": "Kategorie-Modus",
+    "minDifficulty": "Min. Schwierigkeit",
+    "maxDifficulty": "Max. Schwierigkeit",
+    "server": "Server",
+    "serverAddressPlaceholder": "127.0.0.1:8303",
+    "serverNamePlaceholder": "Servername (optional)",
+    "mode": "Modus",
+    "publicRace": "Öffentliches Rennen",
+    "inviteCode": "Einladungscode:",
+    "categoryLabel": "Kategorie:",
+    "categoryModeLabel": "Kategorie-Modus:",
+    "pathLengthLabel": "Streckenlänge:",
+    "pathLengthSteps": "Schritte",
+    "difficultyLabel": "Schwierigkeit:",
+    "stars": "Sterne",
+    "serverLabel": "Server:",
+    "modeLabel": "Modus:",
+    "visibilityLabel": "Sichtbarkeit:",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "failedToUpdate": "Aktualisierung fehlgeschlagen",
+    "failedToSave": "Einstellungen konnten nicht gespeichert werden",
+    "preview": "Vorschau",
+    "settingsTab": "Einstellungen"
+  },
+  "team": {
+    "host": "Host",
+    "joined": "Beigetreten",
+    "invited": "Eingeladen",
+    "inviteTeammate": "Mitspieler einladen",
+    "inviteOpponent": "Gegner einladen",
+    "cancelInvite": "Abbrechen",
+    "waitingForPlayer": "Warte auf Spieler...",
+    "switchTeam": "Zu diesem Team wechseln",
+    "pts": "Pkt.",
+    "failedToInvite": "Einladung konnte nicht gesendet werden",
+    "failedToCancelInvite": "Einladung konnte nicht abgebrochen werden",
+    "failedToSwitch": "Teamwechsel fehlgeschlagen",
+    "cannotSwitchSolo": "Wechsel zu Solo nicht möglich, solange Team 2 Spieler oder ausstehende Einladungen hat",
+    "playerOne": "Spieler 1",
+    "playerTwo": "Spieler 2"
+  },
+  "surrender": {
+    "title": "Aufgeben?",
+    "description": "Dein Gegner gewinnt das Rennen. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "keep": "Weiterspielen",
+    "confirm": "Aufgeben",
+    "failed": "Aufgabe fehlgeschlagen"
+  },
+  "result": {
+    "winner": "{team} gewinnt!",
+    "cancelled": "Rennen abgebrochen"
+  },
+  "rematch": {
+    "button": "Revanche",
+    "title": "Revanche angeboten!",
+    "descriptionNamed": "{name} möchte eine Revanche!",
+    "descriptionGeneric": "Dein Gegner möchte eine Revanche!",
+    "decline": "Ablehnen",
+    "accept": "Revanche annehmen",
+    "failedToCreate": "Revanche konnte nicht erstellt werden",
+    "failedToJoin": "Revanche konnte nicht beigetreten werden"
+  }
+}

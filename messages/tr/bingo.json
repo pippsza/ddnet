@@ -1,0 +1,107 @@
+{
+  "lobby": {
+    "title": "Bingo",
+    "inviteCodePlaceholder": "Davet kodu",
+    "createGame": "Oyun Oluştur",
+    "myActiveGames": "Aktif Oyunlarım",
+    "publicLobby": "Herkese Açık Lobi",
+    "pastGames": "Geçmiş Oyunlar",
+    "noPublicGames": "Herkese açık oyun yok. Başlamak için bir tane oluştur!",
+    "joinFailed": "Oyuna katılma başarısız oldu",
+    "joinSuccess": "Oyuna katıldın!"
+  },
+  "card": {
+    "invite": "Davet",
+    "by": "{name} tarafından",
+    "viewInvite": "Daveti Görüntüle",
+    "open": "Aç",
+    "join": "Katıl"
+  },
+  "cancel": {
+    "title": "Oyun iptal edilsin mi?",
+    "description": "Bu, tüm oyuncular için oyunu iptal edecek. Bu işlem geri alınamaz.",
+    "keep": "Oynamaya devam et",
+    "confirm": "Oyunu iptal et"
+  },
+  "create": {
+    "defaultTitle": "{nick} adlı kullanıcının Bingosu",
+    "failed": "Oyun oluşturulamadı",
+    "goBack": "Geri Dön"
+  },
+  "game": {
+    "errorLoading": "Oyun yüklenirken hata oluştu",
+    "back": "Geri",
+    "joining": "Katılınıyor...",
+    "joinGame": "Oyuna Katıl",
+    "starting": "Başlatılıyor...",
+    "startGame": "Oyunu Başlat",
+    "ready": "Hazır",
+    "unready": "Hazır Değil"
+  },
+  "leave": {
+    "title": "Oyundan ayrıl?",
+    "description": "Takımdan çıkarılacaksın. Oyun hala açıksa daha sonra tekrar katılabilirsin.",
+    "stay": "Kal",
+    "leave": "Ayrıl",
+    "failed": "Oyundan ayrılma başarısız oldu"
+  },
+  "settings": {
+    "gameTitle": "Oyun Başlığı",
+    "gameTitlePlaceholder": "Bingo Oyunum",
+    "category": "Kategori",
+    "minDifficulty": "Min Zorluk",
+    "maxDifficulty": "Maks Zorluk",
+    "mode": "Mod",
+    "publicGame": "Herkese Açık Oyun",
+    "inviteCode": "Davet Kodu:",
+    "categoryLabel": "Kategori:",
+    "difficultyLabel": "Zorluk:",
+    "stars": "yıldız",
+    "modeLabel": "Mod:",
+    "visibilityLabel": "Görünürlük:",
+    "public": "Herkese Açık",
+    "private": "Özel",
+    "failedToUpdate": "Güncelleme başarısız oldu",
+    "failedToSave": "Ayarlar kaydedilemedi",
+    "preview": "Ön İzleme",
+    "settingsTab": "Ayarlar"
+  },
+  "team": {
+    "host": "Ev Sahibi",
+    "joined": "Katıldı",
+    "invited": "Davet Edildi",
+    "inviteTeammate": "Takım Arkadaşı Davet Et",
+    "inviteOpponent": "Rakip Davet Et",
+    "cancelInvite": "İptal",
+    "waitingForPlayer": "Oyuncu bekleniyor...",
+    "switchTeam": "Bu takıma geç",
+    "pts": "puan",
+    "failedToInvite": "Davet gönderilemedi",
+    "failedToCancelInvite": "Davet iptal edilemedi",
+    "failedToSwitch": "Takım değiştirme başarısız oldu",
+    "cannotSwitchSolo": "Takım 2'de oyuncular veya bekleyen davetler varken solo moda geçilemez",
+    "playerOne": "Oyuncu 1",
+    "playerTwo": "Oyuncu 2"
+  },
+  "surrender": {
+    "title": "Teslim ol?",
+    "description": "Rakibin oyunu kazanacak. Bu işlem geri alınamaz.",
+    "keep": "Oynamaya devam et",
+    "confirm": "Teslim Ol",
+    "failed": "Teslim olma başarısız oldu"
+  },
+  "result": {
+    "winner": "{team} kazandı!",
+    "cancelled": "Oyun İptal Edildi"
+  },
+  "rematch": {
+    "button": "Rövanş",
+    "title": "Rövanş teklifi!",
+    "descriptionNamed": "{name} rövanş istiyor!",
+    "descriptionGeneric": "Rakibin rövanş istiyor!",
+    "decline": "Reddet",
+    "accept": "Rövanşı Kabul Et",
+    "failedToCreate": "Rövanş oluşturulamadı",
+    "failedToJoin": "Rövanşa katılınamadı"
+  }
+}

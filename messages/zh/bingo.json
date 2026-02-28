@@ -1,0 +1,107 @@
+{
+  "lobby": {
+    "title": "Bingo",
+    "inviteCodePlaceholder": "邀请码",
+    "createGame": "创建对局",
+    "myActiveGames": "我的进行中对局",
+    "publicLobby": "公开大厅",
+    "pastGames": "历史对局",
+    "noPublicGames": "暂无公开对局。创建一个来开始吧！",
+    "joinFailed": "加入对局失败",
+    "joinSuccess": "已加入对局！"
+  },
+  "card": {
+    "invite": "邀请",
+    "by": "由 {name} 创建",
+    "viewInvite": "查看邀请",
+    "open": "打开",
+    "join": "加入"
+  },
+  "cancel": {
+    "title": "取消对局？",
+    "description": "这将为所有玩家取消对局，此操作无法撤销。",
+    "keep": "继续游戏",
+    "confirm": "取消对局"
+  },
+  "create": {
+    "defaultTitle": "{nick} 的 Bingo",
+    "failed": "创建对局失败",
+    "goBack": "返回"
+  },
+  "game": {
+    "errorLoading": "加载对局时出错",
+    "back": "返回",
+    "joining": "加入中...",
+    "joinGame": "加入对局",
+    "starting": "启动中...",
+    "startGame": "开始对局",
+    "ready": "准备",
+    "unready": "取消准备"
+  },
+  "leave": {
+    "title": "离开对局？",
+    "description": "你将被移出队伍。如果对局仍然开放，你可以稍后重新加入。",
+    "stay": "留下",
+    "leave": "离开",
+    "failed": "离开对局失败"
+  },
+  "settings": {
+    "gameTitle": "对局标题",
+    "gameTitlePlaceholder": "我的 Bingo 对局",
+    "category": "分类",
+    "minDifficulty": "最低难度",
+    "maxDifficulty": "最高难度",
+    "mode": "模式",
+    "publicGame": "公开对局",
+    "inviteCode": "邀请码：",
+    "categoryLabel": "分类：",
+    "difficultyLabel": "难度：",
+    "stars": "星",
+    "modeLabel": "模式：",
+    "visibilityLabel": "可见性：",
+    "public": "公开",
+    "private": "私密",
+    "failedToUpdate": "更新失败",
+    "failedToSave": "保存设置失败",
+    "preview": "预览",
+    "settingsTab": "设置"
+  },
+  "team": {
+    "host": "房主",
+    "joined": "已加入",
+    "invited": "已邀请",
+    "inviteTeammate": "邀请队友",
+    "inviteOpponent": "邀请对手",
+    "cancelInvite": "取消",
+    "waitingForPlayer": "等待玩家加入...",
+    "switchTeam": "切换到此队伍",
+    "pts": "分",
+    "failedToInvite": "发送邀请失败",
+    "failedToCancelInvite": "取消邀请失败",
+    "failedToSwitch": "切换队伍失败",
+    "cannotSwitchSolo": "队伍 2 有玩家或待处理邀请时无法切换为单人模式",
+    "playerOne": "玩家 1",
+    "playerTwo": "玩家 2"
+  },
+  "surrender": {
+    "title": "投降？",
+    "description": "你的对手将赢得对局，此操作无法撤销。",
+    "keep": "继续游戏",
+    "confirm": "投降",
+    "failed": "投降失败"
+  },
+  "result": {
+    "winner": "{team} 获胜！",
+    "cancelled": "对局已取消"
+  },
+  "rematch": {
+    "button": "再来一局",
+    "title": "收到再战邀请！",
+    "descriptionNamed": "{name} 想再来一局！",
+    "descriptionGeneric": "你的对手想再来一局！",
+    "decline": "拒绝",
+    "accept": "接受再战",
+    "failedToCreate": "创建再战失败",
+    "failedToJoin": "加入再战失败"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "title": "通知",
+  "newCount": "{count} 条新通知",
+  "types": {
+    "gameInvite": "对局邀请",
+    "friendRequest": "好友请求",
+    "friendAccepted": "好友已接受",
+    "gameStarted": "对局已开始",
+    "gameEnded": "对局已结束",
+    "roundWon": "回合获胜",
+    "achievement": "成就",
+    "system": "系统",
+    "info": "信息",
+    "playerOnline": "玩家上线",
+    "chatMention": "聊天提及",
+    "directMessage": "私信",
+    "forumReply": "论坛回复",
+    "supportReply": "工单回复"
+  },
+  "retention": {
+    "1h": "1 小时",
+    "24h": "24 小时",
+    "5d": "5 天",
+    "10d": "10 天",
+    "updated": "通知将保留 {duration}",
+    "updateFailed": "更新保留设置失败"
+  },
+  "actions": {
+    "markAllRead": "全部标为已读",
+    "markRead": "标为已读"
+  },
+  "empty": {
+    "title": "暂无通知。",
+    "description": "好友请求、对局邀请等消息将会在这里显示。"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{count}分钟前",
+    "hoursAgo": "{count}小时前",
+    "daysAgo": "{count}天前"
+  }
+}

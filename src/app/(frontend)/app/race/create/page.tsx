@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function CreateRacePage() {
   const router = useRouter()
   const { user } = useAuth()
+  const t = useTranslations('race')
   const [error, setError] = useState('')
   const creatingRef = useRef(false)
 
@@ -21,7 +23,7 @@ export default function CreateRacePage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: `${user.ingameNick}'s Race`,
+        title: t('create.defaultTitle', { nick: user.ingameNick }),
         mode: 'solo',
         categoryMode: 'selected',
         category: 'novice',
@@ -36,12 +38,12 @@ export default function CreateRacePage() {
         if (data.race?.id) {
           router.replace(`/app/race/${data.race.id}`)
         } else {
-          setError(data.error || 'Failed to create race')
+          setError(data.error || t('create.failed'))
           creatingRef.current = false
         }
       })
       .catch(() => {
-        setError('Failed to create race')
+        setError(t('create.failed'))
         creatingRef.current = false
       })
   }, [user, router])
@@ -51,7 +53,7 @@ export default function CreateRacePage() {
       <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-red-500">{error}</p>
         <Button variant="outline" onClick={() => router.back()}>
-          Go Back
+          {t('create.goBack')}
         </Button>
       </div>
     )

@@ -1,0 +1,30 @@
+{
+  "title": "Leaderboard",
+  "tabs": {
+    "bingo": "Bingo",
+    "race": "Race"
+  },
+  "filters": {
+    "categoryPlaceholder": "Category",
+    "sortPlaceholder": "Sort by",
+    "allCategories": "All Categories"
+  },
+  "sort": {
+    "mostWins": "Most Wins",
+    "bestWinRate": "Best Win Rate",
+    "mostGames": "Most Games",
+    "mostMaps": "Most Maps",
+    "mostRoundsWon": "Most Rounds Won"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "Player",
+    "games": "Games",
+    "wins": "Wins",
+    "winRate": "Win Rate",
+    "maps": "Maps",
+    "rounds": "Rounds"
+  },
+  "empty": "No players found",
+  "emptyForCategory": "No players found for {category}."
+}

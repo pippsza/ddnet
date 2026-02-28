@@ -60,6 +60,7 @@ import { CategoryIcon } from '@/components/bingo/CategoryIcon'
 import { ModeSelector } from '@/components/bingo/ModePreview'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -103,6 +104,7 @@ type WinCondition = 'line' | 'cross' | 'full_house'
 export default function BingoGamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const t = useTranslations('bingo')
   const [countdownDone, setCountdownDone] = useState(false)
 
   // Read team index from URL for invited players
@@ -121,7 +123,7 @@ export default function BingoGamePage({ params }: { params: Promise<{ id: string
     refreshInterval: 3000,
   })
 
-  if (error) return <div className="p-8 text-center text-red-500">Error loading game</div>
+  if (error) return <div className="p-8 text-center text-red-500">{t('game.errorLoading')}</div>
   if (!game) return <GamePageSkeleton />
 
   const isWaiting = game.gameStatus === 'waiting' || game.gameStatus === 'ready'
@@ -170,6 +172,7 @@ function LobbyView({
   router: ReturnType<typeof useRouter>
   inviteTeamIndex?: number
 }) {
+  const t = useTranslations('bingo')
   const [actionLoading, setActionLoading] = useState(false)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
   const [settingsError, setSettingsError] = useState('')
@@ -302,7 +305,7 @@ function LobbyView({
       })
       if (!res.ok) {
         const data = await res.json()
-        setSettingsError(data.error || 'Failed to update')
+        setSettingsError(data.error || t('settings.failedToUpdate'))
         setTimeout(() => setSettingsError(''), 4000)
         revertFromServer(batchKeys)
       } else {
@@ -320,7 +323,7 @@ function LobbyView({
       }
       mutate()
     } catch {
-      setSettingsError('Failed to save settings')
+      setSettingsError(t('settings.failedToSave'))
       setTimeout(() => setSettingsError(''), 4000)
       revertFromServer(batchKeys)
     } finally {
@@ -387,7 +390,7 @@ function LobbyView({
       const hasPlayers = team2.players.length > 0
       const hasPending = (team2.pendingInvites?.length || 0) > 0
       if (hasPlayers || hasPending) {
-        toast.error('Cannot switch to solo while Team 2 has players or pending invites')
+        toast.error(t('team.cannotSwitchSolo'))
         return
       }
     }
@@ -444,7 +447,7 @@ function LobbyView({
       router.push('/app/bingo')
     } else {
       const data = await res.json()
-      toast.error(data.error || 'Failed to leave game')
+      toast.error(data.error || t('leave.failed'))
       setActionLoading(false)
     }
   }
@@ -467,10 +470,10 @@ function LobbyView({
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || 'Failed to switch team')
+        toast.error(data.error || t('team.failedToSwitch'))
       }
     } catch {
-      toast.error('Failed to switch team')
+      toast.error(t('team.failedToSwitch'))
     } finally {
       mutate()
       setActionLoading(false)
@@ -484,12 +487,12 @@ function LobbyView({
       {/* Title */}
       {isCreator ? (
         <div>
-          <Label htmlFor="title">Game Title</Label>
+          <Label htmlFor="title">{t('settings.gameTitle')}</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="My Bingo Game"
+            placeholder={t('settings.gameTitlePlaceholder')}
           />
         </div>
       ) : (
@@ -502,7 +505,7 @@ function LobbyView({
       {/* Category */}
       {isCreator ? (
         <div>
-          <Label>Category</Label>
+          <Label>{t('settings.category')}</Label>
           <CategorySelect
             name="category"
             value={category}
@@ -512,7 +515,7 @@ function LobbyView({
         </div>
       ) : (
         <div className="text-sm flex items-center gap-1.5">
-          <span className="text-muted-foreground">Category:</span>
+          <span className="text-muted-foreground">{t('settings.categoryLabel')}</span>
           <CategoryIcon
             category={game.category}
             iconName={game.categoryIcon}
@@ -526,7 +529,7 @@ function LobbyView({
       {isCreator ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Min Difficulty</Label>
+            <Label>{t('settings.minDifficulty')}</Label>
             <Input
               type="number"
               min={0}
@@ -537,7 +540,7 @@ function LobbyView({
             />
           </div>
           <div>
-            <Label>Max Difficulty</Label>
+            <Label>{t('settings.maxDifficulty')}</Label>
             <Input
               type="number"
               min={0}
@@ -550,9 +553,9 @@ function LobbyView({
         </div>
       ) : (
         <div className="text-sm">
-          <span className="text-muted-foreground">Difficulty:</span>{' '}
+          <span className="text-muted-foreground">{t('settings.difficultyLabel')}</span>{' '}
           <span className="font-medium">
-            {game.difficultyRange?.min ?? 0} – {game.difficultyRange?.max ?? 5} stars
+            {game.difficultyRange?.min ?? 0} – {game.difficultyRange?.max ?? 5} {t('settings.stars')}
           </span>
         </div>
       )}
@@ -560,7 +563,7 @@ function LobbyView({
       {/* Mode */}
       {isCreator ? (
         <div>
-          <Label>Mode</Label>
+          <Label>{t('settings.mode')}</Label>
           <ModeSelector
             mode={mode}
             onModeChange={handleModeChange}
@@ -569,7 +572,7 @@ function LobbyView({
         </div>
       ) : (
         <div className="text-sm">
-          <span className="text-muted-foreground">Mode:</span>{' '}
+          <span className="text-muted-foreground">{t('settings.modeLabel')}</span>{' '}
           <span className="font-medium capitalize">{game.mode}</span>
         </div>
       )}
@@ -584,20 +587,20 @@ function LobbyView({
             disabled={savingFields.has('isPublic')}
           />
           <Label htmlFor="isPublic" className="mb-0">
-            Public Game
+            {t('settings.publicGame')}
           </Label>
         </div>
       ) : (
         <div className="text-sm">
-          <span className="text-muted-foreground">Visibility:</span>{' '}
-          <span className="font-medium">{game.isPublic ? 'Public' : 'Private'}</span>
+          <span className="text-muted-foreground">{t('settings.visibilityLabel')}</span>{' '}
+          <span className="font-medium">{game.isPublic ? t('settings.public') : t('settings.private')}</span>
         </div>
       )}
 
       {/* Invite code */}
       {game.inviteCode && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Invite Code:</span>
+          <span className="text-muted-foreground">{t('settings.inviteCode')}</span>
           <code className="font-mono font-bold bg-muted px-2 py-0.5 rounded">
             {game.inviteCode}
           </code>
@@ -711,7 +714,7 @@ function LobbyView({
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('game.back')}
           </Button>
           <div className="flex items-center gap-2">
             {savingFields.size > 0 && (
@@ -726,14 +729,14 @@ function LobbyView({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel game?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('cancel.title')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will cancel the game for all players. This action cannot be undone.
+                      {t('cancel.description')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Keep playing</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancel}>Cancel game</AlertDialogAction>
+                    <AlertDialogCancel>{t('cancel.keep')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleCancel}>{t('cancel.confirm')}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -741,7 +744,7 @@ function LobbyView({
             {!isInGame && (
               <Button size="sm" onClick={handleJoin} disabled={actionLoading}>
                 <LogIn className="h-4 w-4 mr-1.5" />
-                {actionLoading ? 'Joining...' : 'Join Game'}
+                {actionLoading ? t('game.joining') : t('game.joinGame')}
               </Button>
             )}
             {isInGame && !isCreator && (
@@ -759,15 +762,14 @@ function LobbyView({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Leave game?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        You will be removed from the team. You can rejoin later if the game is still
-                        open.
+                        {t('leave.description')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Stay</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLeave}>Leave</AlertDialogAction>
+                      <AlertDialogCancel>{t('leave.stay')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLeave}>{t('leave.leave')}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -778,14 +780,14 @@ function LobbyView({
                   disabled={actionLoading}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                  {actionLoading ? '...' : amReady ? 'Unready' : 'Ready'}
+                  {actionLoading ? '...' : amReady ? t('game.unready') : t('game.ready')}
                 </Button>
               </>
             )}
             {isCreator && (
               <Button size="sm" onClick={handleStart} disabled={!canStart || actionLoading}>
                 <Play className="h-4 w-4 mr-1.5" />
-                {actionLoading ? 'Starting...' : 'Start Game'}
+                {actionLoading ? t('game.starting') : t('game.startGame')}
               </Button>
             )}
           </div>
@@ -830,12 +832,12 @@ function LobbyView({
           {mobileTab === 'settings' ? (
             <>
               <Grid3x3 className="h-4 w-4" />
-              Preview
+              {t('settings.preview')}
             </>
           ) : (
             <>
               <Settings2 className="h-4 w-4" />
-              Settings
+              {t('settings.settingsTab')}
             </>
           )}
         </Button>
@@ -867,6 +869,7 @@ function LobbyTeamCard({
   onSwitchTeam?: (teamIndex: number) => void
   mutate: () => void
 }) {
+  const t = useTranslations('bingo')
   const [inviting, setInviting] = useState(false)
   const [inviteLoading, setInviteLoading] = useState(false)
   // Optimistic pending invites: local state synced from server, updated immediately on invite/cancel
@@ -916,11 +919,11 @@ function LobbyTeamCard({
       if (!res.ok) {
         // Revert optimistic update
         setOptimisticPending((prev) => prev.filter((p) => p.id !== player.id))
-        toast.error(data.error || 'Failed to send invite')
+        toast.error(data.error || t('team.failedToInvite'))
       }
     } catch {
       setOptimisticPending((prev) => prev.filter((p) => p.id !== player.id))
-      toast.error('Failed to send invite')
+      toast.error(t('team.failedToInvite'))
     } finally {
       setInviteLoading(false)
       mutate()
@@ -942,11 +945,11 @@ function LobbyTeamCard({
       if (!res.ok) {
         // Revert: add back
         if (removed) setOptimisticPending((prev) => [...prev, removed])
-        toast.error(data.error || 'Failed to cancel invite')
+        toast.error(data.error || t('team.failedToCancelInvite'))
       }
     } catch {
       if (removed) setOptimisticPending((prev) => [...prev, removed])
-      toast.error('Failed to cancel invite')
+      toast.error(t('team.failedToCancelInvite'))
     } finally {
       mutate()
     }
@@ -986,7 +989,7 @@ function LobbyTeamCard({
                   <span className="text-sm font-medium truncate block">{player.ingameNick}</span>
                   {player.points !== undefined && player.points > 0 && (
                     <span className="text-xs text-muted-foreground">
-                      {player.points.toLocaleString()} pts
+                      {player.points.toLocaleString()} {t('team.pts')}
                     </span>
                   )}
                 </div>
@@ -995,7 +998,7 @@ function LobbyTeamCard({
                     variant="outline"
                     className="text-[10px] border-muted-foreground/30 text-muted-foreground"
                   >
-                    Host
+                    {t('team.host')}
                   </Badge>
                 ) : player.isReady ? (
                   <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -1004,7 +1007,7 @@ function LobbyTeamCard({
                     variant="outline"
                     className="text-[10px] border-green-500/50 text-green-600 dark:text-green-400"
                   >
-                    Joined
+                    {t('team.joined')}
                   </Badge>
                 )}
               </div>
@@ -1033,7 +1036,7 @@ function LobbyTeamCard({
                   variant="outline"
                   className="text-[10px] border-yellow-500/50 text-yellow-600 dark:text-yellow-400"
                 >
-                  Invited
+                  {t('team.invited')}
                 </Badge>
                 {canCancelInvite && (
                   <button
@@ -1059,7 +1062,7 @@ function LobbyTeamCard({
                 <UserPlus className="h-3.5 w-3.5 text-muted-foreground/50" />
               </div>
               <span className="text-sm text-muted-foreground">
-                {isMyTeam ? 'Invite Teammate' : 'Invite Opponent'}
+                {isMyTeam ? t('team.inviteTeammate') : t('team.inviteOpponent')}
               </span>
             </button>
           )}
@@ -1074,7 +1077,7 @@ function LobbyTeamCard({
                 onClick={() => setInviting(false)}
                 disabled={inviteLoading}
               >
-                Cancel
+                {t('team.cancelInvite')}
               </Button>
             </div>
           )}
@@ -1085,7 +1088,7 @@ function LobbyTeamCard({
               <div className="w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
                 <UserPlus className="h-3.5 w-3.5 text-muted-foreground/30" />
               </div>
-              <span className="text-xs text-muted-foreground/50">Waiting for player...</span>
+              <span className="text-xs text-muted-foreground/50">{t('team.waitingForPlayer')}</span>
             </div>
           )}
 
@@ -1099,7 +1102,7 @@ function LobbyTeamCard({
               <div className="w-8 h-8 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center">
                 <ArrowLeftRight className="h-3.5 w-3.5 text-primary/50" />
               </div>
-              <span className="text-sm text-primary/70">Switch to this team</span>
+              <span className="text-sm text-primary/70">{t('team.switchTeam')}</span>
             </button>
           )}
         </div>
@@ -1121,6 +1124,7 @@ function GameView({
   mutate: () => void
   router: ReturnType<typeof useRouter>
 }) {
+  const t = useTranslations('bingo')
   const gridSize = parseInt(game.gridSize?.split('x')[0] || '3')
   const totalCells = gridSize * gridSize
   const teams: Team[] = game.teams || []
@@ -1183,7 +1187,7 @@ function GameView({
       mutate()
     } else {
       const data = await res.json()
-      toast.error(data.error || 'Failed to surrender')
+      toast.error(data.error || t('surrender.failed'))
     }
     setActionLoading(false)
   }
@@ -1197,7 +1201,7 @@ function GameView({
       rematchInitiatedByMe.current = true
       router.push(`/app/bingo/${data.gameId}`)
     } else {
-      toast.error(data.error || 'Failed to create rematch')
+      toast.error(data.error || t('rematch.failedToCreate'))
       setActionLoading(false)
     }
   }
@@ -1210,7 +1214,7 @@ function GameView({
     if (res.ok && data.gameId) {
       router.push(`/app/bingo/${data.gameId}`)
     } else {
-      toast.error(data.error || 'Failed to join rematch')
+      toast.error(data.error || t('rematch.failedToJoin'))
       setRematchAcceptLoading(false)
     }
   }
@@ -1254,21 +1258,21 @@ function GameView({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              Rematch offered!
+              {t('rematch.title')}
             </DialogTitle>
             <DialogDescription>
               {rematchInitiatorName
-                ? `${rematchInitiatorName} wants a rematch!`
-                : 'Your opponent wants a rematch!'}
+                ? t('rematch.descriptionNamed', { name: rematchInitiatorName })
+                : t('rematch.descriptionGeneric')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRematchDismissed(true)}>
-              Decline
+              {t('rematch.decline')}
             </Button>
             <Button onClick={handleAcceptRematch} disabled={rematchAcceptLoading}>
               {rematchAcceptLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Accept Rematch
+              {t('rematch.accept')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1309,14 +1313,14 @@ function GameView({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Surrender?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('surrender.title')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your opponent will win the game. This action cannot be undone.
+                    {t('surrender.description')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep playing</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSurrender}>Surrender</AlertDialogAction>
+                  <AlertDialogCancel>{t('surrender.keep')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSurrender}>{t('surrender.confirm')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -1331,7 +1335,7 @@ function GameView({
                 disabled={actionLoading}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                Rematch
+                {t('rematch.button')}
               </Button>
             )}
         </div>
@@ -1340,14 +1344,14 @@ function GameView({
       {/* Victory banner */}
       {game.gameStatus === 'completed' && winnerTeam && (
         <div className="rounded-lg px-3 py-1.5 text-center border shrink-0 mb-1 bg-primary/10 border-primary/30">
-          <p className="text-base font-bold text-primary">{winnerTeam.name} wins!</p>
+          <p className="text-base font-bold text-primary">{t('result.winner', { team: winnerTeam.name })}</p>
         </div>
       )}
 
       {/* Cancelled */}
       {game.gameStatus === 'cancelled' && (
         <div className="rounded-lg px-3 py-1.5 text-center border border-muted bg-muted/30 shrink-0 mb-1">
-          <p className="text-base font-bold text-muted-foreground">Game Cancelled</p>
+          <p className="text-base font-bold text-muted-foreground">{t('result.cancelled')}</p>
         </div>
       )}
 
@@ -1358,7 +1362,7 @@ function GameView({
             team={topBar}
             totalCells={totalCells}
             isWinner={winnerTeamIndex === 0 || (isSolo && winnerTeamIndex === 0)}
-            label={isSolo ? 'Player 1' : undefined}
+            label={isSolo ? t('team.playerOne') : undefined}
             creatorId={game.createdBy?.id}
           />
         )}
@@ -1383,7 +1387,7 @@ function GameView({
             team={bottomBar}
             totalCells={totalCells}
             isWinner={isSolo ? winnerTeamIndex === 0 : winnerTeamIndex === 1}
-            label={isSolo ? 'Player 2' : undefined}
+            label={isSolo ? t('team.playerTwo') : undefined}
             creatorId={game.createdBy?.id}
           />
         )}

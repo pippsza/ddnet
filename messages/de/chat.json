@@ -1,0 +1,30 @@
+{
+  "title": "Nachrichten",
+  "searchPlaceholder": "Spieler suchen...",
+  "selectAll": "Alle auswählen",
+  "selectedCount": "{count} ausgewählt",
+  "deleteSelected": "Löschen ({count})",
+  "deleteConversation": "Unterhaltung löschen",
+  "otherPlayers": "Andere Spieler",
+  "noPlayersFound": "Keine Spieler gefunden",
+  "noFriendsYet": "Noch keine Freunde.",
+  "addFriendsToChat": "Füge Freunde hinzu, um zu chatten!",
+  "selectConversation": "Wähle eine Unterhaltung, um zu chatten",
+  "noMessagesPreview": "Noch keine Nachrichten",
+  "typing": "schreibt...",
+  "emptyChat": "Noch keine Nachrichten. Sag Hallo!",
+  "messagePlaceholder": "Nachricht eingeben...",
+  "unknownUser": "Unbekannt",
+  "yesterday": "Gestern",
+  "deleteError": "Unterhaltung konnte nicht gelöscht werden",
+  "deleteMultipleError": "Unterhaltungen konnten nicht gelöscht werden",
+  "input": {
+    "placeholder": "Nachricht eingeben...",
+    "cooldownPlaceholder": "Warten...",
+    "attach": "Anhängen",
+    "send": "Senden",
+    "sending": "Wird gesendet...",
+    "uploadFailed": "Datei konnte nicht hochgeladen werden",
+    "uploadError": "Upload fehlgeschlagen"
+  }
+}

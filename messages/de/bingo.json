@@ -1,0 +1,107 @@
+{
+  "lobby": {
+    "title": "Bingo",
+    "inviteCodePlaceholder": "Einladungscode",
+    "createGame": "Spiel erstellen",
+    "myActiveGames": "Meine aktiven Spiele",
+    "publicLobby": "Öffentliche Lobby",
+    "pastGames": "Vergangene Spiele",
+    "noPublicGames": "Keine öffentlichen Spiele verfügbar. Erstelle eins, um loszulegen!",
+    "joinFailed": "Beitritt fehlgeschlagen",
+    "joinSuccess": "Spiel beigetreten!"
+  },
+  "card": {
+    "invite": "Einladen",
+    "by": "von {name}",
+    "viewInvite": "Einladung ansehen",
+    "open": "Öffnen",
+    "join": "Beitreten"
+  },
+  "cancel": {
+    "title": "Spiel abbrechen?",
+    "description": "Das Spiel wird für alle Spieler abgebrochen. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "keep": "Weiterspielen",
+    "confirm": "Spiel abbrechen"
+  },
+  "create": {
+    "defaultTitle": "{nick}s Bingo",
+    "failed": "Spiel konnte nicht erstellt werden",
+    "goBack": "Zurück"
+  },
+  "game": {
+    "errorLoading": "Fehler beim Laden des Spiels",
+    "back": "Zurück",
+    "joining": "Beitritt...",
+    "joinGame": "Spiel beitreten",
+    "starting": "Startet...",
+    "startGame": "Spiel starten",
+    "ready": "Bereit",
+    "unready": "Nicht bereit"
+  },
+  "leave": {
+    "title": "Spiel verlassen?",
+    "description": "Du wirst aus dem Team entfernt. Du kannst später wieder beitreten, wenn das Spiel noch offen ist.",
+    "stay": "Bleiben",
+    "leave": "Verlassen",
+    "failed": "Spiel konnte nicht verlassen werden"
+  },
+  "settings": {
+    "gameTitle": "Spieltitel",
+    "gameTitlePlaceholder": "Mein Bingo-Spiel",
+    "category": "Kategorie",
+    "minDifficulty": "Min. Schwierigkeit",
+    "maxDifficulty": "Max. Schwierigkeit",
+    "mode": "Modus",
+    "publicGame": "Öffentliches Spiel",
+    "inviteCode": "Einladungscode:",
+    "categoryLabel": "Kategorie:",
+    "difficultyLabel": "Schwierigkeit:",
+    "stars": "Sterne",
+    "modeLabel": "Modus:",
+    "visibilityLabel": "Sichtbarkeit:",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "failedToUpdate": "Aktualisierung fehlgeschlagen",
+    "failedToSave": "Einstellungen konnten nicht gespeichert werden",
+    "preview": "Vorschau",
+    "settingsTab": "Einstellungen"
+  },
+  "team": {
+    "host": "Host",
+    "joined": "Beigetreten",
+    "invited": "Eingeladen",
+    "inviteTeammate": "Mitspieler einladen",
+    "inviteOpponent": "Gegner einladen",
+    "cancelInvite": "Abbrechen",
+    "waitingForPlayer": "Warte auf Spieler...",
+    "switchTeam": "Zu diesem Team wechseln",
+    "pts": "Pkt.",
+    "failedToInvite": "Einladung konnte nicht gesendet werden",
+    "failedToCancelInvite": "Einladung konnte nicht abgebrochen werden",
+    "failedToSwitch": "Teamwechsel fehlgeschlagen",
+    "cannotSwitchSolo": "Wechsel zu Solo nicht möglich, solange Team 2 Spieler oder ausstehende Einladungen hat",
+    "playerOne": "Spieler 1",
+    "playerTwo": "Spieler 2"
+  },
+  "surrender": {
+    "title": "Aufgeben?",
+    "description": "Dein Gegner gewinnt das Spiel. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "keep": "Weiterspielen",
+    "confirm": "Aufgeben",
+    "failed": "Aufgabe fehlgeschlagen"
+  },
+  "result": {
+    "winner": "{team} gewinnt!",
+    "cancelled": "Spiel abgebrochen"
+  },
+  "rematch": {
+    "button": "Revanche",
+    "title": "Revanche angeboten!",
+    "descriptionNamed": "{name} möchte eine Revanche!",
+    "descriptionGeneric": "Dein Gegner möchte eine Revanche!",
+    "decline": "Ablehnen",
+    "accept": "Revanche annehmen",
+    "failedToCreate": "Revanche konnte nicht erstellt werden",
+    "failedToJoin": "Revanche konnte nicht beigetreten werden"
+  }
+}

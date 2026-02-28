@@ -16,19 +16,13 @@ import {
 } from '@/components/ui/select'
 import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
 import { MediaAttachments, type UploadedFile } from '@/components/ui/media-attachments'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 
-const CATEGORIES = [
-  { value: 'general', label: 'General' },
-  { value: 'help', label: 'Help' },
-  { value: 'suggestions', label: 'Suggestions' },
-  { value: 'bugs', label: 'Bugs' },
-  { value: 'maps', label: 'Maps' },
-  { value: 'clans', label: 'Clans' },
-  { value: 'offtopic', label: 'Off-topic' },
-]
+const CATEGORY_KEYS = ['general', 'help', 'suggestions', 'bugs', 'maps', 'clans', 'offtopic'] as const
 
 export default function ForumCreatePage() {
+  const t = useTranslations('forum')
   const router = useRouter()
   const [category, setCategory] = useState('general')
   const [submitting, setSubmitting] = useState(false)
@@ -62,7 +56,7 @@ export default function ForumCreatePage() {
       if (!res.ok) throw new Error(data.error)
       router.push(`/app/forum/${data.post.id}`)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create post')
+      setError(err instanceof Error ? err.message : t('create.failed'))
       setSubmitting(false)
     }
   }
@@ -73,61 +67,61 @@ export default function ForumCreatePage() {
         href="/app/forum"
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Forum
+        <ArrowLeft className="h-4 w-4" /> {t('create.backToForum')}
       </Link>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create New Post</CardTitle>
+          <CardTitle>{t('create.cardTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Title</Label>
+              <Label>{t('create.titleLabel')}</Label>
               <Input
                 ref={titleRef}
-                placeholder="Post title"
+                placeholder={t('create.titlePlaceholder')}
                 required
                 maxLength={200}
               />
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t('create.categoryLabel')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                  {CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {t(`list.categories.${key}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Content</Label>
+              <Label>{t('create.contentLabel')}</Label>
               <LexicalRichTextEditor
                 onChange={handleContentChange}
-                placeholder="Write your post..."
+                placeholder={t('create.contentPlaceholder')}
               />
             </div>
             <div>
-              <Label>Attachments</Label>
+              <Label>{t('create.attachmentsLabel')}</Label>
               <MediaAttachments files={files} onFilesChange={setFiles} />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Creating...' : 'Create Post'}
+                {submitting ? t('create.creating') : t('create.createButton')}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
               >
-                Cancel
+                {t('create.cancelButton')}
               </Button>
             </div>
           </form>

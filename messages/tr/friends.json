@@ -1,0 +1,38 @@
+{
+  "title": "Arkadaşlar",
+  "pendingCount": "{count} beklemede",
+  "addFriend": {
+    "placeholder": "Oyun içi takma adı gir...",
+    "button": "Arkadaş Ekle",
+    "sending": "Gönderiliyor..."
+  },
+  "pending": {
+    "title": "Bekleyen İstekler",
+    "wantsToBeYourFriend": "arkadaşın olmak istiyor",
+    "accept": "Kabul Et",
+    "requestSent": "İstek gönderildi — yanıt bekleniyor",
+    "cancel": "İptal"
+  },
+  "list": {
+    "title": "Arkadaşların ({count})",
+    "tabAll": "Tümü",
+    "tabOnline": "Çevrimiçi ({count})",
+    "noFriendsToShow": "Gösterilecek arkadaş yok.",
+    "noFriendsYet": "Henüz arkadaşın yok. Arkadaşlık isteği gönder veya aşağıdaki önerilerden ekle!",
+    "removeFriend": "Arkadaşı kaldır"
+  },
+  "status": {
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı"
+  },
+  "suggested": {
+    "title": "Önerilen Oyuncular",
+    "sent": "Gönderildi",
+    "add": "Ekle"
+  },
+  "unknownUser": "Bilinmiyor",
+  "toast": {
+    "requestSent": "Arkadaşlık isteği gönderildi!",
+    "failedToSend": "İstek gönderilemedi"
+  }
+}

@@ -627,5 +627,20 @@ export const Users: CollectionConfig = {
         update: () => false,
       },
     },
+    {
+      name: 'notificationRetention',
+      type: 'select',
+      defaultValue: '5d',
+      label: 'Notification Retention',
+      options: [
+        { label: '1 Hour', value: '1h' },
+        { label: '24 Hours', value: '24h' },
+        { label: '5 Days', value: '5d' },
+        { label: '10 Days', value: '10d' },
+      ],
+      admin: {
+        description: 'How long notifications are kept before automatic deletion',
+      },
+    },
   ],
 }

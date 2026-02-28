@@ -1,0 +1,30 @@
+{
+  "title": "Messages",
+  "searchPlaceholder": "Search players...",
+  "selectAll": "Select all",
+  "selectedCount": "{count} selected",
+  "deleteSelected": "Delete ({count})",
+  "deleteConversation": "Delete conversation",
+  "otherPlayers": "Other players",
+  "noPlayersFound": "No players found",
+  "noFriendsYet": "No friends yet.",
+  "addFriendsToChat": "Add friends to start chatting!",
+  "selectConversation": "Select a conversation to start chatting",
+  "noMessagesPreview": "No messages yet",
+  "typing": "typing...",
+  "emptyChat": "No messages yet. Say hello!",
+  "messagePlaceholder": "Type a message...",
+  "unknownUser": "Unknown",
+  "yesterday": "Yesterday",
+  "deleteError": "Failed to delete conversation",
+  "deleteMultipleError": "Failed to delete conversations",
+  "input": {
+    "placeholder": "Type a message...",
+    "cooldownPlaceholder": "Wait...",
+    "attach": "Attach",
+    "send": "Send",
+    "sending": "Sending...",
+    "uploadFailed": "Failed to upload file",
+    "uploadError": "Upload failed"
+  }
+}

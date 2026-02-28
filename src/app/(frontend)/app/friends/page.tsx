@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useMemo, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ import {
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function FriendsContent() {
+  const t = useTranslations('friends')
   const {
     data: onlineData,
     isLoading,
@@ -83,27 +85,23 @@ function FriendsContent() {
     const username = friendInputRef.current?.value?.trim() || ''
     if (!username) return
     setSending(true)
-    try {
-      const res = await fetch('/api/friends/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUsername: username }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      toast.success('Friend request sent!')
-      setSentRequests((prev) => new Set(prev).add(username.toLowerCase()))
-      if (friendInputRef.current) friendInputRef.current.value = ''
-      mutatePending()
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to send request')
-    } finally {
-      setSending(false)
+    // Optimistic: add to outgoing immediately
+    const prevPending = pendingData
+    const optimisticEntry = {
+      id: `temp-${Date.now()}`,
+      direction: 'outgoing' as const,
+      otherUser: { ingameNick: username },
+      createdAt: new Date().toISOString(),
     }
-  }
-
-  const handleAddFriend = async (username: string) => {
+    mutatePending(
+      {
+        ...pendingData,
+        outgoing: [...outgoing, optimisticEntry],
+      },
+      false,
+    )
     setSentRequests((prev) => new Set(prev).add(username.toLowerCase()))
+    if (friendInputRef.current) friendInputRef.current.value = ''
     try {
       const res = await fetch('/api/friends/request', {
         method: 'POST',
@@ -112,6 +110,52 @@ function FriendsContent() {
       })
       const data = await res.json()
       if (!res.ok) {
+        mutatePending(prevPending, false)
+        setSentRequests((prev) => {
+          const next = new Set(prev)
+          next.delete(username.toLowerCase())
+          return next
+        })
+        throw new Error(data.error)
+      }
+      toast.success(t('toast.requestSent'))
+      mutatePending()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t('toast.failedToSend'))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleAddFriend = async (username: string, playerData?: any) => {
+    setSentRequests((prev) => new Set(prev).add(username.toLowerCase()))
+    // Optimistic: add to outgoing immediately
+    const prevPending = pendingData
+    const optimisticEntry = {
+      id: `temp-${Date.now()}`,
+      direction: 'outgoing' as const,
+      otherUser: {
+        ingameNick: username,
+        skin: playerData?.skin,
+      },
+      createdAt: new Date().toISOString(),
+    }
+    mutatePending(
+      {
+        ...pendingData,
+        outgoing: [...outgoing, optimisticEntry],
+      },
+      false,
+    )
+    try {
+      const res = await fetch('/api/friends/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUsername: username }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        mutatePending(prevPending, false)
         setSentRequests((prev) => {
           const next = new Set(prev)
           next.delete(username.toLowerCase())
@@ -121,7 +165,7 @@ function FriendsContent() {
       }
       mutatePending()
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to send request')
+      toast.error(err instanceof Error ? err.message : t('toast.failedToSend'))
     }
   }
 
@@ -218,10 +262,10 @@ function FriendsContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Friends</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         {incoming.length > 0 && (
           <Badge className="bg-blue-500 text-white">
-            {incoming.length} pending
+            {t('pendingCount', { count: incoming.length })}
           </Badge>
         )}
       </div>
@@ -234,13 +278,13 @@ function FriendsContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 ref={friendInputRef}
-                placeholder="Enter in-game nickname..."
+                placeholder={t('addFriend.placeholder')}
                 className="pl-10"
               />
             </div>
             <Button type="submit" disabled={sending}>
               <UserPlus className="h-4 w-4 mr-2" />
-              {sending ? 'Sending...' : 'Add Friend'}
+              {sending ? t('addFriend.sending') : t('addFriend.button')}
             </Button>
           </form>
         </CardContent>
@@ -249,13 +293,13 @@ function FriendsContent() {
       {/* Pending Requests */}
       {(incoming.length > 0 || outgoing.length > 0) && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Pending Requests</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <h2 className="text-lg font-semibold">{t('pending.title')}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             {/* Incoming */}
             {incoming.map((req: any) => (
               <PlayerCard
                 key={req.id}
-                name={req.otherUser?.ingameNick || 'Unknown'}
+                name={req.otherUser?.ingameNick || t('unknownUser')}
                 role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
                   name: req.otherUser?.skin?.name,
@@ -266,7 +310,7 @@ function FriendsContent() {
                 className="border-blue-500/20 bg-blue-500/5"
                 subtitle={
                   <p className="text-xs text-muted-foreground">
-                    wants to be your friend
+                    {t('pending.wantsToBeYourFriend')}
                     {req.message && ` — "${req.message}"`}
                   </p>
                 }
@@ -278,7 +322,7 @@ function FriendsContent() {
                       disabled={processingIds.has(req.id)}
                     >
                       <Check className="h-4 w-4 mr-1" />
-                      Accept
+                      {t('pending.accept')}
                     </Button>
                     <Button
                       size="sm"
@@ -297,7 +341,7 @@ function FriendsContent() {
             {outgoing.map((req: any) => (
               <PlayerCard
                 key={req.id}
-                name={req.otherUser?.ingameNick || 'Unknown'}
+                name={req.otherUser?.ingameNick || t('unknownUser')}
                 role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
                   name: req.otherUser?.skin?.name,
@@ -308,7 +352,7 @@ function FriendsContent() {
                 subtitle={
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    Request sent — waiting for response
+                    {t('pending.requestSent')}
                   </p>
                 }
                 actions={
@@ -320,7 +364,7 @@ function FriendsContent() {
                     className="text-destructive hover:text-destructive"
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
-                    Cancel
+                    {t('pending.cancel')}
                   </Button>
                 }
               />
@@ -334,13 +378,13 @@ function FriendsContent() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">
-              Your Friends ({friends.length})
+              {t('list.title', { count: friends.length })}
             </h2>
             <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="all">{t('list.tabAll')}</TabsTrigger>
                 <TabsTrigger value="online">
-                  Online ({onlineFriends.length})
+                  {t('list.tabOnline', { count: onlineFriends.length })}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -361,7 +405,7 @@ function FriendsContent() {
       {friends.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            No friends yet. Send a friend request or add from suggestions below!
+            {t('list.noFriendsYet')}
           </CardContent>
         </Card>
       )}
@@ -369,7 +413,7 @@ function FriendsContent() {
       {/* Suggested Players */}
       {suggested.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-muted-foreground">Suggested Players</h2>
+          <h2 className="text-lg font-semibold text-muted-foreground">{t('suggested.title')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {suggested.slice(0, 8).map((player: any) => {
               const alreadySent =
@@ -388,17 +432,17 @@ function FriendsContent() {
                       size="sm"
                       variant={alreadySent ? 'secondary' : 'default'}
                       disabled={alreadySent}
-                      onClick={() => handleAddFriend(player.name)}
+                      onClick={() => handleAddFriend(player.name, player)}
                     >
                       {alreadySent ? (
                         <>
                           <Check className="h-3.5 w-3.5 mr-1" />
-                          Sent
+                          {t('suggested.sent')}
                         </>
                       ) : (
                         <>
                           <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          Add
+                          {t('suggested.add')}
                         </>
                       )}
                     </Button>
@@ -420,11 +464,12 @@ function FriendsList({
   friends: any[]
   onRemove: (id: string) => void
 }) {
+  const t = useTranslations('friends')
   if (friends.length === 0) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
-          No friends to show.
+          {t('list.noFriendsToShow')}
         </CardContent>
       </Card>
     )
@@ -450,14 +495,14 @@ function FriendsList({
                 <>
                   <Wifi className={cn('h-3 w-3', friend.afk ? 'text-yellow-500' : 'text-green-500')} />
                   <span className={cn('truncate', friend.afk ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400')}>
-                    {friend.server?.name || 'Online'}
+                    {friend.server?.name || t('status.online')}
                   </span>
                   {friend.afk && <AfkBadge />}
                 </>
               ) : (
                 <>
                   <WifiOff className="h-3 w-3" />
-                  Offline
+                  {t('status.offline')}
                 </>
               )}
             </span>
@@ -466,7 +511,7 @@ function FriendsList({
             <button
               onClick={() => onRemove(friend.userId)}
               className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1.5 rounded"
-              title="Remove friend"
+              title={t('list.removeFriend')}
             >
               <Trash2 className="h-4 w-4" />
             </button>

@@ -1,0 +1,107 @@
+{
+  "lobby": {
+    "title": "Бинго",
+    "inviteCodePlaceholder": "Код приглашения",
+    "createGame": "Создать игру",
+    "myActiveGames": "Мои активные игры",
+    "publicLobby": "Публичное лобби",
+    "pastGames": "Прошедшие игры",
+    "noPublicGames": "Нет доступных публичных игр. Создайте свою!",
+    "joinFailed": "Не удалось присоединиться к игре",
+    "joinSuccess": "Вы присоединились к игре!"
+  },
+  "card": {
+    "invite": "Пригласить",
+    "by": "от {name}",
+    "viewInvite": "Посмотреть приглашение",
+    "open": "Открыть",
+    "join": "Вступить"
+  },
+  "cancel": {
+    "title": "Отменить игру?",
+    "description": "Это отменит игру для всех участников. Действие нельзя отменить.",
+    "keep": "Продолжить игру",
+    "confirm": "Отменить игру"
+  },
+  "create": {
+    "defaultTitle": "Бинго {nick}",
+    "failed": "Не удалось создать игру",
+    "goBack": "Назад"
+  },
+  "game": {
+    "errorLoading": "Ошибка загрузки игры",
+    "back": "Назад",
+    "joining": "Подключение...",
+    "joinGame": "Присоединиться",
+    "starting": "Запуск...",
+    "startGame": "Начать игру",
+    "ready": "Готов",
+    "unready": "Не готов"
+  },
+  "leave": {
+    "title": "Покинуть игру?",
+    "description": "Вы будете удалены из команды. Вы сможете вернуться позже, если игра ещё открыта.",
+    "stay": "Остаться",
+    "leave": "Покинуть",
+    "failed": "Не удалось покинуть игру"
+  },
+  "settings": {
+    "gameTitle": "Название игры",
+    "gameTitlePlaceholder": "Моя игра в бинго",
+    "category": "Категория",
+    "minDifficulty": "Мин. сложность",
+    "maxDifficulty": "Макс. сложность",
+    "mode": "Режим",
+    "publicGame": "Публичная игра",
+    "inviteCode": "Код приглашения:",
+    "categoryLabel": "Категория:",
+    "difficultyLabel": "Сложность:",
+    "stars": "звёзд",
+    "modeLabel": "Режим:",
+    "visibilityLabel": "Видимость:",
+    "public": "Публичная",
+    "private": "Приватная",
+    "failedToUpdate": "Не удалось обновить",
+    "failedToSave": "Не удалось сохранить настройки",
+    "preview": "Предпросмотр",
+    "settingsTab": "Настройки"
+  },
+  "team": {
+    "host": "Хост",
+    "joined": "Присоединился",
+    "invited": "Приглашён",
+    "inviteTeammate": "Пригласить тиммейта",
+    "inviteOpponent": "Пригласить соперника",
+    "cancelInvite": "Отмена",
+    "waitingForPlayer": "Ожидание игрока...",
+    "switchTeam": "Перейти в эту команду",
+    "pts": "очк.",
+    "failedToInvite": "Не удалось отправить приглашение",
+    "failedToCancelInvite": "Не удалось отменить приглашение",
+    "failedToSwitch": "Не удалось сменить команду",
+    "cannotSwitchSolo": "Нельзя перейти в соло, пока в Команде 2 есть игроки или ожидающие приглашения",
+    "playerOne": "Игрок 1",
+    "playerTwo": "Игрок 2"
+  },
+  "surrender": {
+    "title": "Сдаться?",
+    "description": "Ваш соперник выиграет игру. Действие нельзя отменить.",
+    "keep": "Продолжить игру",
+    "confirm": "Сдаться",
+    "failed": "Не удалось сдаться"
+  },
+  "result": {
+    "winner": "{team} побеждает!",
+    "cancelled": "Игра отменена"
+  },
+  "rematch": {
+    "button": "Реванш",
+    "title": "Предложен реванш!",
+    "descriptionNamed": "{name} хочет сыграть снова!",
+    "descriptionGeneric": "Ваш соперник хочет реванш!",
+    "decline": "Отклонить",
+    "accept": "Принять реванш",
+    "failedToCreate": "Не удалось создать реванш",
+    "failedToJoin": "Не удалось присоединиться к реваншу"
+  }
+}

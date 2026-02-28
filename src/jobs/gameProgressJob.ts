@@ -1,9 +1,37 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkWinner } from '@/services/bingo/winChecker'
+import { findPlayersOnline, type PlayerOnlineStatus } from '@/lib/ddnet-helpers'
 import type { Bingo, Race, User } from '@/payload-types'
 
 const POLL_INTERVAL = parseInt(process.env.GAME_POLL_INTERVAL_MS || '5000')
+
+// Server presence tracking: gameId → playerName(lowercase) → lastSeenTimestamp(ms)
+const serverPresence = new Map<string, Map<string, number>>()
+const SERVER_PRESENCE_WINDOW = 60_000 // 60 seconds
+
+/**
+ * Check if a player's online status matches the game's registered server.
+ * Compares by server name (primary) or IP+port (fallback).
+ */
+function isOnGameServer(
+  playerStatus: PlayerOnlineStatus,
+  gameServer: { ip?: string | null; port?: number | null; name?: string | null },
+): boolean {
+  if (!playerStatus.online || !playerStatus.server) return false
+  // Primary: match server name (most reliable, handles IP format differences)
+  if (gameServer.name && playerStatus.server.name) {
+    return playerStatus.server.name.toLowerCase() === gameServer.name.toLowerCase()
+  }
+  // Fallback: match IP + port
+  if (gameServer.ip && playerStatus.server.ip) {
+    return (
+      playerStatus.server.ip === gameServer.ip &&
+      (playerStatus.server.port || 8303) === (gameServer.port || 8303)
+    )
+  }
+  return false
+}
 
 interface DDNetFinish {
   timestamp: number
@@ -231,6 +259,35 @@ export async function checkRaceProgress(gameId: string) {
       return { continue: true }
     }
 
+    // --- Server presence check via Master Server ---
+    // Collect all player names and check who is on the game server
+    const allPlayerNames: string[] = []
+    for (const team of game.teams) {
+      for (const playerObj of team.players ?? []) {
+        const pu = typeof playerObj.user === 'object' ? playerObj.user : null
+        if (pu) {
+          const name = (pu as User).ingameNick || (pu as User).username
+          if (name) allPlayerNames.push(name)
+        }
+      }
+    }
+
+    if (!serverPresence.has(gameId)) {
+      serverPresence.set(gameId, new Map())
+    }
+    const presenceMap = serverPresence.get(gameId)!
+
+    try {
+      const onlineStatuses = await findPlayersOnline(allPlayerNames)
+      for (const status of onlineStatuses) {
+        if (isOnGameServer(status, game.server || {})) {
+          presenceMap.set(status.name.toLowerCase(), Date.now())
+        }
+      }
+    } catch (err) {
+      console.error(`[Race] Failed to check Master Server for game ${gameId}:`, err)
+    }
+
     // Determine which map to check for this step
     const currentMapEntry = (game.maps || []).find((m) => m.position === currentStep)
     const isFreeModeWithoutMap = game.categoryMode === 'free' && !currentMapEntry
@@ -267,16 +324,13 @@ export async function checkRaceProgress(gameId: string) {
       }
     }
 
-    // Collect all players' finishes and find the earliest valid one
-    interface FinishCandidate {
+    // Phase 1: Fetch all players' finishes (respecting server presence)
+    interface PlayerFinishData {
       teamIndex: number
       playerName: string
-      finishTime: number    // DDNet finish time (seconds)
-      timestamp: number     // DDNet Unix timestamp (ms)
-      mapName: string       // Map that was finished
+      finishes: DDNetFinish[]
     }
-
-    let earliest: FinishCandidate | null = null
+    const playerFinishData: PlayerFinishData[] = []
 
     for (let ti = 0; ti < game.teams.length; ti++) {
       const team = game.teams[ti]
@@ -288,57 +342,93 @@ export async function checkRaceProgress(gameId: string) {
         const playerName = (playerUser as User).ingameNick || (playerUser as User).username
         if (!playerName) continue
 
+        // Check server presence: was this player on the game server recently?
+        const lastSeen = presenceMap.get(playerName.toLowerCase()) ?? 0
+        const wasOnServer = (Date.now() - lastSeen) < SERVER_PRESENCE_WINDOW
+
+        if (!wasOnServer) {
+          console.log(`[Race] ${playerName} not on game server, skipping finish check`)
+          continue
+        }
+
         try {
           const finishes = await fetchPlayerFinishes(playerName)
-
-          // Log recent finishes for debugging
-          const recentFinishes = finishes
-            .filter((f) => f.timestamp * 1000 >= checkFromTimestamp)
-            .slice(0, 5)
-          if (recentFinishes.length > 0) {
-            console.log(
-              `[Race] ${playerName}: ${recentFinishes.length} finishes since ${new Date(checkFromTimestamp).toISOString()}: ` +
-              recentFinishes.map((f) => `${f.map}@${new Date(f.timestamp * 1000).toISOString()}`).join(', '),
-            )
-          }
-
-          for (const finish of finishes) {
-            const finishTimestamp = finish.timestamp * 1000
-
-            if (finishTimestamp < checkFromTimestamp) continue
-
-            const mapLower = finish.map.toLowerCase()
-
-            let isValidFinish = false
-
-            if (isFreeModeWithoutMap) {
-              // Free mode: any map not already scored counts
-              if (!scoredMaps.has(mapLower)) {
-                isValidFinish = true
-              }
-            } else if (currentMapEntry) {
-              // Selected mode (or free mode with known map): must match current step's map
-              if (mapLower === currentMapEntry.mapName.toLowerCase()) {
-                isValidFinish = true
-              }
-            }
-
-            if (isValidFinish) {
-              if (!earliest || finishTimestamp < earliest.timestamp) {
-                earliest = {
-                  teamIndex: ti,
-                  playerName,
-                  finishTime: finish.time,
-                  timestamp: finishTimestamp,
-                  mapName: finish.map,
-                }
-              }
-            }
-          }
-
+          playerFinishData.push({ teamIndex: ti, playerName, finishes })
           await sleep(200)
         } catch (error) {
           console.error(`[Race] Error checking player ${playerName}:`, error)
+        }
+      }
+    }
+
+    // Phase 2: For free mode, build set of ALL maps finished by ANY player
+    // in PREVIOUS steps (game start to current step start) to prevent reuse
+    const prevFinishedMaps = new Set<string>(scoredMaps)
+    if (isFreeModeWithoutMap) {
+      for (const { finishes } of playerFinishData) {
+        for (const f of finishes) {
+          const ft = f.timestamp * 1000
+          if (ft >= startTimestamp && ft < checkFromTimestamp) {
+            prevFinishedMaps.add(f.map.toLowerCase())
+          }
+        }
+      }
+    }
+
+    // Phase 3: Evaluate candidates for current step — find earliest valid finish
+    interface FinishCandidate {
+      teamIndex: number
+      playerName: string
+      finishTime: number    // DDNet finish time (seconds)
+      timestamp: number     // DDNet Unix timestamp (ms)
+      mapName: string       // Map that was finished
+    }
+
+    let earliest: FinishCandidate | null = null
+
+    for (const { teamIndex: ti, playerName, finishes } of playerFinishData) {
+      // Log recent finishes for debugging
+      const recentFinishes = finishes
+        .filter((f) => f.timestamp * 1000 >= checkFromTimestamp)
+        .slice(0, 5)
+      if (recentFinishes.length > 0) {
+        console.log(
+          `[Race] ${playerName}: ${recentFinishes.length} finishes since ${new Date(checkFromTimestamp).toISOString()}: ` +
+          recentFinishes.map((f) => `${f.map}@${new Date(f.timestamp * 1000).toISOString()}`).join(', '),
+        )
+      }
+
+      for (const finish of finishes) {
+        const finishTimestamp = finish.timestamp * 1000
+
+        if (finishTimestamp < checkFromTimestamp) continue
+
+        const mapLower = finish.map.toLowerCase()
+
+        let isValidFinish = false
+
+        if (isFreeModeWithoutMap) {
+          // Free mode: map must not have been finished by any player in previous steps
+          if (!prevFinishedMaps.has(mapLower)) {
+            isValidFinish = true
+          }
+        } else if (currentMapEntry) {
+          // Selected mode (or free mode with known map): must match current step's map
+          if (mapLower === currentMapEntry.mapName.toLowerCase()) {
+            isValidFinish = true
+          }
+        }
+
+        if (isValidFinish) {
+          if (!earliest || finishTimestamp < earliest.timestamp) {
+            earliest = {
+              teamIndex: ti,
+              playerName,
+              finishTime: finish.time,
+              timestamp: finishTimestamp,
+              mapName: finish.map,
+            }
+          }
         }
       }
     }
@@ -435,6 +525,7 @@ export async function checkRaceProgress(gameId: string) {
     await payload.update({ collection: 'races', id: gameId, data: updateData })
 
     if (isComplete) {
+      serverPresence.delete(gameId)
       await updateRacePlayerStats(game, teams)
     }
 

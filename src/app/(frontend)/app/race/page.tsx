@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -19,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { LobbyPageSkeleton } from '@/components/ui/page-skeleton'
+import { LobbyPageSkeleton, GameCardSkeleton } from '@/components/ui/page-skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
 import { Flag, Plus, X, Users, Server, LogIn, Loader2 } from 'lucide-react'
@@ -28,6 +29,7 @@ import { toast } from 'sonner'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function RaceLobbyContent() {
+  const t = useTranslations('race')
   const router = useRouter()
   const { data: userData } = useSWR('/api/users/me', fetcher)
   const userId = userData?.user?.id
@@ -38,13 +40,13 @@ function RaceLobbyContent() {
   const { page: lobbyPage, setPage: setLobbyPage, buildUrl: buildLobbyUrl } = usePagination({ defaultLimit: 20, pageParam: 'p' })
   const { page: pastPage, setPage: setPastPage, buildUrl: buildPastUrl } = usePagination({ defaultLimit: 10, pageParam: 'past' })
 
-  const { data: lobbyData } = useSWR(
+  const { data: lobbyData, isLoading: lobbyLoading } = useSWR(
     buildLobbyUrl('/api/races?where[isPublic][equals]=true&where[gameStatus][in]=waiting,ready&sort=-createdAt&depth=1'),
     fetcher,
     { refreshInterval: 5000 },
   )
 
-  const { data: activeData, mutate: mutateMyRaces } = useSWR(
+  const { data: activeData, isLoading: activeLoading, mutate: mutateMyRaces } = useSWR(
     userId ? `/api/races?where[teams.players.user][equals]=${userId}&where[gameStatus][in]=waiting,ready,in_progress&sort=-createdAt&depth=1&limit=50` : null,
     fetcher,
     { refreshInterval: 5000 },
@@ -80,15 +82,15 @@ function RaceLobbyContent() {
       const data = await res.json()
 
       if (!res.ok) {
-        toast.error(data.error || 'Failed to join race')
+        toast.error(data.error || t('lobby.joinFailed'))
         setJoiningByCode(false)
         return
       }
 
-      toast.success(data.message || 'Joined race!')
+      toast.success(data.message || t('lobby.joinSuccess'))
       router.push(`/app/race/${data.raceId}`)
     } catch {
-      toast.error('Failed to join race')
+      toast.error(t('lobby.joinFailed'))
       setJoiningByCode(false)
     }
   }
@@ -96,13 +98,13 @@ function RaceLobbyContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Race</h1>
+        <h1 className="text-2xl font-bold">{t('lobby.title')}</h1>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5">
             <Input
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="Invite code"
+              placeholder={t('lobby.inviteCodePlaceholder')}
               className="w-28 h-9 text-center font-mono text-xs tracking-wider"
               maxLength={8}
               disabled={joiningByCode}
@@ -120,32 +122,42 @@ function RaceLobbyContent() {
             </Button>
           </div>
           <Link href="/app/race/create">
-            <Button size="sm"><Plus className="h-4 w-4 mr-2" />Create Race</Button>
+            <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('lobby.createRace')}</Button>
           </Link>
         </div>
       </div>
 
-      {activeRaces.length > 0 && (
+      {activeLoading ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">My Active Races</h2>
+          <h2 className="text-lg font-semibold">{t('lobby.myActiveRaces')}</h2>
+          <div className="grid gap-3">
+            <GameCardSkeleton count={2} />
+          </div>
+        </section>
+      ) : activeRaces.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">{t('lobby.myActiveRaces')}</h2>
           <div className="grid gap-3">
             {activeRaces.map((race: any) => (
               <RaceCard key={race.id} race={race} isMine onCancel={() => mutateMyRaces()} />
             ))}
           </div>
         </section>
-      )}
+      ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Public Lobby</h2>
+        <h2 className="text-lg font-semibold">{t('lobby.publicLobby')}</h2>
         <div className="grid gap-3">
-          {lobbyRaces.map((race: any) => (
-            <RaceCard key={race.id} race={race} />
-          ))}
-          {lobbyRaces.length === 0 && (
+          {lobbyLoading ? (
+            <GameCardSkeleton count={3} />
+          ) : lobbyRaces.length > 0 ? (
+            lobbyRaces.map((race: any) => (
+              <RaceCard key={race.id} race={race} />
+            ))
+          ) : (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
-                No public races available. Create one to get started!
+                {t('lobby.noPublicRaces')}
               </CardContent>
             </Card>
           )}
@@ -161,7 +173,7 @@ function RaceLobbyContent() {
 
       {pastRaces.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-muted-foreground">Past Races</h2>
+          <h2 className="text-lg font-semibold text-muted-foreground">{t('lobby.pastRaces')}</h2>
           <div className="grid gap-3">
             {pastRaces.map((race: any) => (
               <RaceCard key={race.id} race={race} />
@@ -181,6 +193,7 @@ function RaceLobbyContent() {
 }
 
 function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onCancel?: () => void }) {
+  const t = useTranslations('race')
   const [cancelling, setCancelling] = useState(false)
 
   const handleCancel = async () => {
@@ -193,7 +206,7 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
     }
   }
 
-  const serverLabel = race.server?.name || race.server?.ip || 'Unknown'
+  const serverLabel = race.server?.name || race.server?.ip || t('lobby.unknownServer')
   const totalPlayers = race.teams?.reduce(
     (sum: number, t: any) => sum + (t.players?.length || 0),
     0,
@@ -210,7 +223,7 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
           <div>
             <h3 className="font-semibold">{race.title}</h3>
             <p className="text-sm text-muted-foreground">
-              {race.category} &middot; {race.pathLength} steps &middot; {race.mode}
+              {race.category} &middot; {race.pathLength} {t('lobby.steps')} &middot; {race.mode}
             </p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Server className="h-3 w-3" /> {serverLabel}
@@ -232,21 +245,21 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Cancel race?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('cancel.title')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will cancel the race for all players. This action cannot be undone.
+                    {t('cancel.description')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep racing</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleCancel}>Cancel race</AlertDialogAction>
+                  <AlertDialogCancel>{t('cancel.keep')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancel}>{t('cancel.confirm')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
           <Link href={`/app/race/${race.id}`}>
             <Button size="sm" variant={isMine ? 'default' : 'outline'}>
-              {isMine ? 'Open' : 'Join'}
+              {isMine ? t('card.open') : t('card.join')}
             </Button>
           </Link>
         </div>

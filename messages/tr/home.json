@@ -1,0 +1,84 @@
+{
+  "navigation": {
+    "title": "DDashBoard",
+    "login": "Giriş Yap",
+    "adminPanel": "Yönetici Paneli"
+  },
+  "hero": {
+    "badge": "Yeni Oyun Modu",
+    "title": "DDashBoard",
+    "subtitle": "DDraceNetwork harita tamamlama yarışması",
+    "description": "Rakiplerinizden daha hızlı sıra, çapraz veya tam ev tamamlayın. Her hücre bir meydan okumadır!",
+    "learnMore": "Bingo Hakkında Bilgi Al",
+    "startPlaying": "Oynamaya Başla"
+  },
+  "preview": {
+    "caption": "Örnek 5x5 oyun tahtası"
+  },
+  "howItWorks": {
+    "title": "Bingo Nasıl Çalışır?",
+    "subtitle": "Basit kurallar, sonsuz olasılıklar",
+    "steps": {
+      "chooseMode": {
+        "title": "Mod Seç",
+        "description": "Tek başına oyna veya diğer oyuncularla gerçek zamanlı yarış"
+      },
+      "completeMaps": {
+        "title": "Haritaları Tamamla",
+        "description": "Tahtadaki her hücre bir DDNet haritasıdır. Hücreyi işaretlemek için haritayı tamamla"
+      },
+      "getCombination": {
+        "title": "Kombinasyonu Elde Et",
+        "description": "Rakiplerinizden daha hızlı bir sıra, çapraz veya tam ev tamamlayın!"
+      }
+    }
+  },
+  "modes": {
+    "solo": {
+      "title": "Solo Mod",
+      "description": "Kişisel rekorlar kır",
+      "features": {
+        "ownPace": "Haritaları kendi hızında tamamla",
+        "trackStats": "İstatistiklerini takip et",
+        "improveAchievements": "Kişisel başarılarını geliştir"
+      }
+    },
+    "competitive": {
+      "title": "Rekabetçi Mod",
+      "description": "Gerçek zamanlı kazan",
+      "features": {
+        "competeWithPlayers": "Diğer oyuncularla yarış",
+        "onlineProgress": "Çevrimiçi ilerleme senkronizasyonu",
+        "ratingSystem": "Derecelendirme sistemi"
+      }
+    }
+  },
+  "additionalFeatures": {
+    "title": "Ek Özellikler",
+    "subtitle": "Bir oyundan fazlası",
+    "onlineFriends": {
+      "title": "Çevrimiçi Arkadaşlar",
+      "description": "Arkadaş ekle ve aktivitelerini gerçek zamanlı takip et. Oyunlarına katıl ve birlikte koşular organize et"
+    },
+    "accountSystem": {
+      "title": "Hesap Sistemi",
+      "description": "Profil oluştur, istatistikleri takip et ve oyun deneyimini kişiselleştir. Tüm başarılar her zaman seninle"
+    },
+    "eventServers": {
+      "title": "Etkinlik Sunucuları (Yakında)",
+      "description": "Gelecekte özel etkinlikler ve turnuvalar için sunucu kurma seçeneği olacak"
+    }
+  },
+  "cta": {
+    "badge": "Hemen Katıl",
+    "title": "Meydan Okumaya Hazır mısın?",
+    "description": "DDashBoard topluluğunun bir parçası ol ve yeteneklerini kanıtla",
+    "createAccount": "Hesap Oluştur"
+  },
+  "footer": {
+    "about": "Hakkında",
+    "rules": "Kurallar",
+    "support": "Destek",
+    "copyright": "© 2026 DDashBoard"
+  }
+}

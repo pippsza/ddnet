@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "Oyuncular",
+    "searchPlaceholder": "Oyuncu ara...",
+    "registered": "Kayıtlı Oyuncular",
+    "community": "Topluluk Üyeleri",
+    "ddnet": "DDNet Oyuncuları",
+    "noPlayersFound": "\"{search}\" için oyuncu bulunamadı. Farklı bir isim dene."
+  },
+  "detail": {
+    "backToPlayers": "Oyunculara Dön",
+    "notFound": "\"{name}\" adlı oyuncu bulunamadı.",
+    "mapper": "Haritacı",
+    "points": "{count} puan",
+    "rank": "Sıralama #{rank}",
+    "played": "oynandı",
+    "playingSince": "{date} tarihinden beri oynuyor",
+    "firstFinish": "İlk bitiriş: {date} - {map}",
+    "copyAddress": "Adresi kopyala",
+    "tabs": {
+      "service": "Servis",
+      "ddnet": "DDNet",
+      "settings": "Ayarlar"
+    },
+    "noServiceStats": "Servis istatistiği yok",
+    "noServiceStatsDescription": "Bu oyuncu henüz hiçbir bingo veya yarış oyununa katılmadı.",
+    "friend": {
+      "remove": "Arkadaşı Kaldır",
+      "removing": "Kaldırılıyor...",
+      "cancelRequest": "İsteği İptal Et",
+      "cancelling": "İptal ediliyor...",
+      "acceptRequest": "İsteği Kabul Et",
+      "accepting": "Kabul ediliyor...",
+      "add": "Arkadaş Ekle",
+      "sending": "Gönderiliyor...",
+      "message": "Mesaj"
+    },
+    "ingameChat": {
+      "button": "Oyun İçi Sohbet",
+      "connecting": "Bağlanıyor...",
+      "failed": "Oyun içi sohbet başlatılamadı"
+    },
+    "externalLinks": {
+      "ddnetProfile": "DDNet Profili",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "Sunucu şifre gerektiriyor",
+      "description": "Bu sunucu şifre korumalı. Bağlanmak için sunucu şifresini gir.",
+      "placeholder": "Sunucu şifresi",
+      "connect": "Bağlan",
+      "cancel": "İptal",
+      "securityNote": "Şifren güvenli bir şekilde gönderilir ve saklanmaz. Yalnızca botu sunucuya bağlamak için kullanılır."
+    }
+  },
+  "online": {
+    "title": "Çevrimiçi Oyuncular",
+    "onlineCount": "{count} çevrimiçi",
+    "addPlayerPlaceholder": "DDNet oyuncu takma adını gir...",
+    "adding": "Ekleniyor...",
+    "watchPlayer": "Oyuncuyu İzle",
+    "onlineStatus": "Çevrimiçi",
+    "offlineStatus": "Çevrimdışı",
+    "disableNotifications": "Bildirimleri kapat",
+    "enableNotifications": "Bildirimleri aç",
+    "removeFromWatchlist": "İzleme listesinden kaldır",
+    "toast": {
+      "added": "{name} izleme listesine eklendi",
+      "removed": "{name} izleme listesinden kaldırıldı",
+      "failedToAdd": "Oyuncu eklenemedi",
+      "failedToRemove": "Oyuncu kaldırılamadı",
+      "failedToUpdateNotification": "Bildirim tercihi güncellenemedi"
+    },
+    "empty": {
+      "title": "Henüz izlenen oyuncu yok.",
+      "description": "Çevrimiçi durumlarını takip etmek için DDNet oyuncu takma adları ekle. Çevrimiçi olduklarında bildirim alacaksın."
+    }
+  }
+}

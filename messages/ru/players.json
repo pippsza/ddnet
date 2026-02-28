@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "Игроки",
+    "searchPlaceholder": "Поиск игроков...",
+    "registered": "Зарегистрированные игроки",
+    "community": "Участники сообщества",
+    "ddnet": "Игроки DDNet",
+    "noPlayersFound": "Игроки по запросу \"{search}\" не найдены. Попробуйте другое имя."
+  },
+  "detail": {
+    "backToPlayers": "К списку игроков",
+    "notFound": "Игрок \"{name}\" не найден.",
+    "mapper": "Маппер",
+    "points": "{count} очков",
+    "rank": "Ранг #{rank}",
+    "played": "сыграно",
+    "playingSince": "Играет с {date}",
+    "firstFinish": "Первое прохождение: {date} на {map}",
+    "copyAddress": "Копировать адрес",
+    "tabs": {
+      "service": "Сервис",
+      "ddnet": "DDNet",
+      "settings": "Настройки"
+    },
+    "noServiceStats": "Нет статистики сервиса",
+    "noServiceStatsDescription": "Этот игрок ещё не участвовал ни в одной игре бинго или гонке.",
+    "friend": {
+      "remove": "Удалить из друзей",
+      "removing": "Удаление...",
+      "cancelRequest": "Отменить запрос",
+      "cancelling": "Отмена...",
+      "acceptRequest": "Принять запрос",
+      "accepting": "Принятие...",
+      "add": "Добавить в друзья",
+      "sending": "Отправка...",
+      "message": "Написать"
+    },
+    "ingameChat": {
+      "button": "Написать в игре",
+      "connecting": "Подключение...",
+      "failed": "Не удалось запустить игровой чат"
+    },
+    "externalLinks": {
+      "ddnetProfile": "Профиль DDNet",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "Сервер требует пароль",
+      "description": "Этот сервер защищён паролем. Введите пароль для подключения.",
+      "placeholder": "Пароль сервера",
+      "connect": "Подключиться",
+      "cancel": "Отмена",
+      "securityNote": "Ваш пароль передаётся безопасно и не сохраняется. Он используется только для подключения бота к серверу."
+    }
+  },
+  "online": {
+    "title": "Игроки онлайн",
+    "onlineCount": "{count} в сети",
+    "addPlayerPlaceholder": "Введите никнейм игрока DDNet...",
+    "adding": "Добавление...",
+    "watchPlayer": "Отслеживать игрока",
+    "onlineStatus": "В сети",
+    "offlineStatus": "Не в сети",
+    "disableNotifications": "Отключить уведомления",
+    "enableNotifications": "Включить уведомления",
+    "removeFromWatchlist": "Удалить из списка отслеживания",
+    "toast": {
+      "added": "{name} добавлен в список отслеживания",
+      "removed": "{name} удалён из списка отслеживания",
+      "failedToAdd": "Не удалось добавить игрока",
+      "failedToRemove": "Не удалось удалить игрока",
+      "failedToUpdateNotification": "Не удалось обновить настройку уведомлений"
+    },
+    "empty": {
+      "title": "Пока нет отслеживаемых игроков.",
+      "description": "Добавьте никнеймы игроков DDNet, чтобы отслеживать их статус. Вы получите уведомление, когда они появятся в сети."
+    }
+  }
+}

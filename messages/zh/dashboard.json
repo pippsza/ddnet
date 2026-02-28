@@ -1,0 +1,26 @@
+{
+  "fallbackName": "未知",
+  "points": "积分",
+  "rank": "排名 #{rank}",
+  "played": "已游玩",
+  "playingSince": "游玩始于 {date}",
+  "tabs": {
+    "service": "平台",
+    "ddnet": "DDNet"
+  },
+  "bingo": {
+    "title": "Bingo",
+    "description": "创建或加入 Bingo 对局，在 DDNet 地图上一决高下",
+    "createButton": "创建对局",
+    "browseButton": "浏览大厅"
+  },
+  "race": {
+    "title": "竞速",
+    "description": "在 DDNet 服务器上与其他玩家竞速",
+    "createButton": "创建竞速",
+    "browseButton": "浏览大厅"
+  },
+  "friends": {
+    "title": "好友"
+  }
+}

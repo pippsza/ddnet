@@ -1,0 +1,26 @@
+{
+  "fallbackName": "Неизвестный",
+  "points": "очков",
+  "rank": "Ранг #{rank}",
+  "played": "сыграно",
+  "playingSince": "Играет с {date}",
+  "tabs": {
+    "service": "Сервис",
+    "ddnet": "DDNet"
+  },
+  "bingo": {
+    "title": "Бинго",
+    "description": "Создайте или присоединитесь к игре в бинго на картах DDNet",
+    "createButton": "Создать игру",
+    "browseButton": "Обзор лобби"
+  },
+  "race": {
+    "title": "Гонка",
+    "description": "Соревнуйтесь с другими игроками на серверах DDNet",
+    "createButton": "Создать гонку",
+    "browseButton": "Обзор лобби"
+  },
+  "friends": {
+    "title": "Друзья"
+  }
+}

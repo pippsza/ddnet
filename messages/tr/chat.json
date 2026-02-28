@@ -1,0 +1,30 @@
+{
+  "title": "Mesajlar",
+  "searchPlaceholder": "Oyuncu ara...",
+  "selectAll": "Tümünü seç",
+  "selectedCount": "{count} seçildi",
+  "deleteSelected": "Sil ({count})",
+  "deleteConversation": "Sohbeti sil",
+  "otherPlayers": "Diğer oyuncular",
+  "noPlayersFound": "Oyuncu bulunamadı",
+  "noFriendsYet": "Henüz arkadaşın yok.",
+  "addFriendsToChat": "Sohbet etmeye başlamak için arkadaş ekle!",
+  "selectConversation": "Sohbet başlatmak için bir konuşma seç",
+  "noMessagesPreview": "Henüz mesaj yok",
+  "typing": "yazıyor...",
+  "emptyChat": "Henüz mesaj yok. Merhaba de!",
+  "messagePlaceholder": "Bir mesaj yaz...",
+  "unknownUser": "Bilinmiyor",
+  "yesterday": "Dün",
+  "deleteError": "Sohbet silinemedi",
+  "deleteMultipleError": "Sohbetler silinemedi",
+  "input": {
+    "placeholder": "Bir mesaj yaz...",
+    "cooldownPlaceholder": "Bekle...",
+    "attach": "Ekle",
+    "send": "Gönder",
+    "sending": "Gönderiliyor...",
+    "uploadFailed": "Dosya yüklenemedi",
+    "uploadError": "Yükleme başarısız oldu"
+  }
+}

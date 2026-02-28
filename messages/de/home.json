@@ -1,0 +1,84 @@
+{
+  "navigation": {
+    "title": "DDashBoard",
+    "login": "Anmelden",
+    "adminPanel": "Admin-Bereich"
+  },
+  "hero": {
+    "badge": "Neuer Spielmodus",
+    "title": "DDashBoard",
+    "subtitle": "Wettkampf im Abschließen von DDraceNetwork-Maps",
+    "description": "Vervollständige Reihen, Diagonalen oder das ganze Feld schneller als deine Gegner. Jede Zelle ist eine Herausforderung!",
+    "learnMore": "Mehr über Bingo erfahren",
+    "startPlaying": "Jetzt spielen"
+  },
+  "preview": {
+    "caption": "Beispiel eines 5×5-Spielfelds"
+  },
+  "howItWorks": {
+    "title": "Wie funktioniert Bingo?",
+    "subtitle": "Einfache Regeln, endlose Möglichkeiten",
+    "steps": {
+      "chooseMode": {
+        "title": "Modus wählen",
+        "description": "Solo spielen oder gegen andere Spieler in Echtzeit antreten"
+      },
+      "completeMaps": {
+        "title": "Maps abschließen",
+        "description": "Jede Zelle auf dem Feld ist eine DDNet-Map. Schließe sie ab, um die Zelle zu markieren"
+      },
+      "getCombination": {
+        "title": "Kombination erzielen",
+        "description": "Vervollständige eine Reihe, Diagonale oder das ganze Feld schneller als deine Gegner!"
+      }
+    }
+  },
+  "modes": {
+    "solo": {
+      "title": "Solo-Modus",
+      "description": "Persönliche Rekorde aufstellen",
+      "features": {
+        "ownPace": "Maps in deinem eigenen Tempo abschließen",
+        "trackStats": "Statistiken verfolgen",
+        "improveAchievements": "Persönliche Erfolge verbessern"
+      }
+    },
+    "competitive": {
+      "title": "Wettkampf-Modus",
+      "description": "In Echtzeit gewinnen",
+      "features": {
+        "competeWithPlayers": "Gegen andere Spieler antreten",
+        "onlineProgress": "Online-Fortschrittssynchronisierung",
+        "ratingSystem": "Bewertungssystem"
+      }
+    }
+  },
+  "additionalFeatures": {
+    "title": "Weitere Funktionen",
+    "subtitle": "Mehr als nur ein Spiel",
+    "onlineFriends": {
+      "title": "Online-Freunde",
+      "description": "Füge Freunde hinzu und verfolge ihre Aktivitäten in Echtzeit. Tritt ihren Spielen bei und organisiere gemeinsame Runs"
+    },
+    "accountSystem": {
+      "title": "Account-System",
+      "description": "Erstelle ein Profil, verfolge Statistiken und personalisiere dein Spielerlebnis. Alle Erfolge immer dabei"
+    },
+    "eventServers": {
+      "title": "Event-Server (Demnächst)",
+      "description": "In Zukunft wird es die Möglichkeit geben, Server für besondere Events und Turniere bereitzustellen"
+    }
+  },
+  "cta": {
+    "badge": "Jetzt beitreten",
+    "title": "Bereit für die Herausforderung?",
+    "description": "Werde Teil der DDashBoard-Community und beweise dein Können",
+    "createAccount": "Account erstellen"
+  },
+  "footer": {
+    "about": "Über uns",
+    "rules": "Regeln",
+    "support": "Support",
+    "copyright": "© 2026 DDashBoard"
+  }
+}

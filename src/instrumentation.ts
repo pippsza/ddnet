@@ -14,6 +14,7 @@ export async function register() {
     const { startGameProgressJob } = await import('@/jobs/gameProgressJob')
 
     const { startOnlineWatchJob } = await import('@/jobs/onlineWatchJob')
+    const { startNotificationCleanupJob } = await import('@/jobs/notificationCleanupJob')
 
     // Ensure default role exists before starting jobs
     const { getPayload } = await import('payload')
@@ -26,6 +27,7 @@ export async function register() {
     startBotCleanupJob()
     startGameProgressJob()
     startOnlineWatchJob()
+    startNotificationCleanupJob()
 
     console.log('[Instrumentation] All background jobs started')
   }

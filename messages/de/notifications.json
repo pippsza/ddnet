@@ -1,0 +1,42 @@
+{
+  "title": "Benachrichtigungen",
+  "newCount": "{count} neu",
+  "types": {
+    "gameInvite": "Spieleinladung",
+    "friendRequest": "Freundschaftsanfrage",
+    "friendAccepted": "Freundschaft angenommen",
+    "gameStarted": "Spiel gestartet",
+    "gameEnded": "Spiel beendet",
+    "roundWon": "Runde gewonnen",
+    "achievement": "Erfolg",
+    "system": "System",
+    "info": "Info",
+    "playerOnline": "Spieler online",
+    "chatMention": "Chat-Erwähnung",
+    "directMessage": "Direktnachricht",
+    "forumReply": "Forum-Antwort",
+    "supportReply": "Support-Antwort"
+  },
+  "retention": {
+    "1h": "1 Stunde",
+    "24h": "24 Stunden",
+    "5d": "5 Tage",
+    "10d": "10 Tage",
+    "updated": "Benachrichtigungen werden {duration} aufbewahrt",
+    "updateFailed": "Aufbewahrungseinstellung konnte nicht aktualisiert werden"
+  },
+  "actions": {
+    "markAllRead": "Alle als gelesen markieren",
+    "markRead": "Als gelesen markieren"
+  },
+  "empty": {
+    "title": "Noch keine Benachrichtigungen.",
+    "description": "Du wirst über Freundschaftsanfragen, Spieleinladungen und mehr benachrichtigt."
+  },
+  "time": {
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {count} Min.",
+    "hoursAgo": "vor {count} Std.",
+    "daysAgo": "vor {count} T."
+  }
+}

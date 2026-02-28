@@ -1,7 +1,14 @@
+import { readFileSync } from 'fs'
 import { withPayload } from '@payloadcms/next/withPayload'
 import createNextIntlPlugin from 'next-intl/plugin'
+
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    APP_VERSION: pkg.version,
+  },
   output: 'standalone',
   experimental: {
     staleTimes: {

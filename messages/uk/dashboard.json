@@ -1,0 +1,26 @@
+{
+  "fallbackName": "Невідомо",
+  "points": "очки",
+  "rank": "Ранг #{rank}",
+  "played": "зіграно",
+  "playingSince": "Грає з {date}",
+  "tabs": {
+    "service": "Сервіс",
+    "ddnet": "DDNet"
+  },
+  "bingo": {
+    "title": "Бінго",
+    "description": "Створіть або приєднайтесь до гри в бінго, щоб змагатися на мапах DDNet",
+    "createButton": "Створити гру",
+    "browseButton": "Переглянути лобі"
+  },
+  "race": {
+    "title": "Перегони",
+    "description": "Змагайтеся з іншими гравцями на серверах DDNet",
+    "createButton": "Створити перегони",
+    "browseButton": "Переглянути лобі"
+  },
+  "friends": {
+    "title": "Друзі"
+  }
+}

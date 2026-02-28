@@ -1,0 +1,86 @@
+{
+  "buttons": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "create": "Oluştur",
+    "join": "Katıl",
+    "open": "Aç",
+    "back": "Geri",
+    "submit": "Gönder",
+    "close": "Kapat",
+    "confirm": "Onayla",
+    "edit": "Düzenle",
+    "loading": "Yükleniyor...",
+    "sending": "Gönderiliyor...",
+    "creating": "Oluşturuluyor...",
+    "saving": "Kaydediliyor...",
+    "tryAgain": "Tekrar Dene",
+    "enable": "Etkinleştir",
+    "disable": "Devre Dışı Bırak",
+    "copy": "Kopyala"
+  },
+  "status": {
+    "waiting": "Bekleniyor",
+    "ready": "Hazır",
+    "inProgress": "Devam Ediyor",
+    "completed": "Tamamlandı",
+    "cancelled": "İptal Edildi",
+    "pending": "Beklemede",
+    "active": "Aktif",
+    "success": "Başarılı",
+    "failed": "Başarısız",
+    "expired": "Süresi Doldu",
+    "notReady": "Hazır Değil",
+    "playing": "Oynuyor",
+    "winner": "Kazanan",
+    "loser": "Kaybetti",
+    "starting": "Başlıyor",
+    "running": "Çalışıyor",
+    "stopping": "Durduruluyor",
+    "stopped": "Durduruldu",
+    "error": "Hata",
+    "open": "Açık",
+    "waitingForUser": "Yanıt Bekleniyor",
+    "resolved": "Çözüldü",
+    "closed": "Kapatıldı",
+    "rejected": "Reddedildi",
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "verified": "Doğrulandı",
+    "solo": "Solo",
+    "team": "Takım",
+    "multiplayer": "Çok Oyunculu",
+    "published": "Yayınlandı",
+    "draft": "Taslak"
+  },
+  "priority": {
+    "low": "Düşük",
+    "medium": "Orta",
+    "high": "Yüksek",
+    "critical": "Kritik"
+  },
+  "roles": {
+    "admin": "Yönetici",
+    "moderator": "Moderatör",
+    "tester": "Test Uzmanı",
+    "member": "Üye"
+  },
+  "time": {
+    "justNow": "Az önce",
+    "minutesAgo": "{count}dk önce",
+    "hoursAgo": "{count}sa önce",
+    "daysAgo": "{count}g önce",
+    "yesterday": "Dün"
+  },
+  "pagination": {
+    "showing": "{from}–{to} / {total} gösteriliyor",
+    "previous": "Önceki",
+    "next": "Sonraki"
+  },
+  "errors": {
+    "somethingWentWrong": "Bir şeyler ters gitti",
+    "notFound": "Bulunamadı",
+    "unauthorized": "Yetkisiz erişim"
+  }
+}

@@ -601,6 +601,10 @@ export interface User {
    * Encrypted login token for auto-login on game servers
    */
   savedLoginToken?: string | null;
+  /**
+   * How long notifications are kept before automatic deletion
+   */
+  notificationRetention?: ('1h' | '24h' | '5d' | '10d') | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -1434,6 +1438,10 @@ export interface Conversation {
   lastMessage?: string | null;
   lastMessageAt?: string | null;
   lastMessageBy?: (string | null) | User;
+  /**
+   * Users who have hidden this conversation from their list
+   */
+  deletedBy?: (string | User)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2085,6 +2093,7 @@ export interface UsersSelect<T extends boolean = true> {
         favoriteCategory?: T;
       };
   savedLoginToken?: T;
+  notificationRetention?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -2508,6 +2517,7 @@ export interface ConversationsSelect<T extends boolean = true> {
   lastMessage?: T;
   lastMessageAt?: T;
   lastMessageBy?: T;
+  deletedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

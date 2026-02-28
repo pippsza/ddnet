@@ -1,0 +1,30 @@
+{
+  "title": "Bestenliste",
+  "tabs": {
+    "bingo": "Bingo",
+    "race": "Rennen"
+  },
+  "filters": {
+    "categoryPlaceholder": "Kategorie",
+    "sortPlaceholder": "Sortieren nach",
+    "allCategories": "Alle Kategorien"
+  },
+  "sort": {
+    "mostWins": "Meiste Siege",
+    "bestWinRate": "Beste Siegquote",
+    "mostGames": "Meiste Spiele",
+    "mostMaps": "Meiste Maps",
+    "mostRoundsWon": "Meiste Runden gewonnen"
+  },
+  "columns": {
+    "rank": "#",
+    "player": "Spieler",
+    "games": "Spiele",
+    "wins": "Siege",
+    "winRate": "Siegquote",
+    "maps": "Maps",
+    "rounds": "Runden"
+  },
+  "empty": "Keine Spieler gefunden",
+  "emptyForCategory": "Keine Spieler für {category} gefunden."
+}

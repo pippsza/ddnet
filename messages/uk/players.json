@@ -1,0 +1,79 @@
+{
+  "list": {
+    "title": "Гравці",
+    "searchPlaceholder": "Пошук гравців...",
+    "registered": "Зареєстровані гравці",
+    "community": "Учасники спільноти",
+    "ddnet": "Гравці DDNet",
+    "noPlayersFound": "Гравців не знайдено за запитом \"{search}\". Спробуйте інше ім'я."
+  },
+  "detail": {
+    "backToPlayers": "Назад до гравців",
+    "notFound": "Гравця \"{name}\" не знайдено.",
+    "mapper": "Маппер",
+    "points": "{count} очків",
+    "rank": "Ранг #{rank}",
+    "played": "зіграно",
+    "playingSince": "Грає з {date}",
+    "firstFinish": "Перше проходження: {date} на {map}",
+    "copyAddress": "Копіювати адресу",
+    "tabs": {
+      "service": "Сервіс",
+      "ddnet": "DDNet",
+      "settings": "Налаштування"
+    },
+    "noServiceStats": "Статистика сервісу недоступна",
+    "noServiceStatsDescription": "Цей гравець ще не брав участі в жодній грі бінго чи перегонах.",
+    "friend": {
+      "remove": "Видалити друга",
+      "removing": "Видалення...",
+      "cancelRequest": "Скасувати запит",
+      "cancelling": "Скасування...",
+      "acceptRequest": "Прийняти запит",
+      "accepting": "Прийняття...",
+      "add": "Додати друга",
+      "sending": "Надсилання...",
+      "message": "Повідомлення"
+    },
+    "ingameChat": {
+      "button": "Ігровий чат",
+      "connecting": "Підключення...",
+      "failed": "Не вдалося розпочати ігровий чат"
+    },
+    "externalLinks": {
+      "ddnetProfile": "Профіль DDNet",
+      "ddstats": "DDStats"
+    },
+    "passwordPrompt": {
+      "title": "Сервер потребує пароль",
+      "description": "Цей сервер захищений паролем. Введіть пароль сервера для підключення.",
+      "placeholder": "Пароль сервера",
+      "connect": "Підключитися",
+      "cancel": "Скасувати",
+      "securityNote": "Ваш пароль надсилається безпечно та не зберігається. Він використовується лише для підключення бота до сервера."
+    }
+  },
+  "online": {
+    "title": "Гравці онлайн",
+    "onlineCount": "{count} онлайн",
+    "addPlayerPlaceholder": "Введіть нікнейм гравця DDNet...",
+    "adding": "Додавання...",
+    "watchPlayer": "Стежити за гравцем",
+    "onlineStatus": "Онлайн",
+    "offlineStatus": "Офлайн",
+    "disableNotifications": "Вимкнути сповіщення",
+    "enableNotifications": "Увімкнути сповіщення",
+    "removeFromWatchlist": "Видалити зі списку спостереження",
+    "toast": {
+      "added": "{name} додано до списку спостереження",
+      "removed": "{name} видалено зі списку спостереження",
+      "failedToAdd": "Не вдалося додати гравця",
+      "failedToRemove": "Не вдалося видалити гравця",
+      "failedToUpdateNotification": "Не вдалося оновити налаштування сповіщень"
+    },
+    "empty": {
+      "title": "Ви ще не стежите за жодним гравцем.",
+      "description": "Додайте нікнейми гравців DDNet, щоб відстежувати їхній онлайн-статус. Ви отримаєте сповіщення, коли вони з'являться онлайн."
+    }
+  }
+}

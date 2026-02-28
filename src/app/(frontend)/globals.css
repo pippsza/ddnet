@@ -665,6 +665,22 @@ svg {
   will-change: transform;
 }
 
+/* ─── Micro-interactions ─── */
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
 /* ============================================================================
    TeeAssembler 2.0 — Required CSS for tee character rendering
    https://github.com/AlexIsTheGuy/TeeAssembler-2.0

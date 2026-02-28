@@ -1,0 +1,30 @@
+{
+  "title": "Повідомлення",
+  "searchPlaceholder": "Пошук гравців...",
+  "selectAll": "Вибрати всі",
+  "selectedCount": "{count} вибрано",
+  "deleteSelected": "Видалити ({count})",
+  "deleteConversation": "Видалити розмову",
+  "otherPlayers": "Інші гравці",
+  "noPlayersFound": "Гравців не знайдено",
+  "noFriendsYet": "Друзів поки немає.",
+  "addFriendsToChat": "Додайте друзів, щоб почати спілкування!",
+  "selectConversation": "Оберіть розмову, щоб почати спілкування",
+  "noMessagesPreview": "Ще немає повідомлень",
+  "typing": "друкує...",
+  "emptyChat": "Ще немає повідомлень. Привітайтеся!",
+  "messagePlaceholder": "Напишіть повідомлення...",
+  "unknownUser": "Невідомий",
+  "yesterday": "Вчора",
+  "deleteError": "Не вдалося видалити розмову",
+  "deleteMultipleError": "Не вдалося видалити розмови",
+  "input": {
+    "placeholder": "Напишіть повідомлення...",
+    "cooldownPlaceholder": "Зачекайте...",
+    "attach": "Прикріпити",
+    "send": "Надіслати",
+    "sending": "Надсилання...",
+    "uploadFailed": "Не вдалося завантажити файл",
+    "uploadError": "Помилка завантаження"
+  }
+}

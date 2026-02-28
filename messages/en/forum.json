@@ -1,0 +1,96 @@
+{
+  "list": {
+    "title": "Forum",
+    "newPost": "New Post",
+    "searchPlaceholder": "Search posts...",
+    "categories": {
+      "all": "All",
+      "general": "General",
+      "help": "Help",
+      "suggestions": "Suggestions",
+      "bugs": "Bugs",
+      "maps": "Maps",
+      "clans": "Clans",
+      "offtopic": "Off-topic"
+    },
+    "locked": "Locked",
+    "unknownAuthor": "Unknown",
+    "noPosts": "No posts found. Be the first to start a discussion!"
+  },
+  "create": {
+    "backToForum": "Back to Forum",
+    "cardTitle": "Create New Post",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Post title",
+    "categoryLabel": "Category",
+    "contentLabel": "Content",
+    "contentPlaceholder": "Write your post...",
+    "attachmentsLabel": "Attachments",
+    "createButton": "Create Post",
+    "creating": "Creating...",
+    "cancelButton": "Cancel",
+    "failed": "Failed to create post"
+  },
+  "post": {
+    "backToForum": "Back to Forum",
+    "notFound": "Post not found.",
+    "unknownAuthor": "Unknown",
+    "typing": "typing...",
+    "replyPlaceholder": "Write a reply...",
+    "lockedMessage": "This post is locked. No new replies can be added.",
+    "mod": {
+      "label": "Mod:",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "hide": "Hide",
+      "unhide": "Unhide"
+    }
+  },
+  "articles": {
+    "title": "Articles",
+    "newArticle": "New Article",
+    "searchPlaceholder": "Search articles...",
+    "categories": {
+      "all": "All",
+      "news": "News",
+      "tutorial": "Tutorial",
+      "guide": "Guide",
+      "update": "Update",
+      "event": "Event",
+      "announcement": "Announcement"
+    },
+    "featured": "Featured",
+    "defaultAuthor": "Admin",
+    "noArticles": "No articles found."
+  },
+  "articleCreate": {
+    "backToArticles": "Back to Articles",
+    "cardTitle": "Create Article",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Article title",
+    "excerptLabel": "Excerpt",
+    "excerptPlaceholder": "Short description for preview...",
+    "categoryLabel": "Category",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "tag1, tag2, tag3",
+    "tagsHelp": "Comma-separated",
+    "featured": "Featured article",
+    "contentLabel": "Content",
+    "contentPlaceholder": "Write your article...",
+    "publishButton": "Publish Article",
+    "publishing": "Publishing...",
+    "cancelButton": "Cancel",
+    "failed": "Failed to create article"
+  },
+  "articleDetail": {
+    "backToArticles": "Back to Articles",
+    "edit": "Edit",
+    "featured": "Featured",
+    "defaultAuthor": "Admin",
+    "views": "{count} views",
+    "likes": "{count} likes",
+    "notFound": "Article not found."
+  }
+}

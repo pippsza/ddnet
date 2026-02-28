@@ -11,16 +11,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 
-const CATEGORIES = [
-  { value: 'news', label: 'News' },
-  { value: 'tutorial', label: 'Tutorial' },
-  { value: 'guide', label: 'Guide' },
-  { value: 'update', label: 'Update' },
-  { value: 'event', label: 'Event' },
-  { value: 'announcement', label: 'Announcement' },
-]
+const CATEGORY_KEYS = ['news', 'tutorial', 'guide', 'update', 'event', 'announcement'] as const
 
 function slugify(text: string): string {
   return text
@@ -32,6 +26,7 @@ function slugify(text: string): string {
 }
 
 export default function ArticleCreatePage() {
+  const t = useTranslations('forum')
   const router = useRouter()
   const [category, setCategory] = useState('news')
   const [featured, setFeatured] = useState(false)
@@ -67,18 +62,18 @@ export default function ArticleCreatePage() {
           category,
           tags: tags
             .split(',')
-            .map((t) => t.trim())
+            .map((s) => s.trim())
             .filter(Boolean)
-            .map((t) => ({ tag: t })),
+            .map((s) => ({ tag: s })),
           featured,
           _status: 'published',
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.errors?.[0]?.message || 'Failed to create article')
+      if (!res.ok) throw new Error(data.errors?.[0]?.message || t('articleCreate.failed'))
       router.push(`/app/articles/${data.doc.slug}`)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create article')
+      setError(err instanceof Error ? err.message : t('articleCreate.failed'))
       setSubmitting(false)
     }
   }
@@ -89,55 +84,55 @@ export default function ArticleCreatePage() {
         href="/app/articles"
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Articles
+        <ArrowLeft className="h-4 w-4" /> {t('articleCreate.backToArticles')}
       </Link>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Article</CardTitle>
+          <CardTitle>{t('articleCreate.cardTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Title</Label>
+              <Label>{t('articleCreate.titleLabel')}</Label>
               <Input
                 ref={titleRef}
-                placeholder="Article title"
+                placeholder={t('articleCreate.titlePlaceholder')}
                 required
                 maxLength={200}
               />
             </div>
             <div>
-              <Label>Excerpt</Label>
+              <Label>{t('articleCreate.excerptLabel')}</Label>
               <Textarea
                 ref={excerptRef}
-                placeholder="Short description for preview..."
+                placeholder={t('articleCreate.excerptPlaceholder')}
                 rows={2}
                 className="resize-none"
               />
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t('articleCreate.categoryLabel')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                  {CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {t(`articles.categories.${key}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Tags</Label>
+              <Label>{t('articleCreate.tagsLabel')}</Label>
               <Input
                 ref={tagsRef}
-                placeholder="tag1, tag2, tag3"
+                placeholder={t('articleCreate.tagsPlaceholder')}
               />
-              <p className="text-xs text-muted-foreground mt-1">Comma-separated</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('articleCreate.tagsHelp')}</p>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -146,23 +141,23 @@ export default function ArticleCreatePage() {
                 onCheckedChange={(checked) => setFeatured(checked === true)}
               />
               <Label htmlFor="featured" className="mb-0 cursor-pointer">
-                Featured article
+                {t('articleCreate.featured')}
               </Label>
             </div>
             <div>
-              <Label>Content</Label>
+              <Label>{t('articleCreate.contentLabel')}</Label>
               <LexicalRichTextEditor
                 onChange={handleContentChange}
-                placeholder="Write your article..."
+                placeholder={t('articleCreate.contentPlaceholder')}
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Publishing...' : 'Publish Article'}
+                {submitting ? t('articleCreate.publishing') : t('articleCreate.publishButton')}
               </Button>
               <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
+                {t('articleCreate.cancelButton')}
               </Button>
             </div>
           </form>

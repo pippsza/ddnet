@@ -28,15 +28,15 @@ export async function POST(req: NextRequest) {
     const { user } = await payload.auth({ headers: req.headers })
 
     const body = await req.json()
-    const { subject, category, priority, description, contactEmail } = body
+    const { subject, category, priority, description, contactName, contactDiscord, attachments } = body
 
     if (!subject || !category || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Anonymous submissions require a contact email
-    if (!user && !contactEmail) {
-      return NextResponse.json({ error: 'Contact email is required' }, { status: 400 })
+    // Anonymous submissions require a Discord username
+    if (!user && !contactDiscord) {
+      return NextResponse.json({ error: 'Discord username is required' }, { status: 400 })
     }
 
     const ticket = await payload.create({
@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
         description: textToLexical(description),
         status: 'open',
         createdBy: user?.id,
-        contactEmail: user ? undefined : contactEmail,
+        contactName: user ? undefined : contactName,
+        contactDiscord: user ? undefined : contactDiscord,
+        ...(attachments?.length > 0 && {
+          attachments: attachments.map((id: string) => ({ file: id })),
+        }),
         responses: [],
       },
     })

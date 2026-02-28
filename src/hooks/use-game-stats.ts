@@ -67,12 +67,12 @@ export interface MonthlyGameData {
 
 export function useGameStats(userId?: string) {
   const { data: bingoData } = useSWR<{ games: BingoGameEntry[] }>(
-    userId ? '/api/bingo/my-games' : null,
+    userId ? `/api/bingo/my-games?userId=${userId}` : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )
   const { data: raceData } = useSWR<{ docs: RaceGameEntry[] }>(
-    userId ? `/api/races?where[players.user][equals]=${userId}&sort=-createdAt&depth=1&limit=50` : null,
+    userId ? `/api/races?where[teams.players.user][equals]=${userId}&sort=-createdAt&depth=1&limit=50` : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )

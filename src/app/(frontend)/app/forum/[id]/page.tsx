@@ -224,6 +224,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
               header={<MessageHeader user={author} timestamp={post.createdAt} isOwn={isOwn} />}
             >
               <LexicalContent content={post.content} />
+              <MessageImages images={post.images} />
             </ChatBubble>
           )
         })()}

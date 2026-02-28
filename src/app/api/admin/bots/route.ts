@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     const botManager = getBotManager()
 
     const { docs: dbBots } = await payload.find({
+      overrideAccess: true,
       collection: 'bots',
       where: { status: { in: ['starting', 'running'] } },
       sort: '-createdAt',

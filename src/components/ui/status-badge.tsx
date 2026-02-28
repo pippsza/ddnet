@@ -107,7 +107,10 @@ export function RoleBadge({
     )
   }
 
-  // Legacy string-based fallback
-  if (role === 'player') return null
+  // Default role — show "Member"
+  if (role === 'player') {
+    return <Badge variant="outline" className={cn('text-muted-foreground', className)}>Member</Badge>
+  }
+
   return <StatusBadge status={role} className={className} />
 }

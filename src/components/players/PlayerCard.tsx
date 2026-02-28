@@ -123,16 +123,12 @@ export function PlayerCard({
                 className="text-[10px] px-1.5 py-0"
               />
             )}
-            {role && (typeof role === 'object' || role !== 'player') ? (
+            {variant === 'registered' && (
               <RoleBadge
-                role={role}
+                role={role || 'player'}
                 className="text-[10px] px-1.5 py-0 shrink-0"
               />
-            ) : variant === 'registered' ? (
-              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-                Member
-              </span>
-            ) : null}
+            )}
           </div>
           {subtitle ? (
             <div className="mt-0.5">{subtitle}</div>
@@ -154,7 +150,15 @@ export function PlayerCard({
         </div>
 
         {actions && (
-          <div className="flex items-center gap-2 shrink-0">{actions}</div>
+          <div
+            className="flex items-center gap-2 shrink-0"
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+          >
+            {actions}
+          </div>
         )}
       </CardContent>
     </Card>

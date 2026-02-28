@@ -18,11 +18,11 @@ import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils
 import { Input } from '@/components/ui/input'
 import {
   UserPlus,
+  UserMinus,
   MessageCircle,
   Copy,
   Map,
-  UserCheck,
-  Clock,
+  X,
   ArrowLeft,
   Gamepad2,
   Lock,
@@ -53,8 +53,8 @@ function PlayerDetailContent({ name }: { name: string }) {
     fetcher,
     { refreshInterval: 30000 },
   )
-  const { data: meData } = useSWR('/api/users/me', fetcher)
-  const { data: pendingData } = useSWR('/api/friends/pending', fetcher)
+  const { data: meData, mutate: mutateMe } = useSWR('/api/users/me', fetcher)
+  const { data: pendingData, mutate: mutatePending } = useSWR('/api/friends/pending', fetcher)
 
   const { botSettings } = useBotSettings()
   const reg = data?.registered
@@ -66,7 +66,6 @@ function PlayerDetailContent({ name }: { name: string }) {
   const gameStats = useGameStats(reg?.id)
   const { isAdmin, permissions } = usePermissions()
 
-  const [friendSent, setFriendSent] = useState(false)
   const [friendSending, setFriendSending] = useState(false)
   const [chatStarting, setChatStarting] = useState(false)
   const [passwordPrompt, setPasswordPrompt] = useState(false)
@@ -102,15 +101,115 @@ function PlayerDetailContent({ name }: { name: string }) {
   const handleAddFriend = async () => {
     if (!reg?.id) return
     setFriendSending(true)
+    // Optimistic: show as pending_sent immediately
+    const prevPending = pendingData
+    mutatePending(
+      {
+        ...pendingData,
+        outgoing: [...(pendingData?.outgoing || []), { otherUser: { id: reg.id } }],
+      },
+      false,
+    )
     try {
-      const res = await fetch('/api/friends/request', {
+      await fetch('/api/friends/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recipientId: reg.id }),
       })
-      if (res.ok) setFriendSent(true)
+      mutatePending()
     } catch {
-      // ignore
+      mutatePending(prevPending, false)
+    } finally {
+      setFriendSending(false)
+    }
+  }
+
+  const handleRemoveFriend = async () => {
+    if (!reg?.id) return
+    setFriendSending(true)
+    // Optimistic: remove from friends list immediately
+    const prevMe = meData
+    mutateMe(
+      {
+        ...meData,
+        user: {
+          ...meData?.user,
+          friend: (meData?.user?.friend || []).filter((f: any) => {
+            const fId = typeof f.user === 'string' ? f.user : f.user?.id
+            return fId !== reg.id
+          }),
+        },
+      },
+      false,
+    )
+    try {
+      await fetch(`/api/friends/${reg.id}`, { method: 'DELETE' })
+      mutateMe()
+    } catch {
+      mutateMe(prevMe, false)
+    } finally {
+      setFriendSending(false)
+    }
+  }
+
+  const handleCancelRequest = async () => {
+    const request = pendingData?.outgoing?.find((r: any) => r.otherUser?.id === reg?.id)
+    if (!request) return
+    setFriendSending(true)
+    // Optimistic: remove from outgoing immediately
+    const prevPending = pendingData
+    mutatePending(
+      {
+        ...pendingData,
+        outgoing: (pendingData?.outgoing || []).filter((r: any) => r.id !== request.id),
+      },
+      false,
+    )
+    try {
+      await fetch(`/api/friend-requests/${request.id}`, { method: 'DELETE' })
+      mutatePending()
+    } catch {
+      mutatePending(prevPending, false)
+    } finally {
+      setFriendSending(false)
+    }
+  }
+
+  const handleAcceptRequest = async () => {
+    const request = pendingData?.incoming?.find((r: any) => r.otherUser?.id === reg?.id)
+    if (!request) return
+    setFriendSending(true)
+    // Optimistic: move from pending to friends
+    const prevPending = pendingData
+    const prevMe = meData
+    mutatePending(
+      {
+        ...pendingData,
+        incoming: (pendingData?.incoming || []).filter((r: any) => r.id !== request.id),
+      },
+      false,
+    )
+    mutateMe(
+      {
+        ...meData,
+        user: {
+          ...meData?.user,
+          friend: [...(meData?.user?.friend || []), { user: { id: reg.id } }],
+        },
+      },
+      false,
+    )
+    try {
+      await fetch('/api/friends/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: request.id, action: 'accept' }),
+      })
+      mutatePending()
+      mutateMe()
+    } catch {
+      mutatePending(prevPending, false)
+      mutateMe(prevMe, false)
     } finally {
       setFriendSending(false)
     }
@@ -271,14 +370,9 @@ function PlayerDetailContent({ name }: { name: string }) {
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
               <h1 className="text-3xl font-bold truncate">{playerName}</h1>
               {reg?.isVerified && <StatusBadge status="verified" />}
-              {reg &&
-                ((reg as any).primaryRole || (reg.roles && reg.roles !== 'player') ? (
-                  <RoleBadge role={(reg as any).primaryRole || reg.roles} />
-                ) : (
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                    Member
-                  </span>
-                ))}
+              {reg && (
+                <RoleBadge role={(reg as any).primaryRole || reg.roles || 'player'} />
+              )}
               {ddstats?.is_mapper && (
                 <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-medium">
                   Mapper
@@ -338,21 +432,19 @@ function PlayerDetailContent({ name }: { name: string }) {
               {reg?.id && !isOwnProfile && (
                 <>
                   {friendStatus === 'friends' ? (
-                    <Button size="sm" variant="secondary" disabled>
-                      <UserCheck className="h-4 w-4 mr-1" />
-                      Friends
+                    <Button size="sm" variant="secondary" disabled={friendSending} onClick={handleRemoveFriend}>
+                      <UserMinus className="h-4 w-4 mr-1" />
+                      {friendSending ? 'Removing...' : 'Remove Friend'}
                     </Button>
-                  ) : friendStatus === 'pending_sent' || friendSent ? (
-                    <Button size="sm" variant="secondary" disabled>
-                      <Clock className="h-4 w-4 mr-1" />
-                      Request Sent
+                  ) : friendStatus === 'pending_sent' ? (
+                    <Button size="sm" variant="secondary" disabled={friendSending} onClick={handleCancelRequest}>
+                      <X className="h-4 w-4 mr-1" />
+                      {friendSending ? 'Cancelling...' : 'Cancel Request'}
                     </Button>
                   ) : friendStatus === 'pending_received' ? (
-                    <Button size="sm" variant="default" asChild>
-                      <Link href="/app/friends">
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        Accept Request
-                      </Link>
+                    <Button size="sm" variant="default" disabled={friendSending} onClick={handleAcceptRequest}>
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {friendSending ? 'Accepting...' : 'Accept Request'}
                     </Button>
                   ) : (
                     <Button size="sm" disabled={friendSending} onClick={handleAddFriend}>

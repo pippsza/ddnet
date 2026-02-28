@@ -88,39 +88,40 @@ export async function POST(req: NextRequest) {
         ? otherParticipant.user.id
         : otherParticipant.user
 
-      try {
-        // Dedup: skip if unread DM notification from same sender already exists
-        const { totalDocs: existing } = await payload.find({
-          collection: 'notifications',
-          where: {
-            and: [
-              { recipient: { equals: recipientId } },
-              { type: { equals: 'direct_message' } },
-              { isRead: { equals: false } },
-              { relatedUser: { equals: user.id } },
-            ],
-          },
-          limit: 0,
-          overrideAccess: true,
-        })
-
-        if (existing === 0) {
-          await payload.create({
+      void (async () => {
+        try {
+          const { totalDocs: existing } = await payload.find({
             collection: 'notifications',
-            data: {
-              recipient: recipientId,
-              type: 'direct_message',
-              title: `Message from ${user.ingameNick || 'someone'}`,
-              message: preview,
-              actionUrl: '/app/chat',
-              relatedUser: user.id,
+            where: {
+              and: [
+                { recipient: { equals: recipientId } },
+                { type: { equals: 'direct_message' } },
+                { isRead: { equals: false } },
+                { relatedUser: { equals: user.id } },
+              ],
             },
+            limit: 0,
             overrideAccess: true,
           })
+
+          if (existing === 0) {
+            await payload.create({
+              collection: 'notifications',
+              data: {
+                recipient: recipientId,
+                type: 'direct_message',
+                title: `Message from ${user.ingameNick || 'someone'}`,
+                message: preview,
+                actionUrl: '/app/chat',
+                relatedUser: user.id,
+              },
+              overrideAccess: true,
+            })
+          }
+        } catch {
+          // Non-critical
         }
-      } catch {
-        // Non-critical, ignore notification errors
-      }
+      })()
     }
 
     return NextResponse.json({

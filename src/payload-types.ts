@@ -1159,6 +1159,12 @@ export interface ForumPost {
     };
     [k: string]: unknown;
   };
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Post author
    */
@@ -1258,9 +1264,13 @@ export interface Support {
    */
   createdBy?: (string | null) | User;
   /**
-   * Email for anonymous ticket submissions
+   * Name for anonymous ticket submissions
    */
-  contactEmail?: string | null;
+  contactName?: string | null;
+  /**
+   * Discord username for anonymous ticket submissions
+   */
+  contactDiscord?: string | null;
   /**
    * Communication thread between user and support
    */
@@ -2350,6 +2360,12 @@ export interface ForumPostsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   content?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   author?: T;
   category?: T;
   tags?:
@@ -2391,7 +2407,8 @@ export interface SupportSelect<T extends boolean = true> {
   status?: T;
   description?: T;
   createdBy?: T;
-  contactEmail?: T;
+  contactName?: T;
+  contactDiscord?: T;
   responses?:
     | T
     | {

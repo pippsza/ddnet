@@ -10,7 +10,8 @@ export const Support: CollectionConfig = {
   },
   access: {
     read: async ({ req }) => {
-      if (!req.user) return false
+      // Anonymous tickets (no createdBy) are public
+      if (!req.user) return { createdBy: { exists: false } }
       if (!(await hasPageAccess(req, 'support'))) return false
       if (await hasPermission(req, 'support', 'view_all')) return true
       return { createdBy: { equals: req.user.id } }
@@ -116,11 +117,20 @@ export const Support: CollectionConfig = {
       },
     },
     {
-      name: 'contactEmail',
-      type: 'email',
-      label: 'Contact Email',
+      name: 'contactName',
+      type: 'text',
+      label: 'Contact Name',
       admin: {
-        description: 'Email for anonymous ticket submissions',
+        description: 'Name for anonymous ticket submissions',
+        condition: (data) => !data.createdBy,
+      },
+    },
+    {
+      name: 'contactDiscord',
+      type: 'text',
+      label: 'Discord',
+      admin: {
+        description: 'Discord username for anonymous ticket submissions',
         condition: (data) => !data.createdBy,
       },
     },
@@ -210,7 +220,8 @@ export const Support: CollectionConfig = {
       ],
       access: {
         read: async ({ req, doc }) => {
-          if (!req.user) return false
+          // Allow reading responses on anonymous (public) tickets
+          if (!req.user) return !doc?.createdBy
           if (await hasPermission(req, 'support', 'view_all')) return true
           return doc?.createdBy === req.user.id
         },

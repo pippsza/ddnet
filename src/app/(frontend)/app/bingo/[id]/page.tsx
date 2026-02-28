@@ -44,6 +44,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { GamePageSkeleton } from '@/components/ui/page-skeleton'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { FriendInviteSearch } from '@/components/bingo/FriendInviteSearch'
@@ -1117,7 +1125,10 @@ function GameView({
   const totalCells = gridSize * gridSize
   const teams: Team[] = game.teams || []
   const confettiFired = useRef(false)
+  const rematchInitiatedByMe = useRef(false)
   const [actionLoading, setActionLoading] = useState(false)
+  const [rematchDismissed, setRematchDismissed] = useState(false)
+  const [rematchAcceptLoading, setRematchAcceptLoading] = useState(false)
 
   const winnerTeamIndex: number | null = game.winnerTeam ?? null
   const winnerTeam = winnerTeamIndex != null ? teams[winnerTeamIndex] : null
@@ -1177,18 +1188,42 @@ function GameView({
     setActionLoading(false)
   }
 
-  // Rematch handler
+  // Rematch handler (for the button — initiator)
   const handleRematch = async () => {
     setActionLoading(true)
     const res = await fetch(`/api/bingo/${gameId}/rematch`, { method: 'POST' })
     const data = await res.json()
     if (res.ok && data.gameId) {
+      rematchInitiatedByMe.current = true
       router.push(`/app/bingo/${data.gameId}`)
     } else {
       toast.error(data.error || 'Failed to create rematch')
       setActionLoading(false)
     }
   }
+
+  // Rematch popup: accept handler (for the receiver)
+  const handleAcceptRematch = async () => {
+    setRematchAcceptLoading(true)
+    const res = await fetch(`/api/bingo/${gameId}/rematch`, { method: 'POST' })
+    const data = await res.json()
+    if (res.ok && data.gameId) {
+      router.push(`/app/bingo/${data.gameId}`)
+    } else {
+      toast.error(data.error || 'Failed to join rematch')
+      setRematchAcceptLoading(false)
+    }
+  }
+
+  const showRematchPopup =
+    !!game.rematchGameId &&
+    game.isCurrentUserInGame &&
+    !rematchDismissed &&
+    !rematchInitiatedByMe.current &&
+    (game.gameStatus === 'completed' || game.gameStatus === 'cancelled')
+
+  const otherPlayers = teams.flatMap((t) => t.players || []).filter((p) => p.id !== game.currentUserId)
+  const rematchInitiatorName = otherPlayers.length === 1 ? otherPlayers[0].ingameNick : null
 
   // For solo mode: split team[0] players into top (player1) and bottom (player2)
   const isSolo = game.mode === 'solo'
@@ -1209,6 +1244,35 @@ function GameView({
 
   return (
     <div className="h-full flex flex-col max-w-xl mx-auto overflow-hidden">
+      <Dialog
+        open={showRematchPopup}
+        onOpenChange={(open) => {
+          if (!open) setRematchDismissed(true)
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Rematch offered!
+            </DialogTitle>
+            <DialogDescription>
+              {rematchInitiatorName
+                ? `${rematchInitiatorName} wants a rematch!`
+                : 'Your opponent wants a rematch!'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRematchDismissed(true)}>
+              Decline
+            </Button>
+            <Button onClick={handleAcceptRematch} disabled={rematchAcceptLoading}>
+              {rematchAcceptLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Accept Rematch
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Header row: title + timer + status */}
       <div className="flex items-center justify-between shrink-0 py-2 flex-wrap">
         <div className="min-w-0 flex-1">

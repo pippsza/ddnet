@@ -173,6 +173,36 @@ const hardResetHook: CollectionBeforeChangeHook = async ({ data, req, operation 
 }
 
 /**
+ * After user creation, assign the default role to the new user
+ */
+const assignDefaultRole: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
+  if (operation !== 'create') return doc
+  if (doc.roles === 'admin') return doc
+
+  try {
+    const { docs: defaultRoles } = await req.payload.find({
+      collection: 'roles',
+      where: { isDefault: { equals: true } },
+      limit: 1,
+      depth: 0,
+    })
+
+    if (defaultRoles.length === 0) return doc
+
+    await req.payload.update({
+      collection: 'users',
+      id: doc.id,
+      overrideAccess: true,
+      data: { assignedRoles: [defaultRoles[0].id] },
+    })
+  } catch (error) {
+    console.error(`[Users] Failed to assign default role to ${doc.ingameNick}:`, error)
+  }
+
+  return doc
+}
+
+/**
  * After user creation, fetch DDNet stats and populate ingameStats
  */
 const syncDDNetOnCreate: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
@@ -261,7 +291,7 @@ export const Users: CollectionConfig = {
   },
   hooks: {
     beforeChange: [hardResetHook],
-    afterChange: [syncDDNetOnCreate],
+    afterChange: [assignDefaultRole, syncDDNetOnCreate],
     afterRead: [
       async ({ doc, req }) => {
         // Compute primaryRole for badge display

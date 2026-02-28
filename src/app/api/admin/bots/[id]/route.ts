@@ -15,6 +15,7 @@ export async function GET(
     const botManager = getBotManager()
 
     const bot = await payload.findByID({
+      overrideAccess: true,
       collection: 'bots',
       id,
     })
@@ -49,6 +50,7 @@ export async function DELETE(
     const botManager = getBotManager()
 
     const bot = await payload.findByID({
+      overrideAccess: true,
       collection: 'bots',
       id,
     })
@@ -60,6 +62,7 @@ export async function DELETE(
     await botManager.stopBot(bot.containerId)
 
     await payload.update({
+      overrideAccess: true,
       collection: 'bots',
       id,
       data: {

@@ -4,7 +4,7 @@ import { useState, useRef, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { toast } from 'sonner'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -127,6 +127,15 @@ function FriendsContent() {
 
   const handleAcceptReject = async (requestId: string, action: 'accept' | 'reject') => {
     setProcessingIds((prev) => new Set(prev).add(requestId))
+    // Optimistic: remove from incoming immediately
+    const prevPending = pendingData
+    mutatePending(
+      {
+        ...pendingData,
+        incoming: incoming.filter((r: any) => r.id !== requestId),
+      },
+      false,
+    )
     try {
       await fetch('/api/friends/accept', {
         method: 'POST',
@@ -136,7 +145,7 @@ function FriendsContent() {
       mutatePending()
       mutateOnline()
     } catch {
-      // ignore
+      mutatePending(prevPending, false)
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev)
@@ -148,13 +157,22 @@ function FriendsContent() {
 
   const handleCancelRequest = async (requestId: string) => {
     setProcessingIds((prev) => new Set(prev).add(requestId))
+    // Optimistic: remove from outgoing immediately
+    const prevPending = pendingData
+    mutatePending(
+      {
+        ...pendingData,
+        outgoing: outgoing.filter((r: any) => r.id !== requestId),
+      },
+      false,
+    )
     try {
       await fetch(`/api/friend-requests/${requestId}`, {
         method: 'DELETE',
       })
       mutatePending()
     } catch {
-      // ignore
+      mutatePending(prevPending, false)
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev)
@@ -165,11 +183,21 @@ function FriendsContent() {
   }
 
   const handleRemoveFriend = async (friendId: string) => {
+    // Optimistic: remove from friends list immediately
+    const prevOnline = onlineData
+    mutateOnline(
+      {
+        ...onlineData,
+        friends: (onlineData?.friends || []).filter((f: any) => f.userId !== friendId),
+      },
+      false,
+    )
     try {
       const res = await fetch(`/api/friends/${friendId}`, { method: 'DELETE' })
       if (res.ok) mutateOnline()
+      else mutateOnline(prevOnline, false)
     } catch {
-      // ignore
+      mutateOnline(prevOnline, false)
     }
   }
 
@@ -220,11 +248,9 @@ function FriendsContent() {
 
       {/* Pending Requests */}
       {(incoming.length > 0 || outgoing.length > 0) && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Pending Requests</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">Pending Requests</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {/* Incoming */}
             {incoming.map((req: any) => (
               <PlayerCard
@@ -299,8 +325,8 @@ function FriendsContent() {
                 }
               />
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Friends List */}

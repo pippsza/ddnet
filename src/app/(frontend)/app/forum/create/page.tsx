@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
+import { MediaAttachments, type UploadedFile } from '@/components/ui/media-attachments'
 import { ArrowLeft } from 'lucide-react'
 
 const CATEGORIES = [
@@ -32,6 +33,7 @@ export default function ForumCreatePage() {
   const [category, setCategory] = useState('general')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [files, setFiles] = useState<UploadedFile[]>([])
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<any>(null)
 
@@ -53,6 +55,7 @@ export default function ForumCreatePage() {
           title,
           category,
           content: contentRef.current,
+          ...(files.length > 0 && { images: files.map((f) => f.id) }),
         }),
       })
       const data = await res.json()
@@ -109,6 +112,10 @@ export default function ForumCreatePage() {
                 onChange={handleContentChange}
                 placeholder="Write your post..."
               />
+            </div>
+            <div>
+              <Label>Attachments</Label>
+              <MediaAttachments files={files} onFilesChange={setFiles} />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-2">

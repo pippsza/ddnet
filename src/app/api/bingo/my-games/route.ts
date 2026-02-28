@@ -8,7 +8,11 @@ export async function GET(req: NextRequest) {
     const payload = await getPayload({ config })
     const { user } = await payload.auth({ headers: req.headers })
 
-    if (!user) {
+    // Allow querying another user's games via ?userId=
+    const targetUserId = req.nextUrl.searchParams.get('userId')
+    const lookupId = targetUserId || user?.id
+
+    if (!lookupId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -17,8 +21,8 @@ export async function GET(req: NextRequest) {
       collection: 'bingo',
       where: {
         or: [
-          { 'teams.players.user': { equals: user.id } },
-          { 'teams.pendingInvites.user': { equals: user.id } },
+          { 'teams.players.user': { equals: lookupId } },
+          ...(!targetUserId ? [{ 'teams.pendingInvites.user': { equals: lookupId } }] : []),
         ],
       },
       sort: '-createdAt',
@@ -46,23 +50,23 @@ export async function GET(req: NextRequest) {
       const isPlayer = game.teams.some((team) =>
         team.players?.some((p) => {
           const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
-          return pUserId === user.id
+          return pUserId === lookupId
         }),
       )
       const isPendingInvite = !isPlayer && game.teams.some((team) =>
         team.pendingInvites?.some((p) => {
           const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
-          return pUserId === user.id
+          return pUserId === lookupId
         }),
       )
 
-      // Determine if current user won this game
+      // Determine if target user won this game
       let isWinner: boolean | null = null
       if (game.gameStatus === 'completed' && game.winnerTeam != null) {
         const userTeamIndex = game.teams.findIndex((team) =>
           team.players?.some((p) => {
             const pUserId = typeof p.user === 'object' ? p.user?.id : p.user
-            return pUserId === user.id
+            return pUserId === lookupId
           }),
         )
         isWinner = userTeamIndex === game.winnerTeam

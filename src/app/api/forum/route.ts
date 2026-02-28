@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { title, category, content } = body
+    const { title, category, content, images } = body
 
     if (!title?.trim() || !category || !content) {
       return NextResponse.json({ error: 'Title, category, and content are required' }, { status: 400 })
@@ -127,6 +127,9 @@ export async function POST(req: NextRequest) {
         category,
         status: 'published',
         isPinned: false,
+        ...(images?.length > 0 && {
+          images: images.map((id: string) => ({ image: id })),
+        }),
         views: 0,
         likes: 0,
         replies: [],

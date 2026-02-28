@@ -10,28 +10,16 @@ export const Notifications: CollectionConfig = {
   access: {
     read: ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin') return true
-      // Users can only read their own notifications
-      return {
-        recipient: { equals: req.user.id },
-      }
+      return { recipient: { equals: req.user.id } }
     },
     create: () => true, // System creates notifications
     update: ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin') return true
-      // Users can only update (mark as read) their own notifications
-      return {
-        recipient: { equals: req.user.id },
-      }
+      return { recipient: { equals: req.user.id } }
     },
     delete: ({ req }) => {
       if (!req.user) return false
-      if (req.user.roles === 'admin') return true
-      // Users can delete their own notifications
-      return {
-        recipient: { equals: req.user.id },
-      }
+      return { recipient: { equals: req.user.id } }
     },
   },
   fields: [

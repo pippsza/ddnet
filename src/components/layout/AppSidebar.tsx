@@ -151,7 +151,21 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { isMobile, setOpenMobile } = useSidebar()
-  const { unreadCount } = useNotifications()
+  const { notifications, unreadCount } = useNotifications()
+
+  const dmCount = notifications.filter((n) => !n.isRead && n.type === 'direct_message').length
+  const forumCount = notifications.filter((n) => !n.isRead && n.type === 'forum_reply').length
+  const supportCount = notifications.filter((n) => !n.isRead && n.type === 'support_reply').length
+  const friendCount = notifications.filter((n) => !n.isRead && n.type === 'friend_request').length
+
+  const sidebarBadge = (count: number) =>
+    count > 0 ? (count > 9 ? '9+' : count) : null
+
+  const badgeByUrl: Record<string, number> = {
+    '/app/chat': dmCount,
+    '/app/forum': forumCount,
+    '/app/friends': friendCount,
+  }
   const [mounted, setMounted] = useState(false)
   const [chatMentions, setChatMentions] = useState(0)
 
@@ -306,16 +320,24 @@ export function AppSidebar({ user }: AppSidebarProps) {
               <SidebarMenu>
                 {socialItems
                   .filter((item) => hasPage(item.requiredPage))
-                  .map((item) => (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
-                        <Link href={item.url} onClick={handleNavClick}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  .map((item) => {
+                    const badge = mounted ? sidebarBadge(badgeByUrl[item.url] ?? 0) : null
+                    return (
+                      <SidebarMenuItem key={item.url}>
+                        <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)}>
+                          <Link href={item.url} onClick={handleNavClick}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                        {badge !== null && (
+                          <SidebarMenuBadge className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+                            {badge}
+                          </SidebarMenuBadge>
+                        )}
+                      </SidebarMenuItem>
+                    )
+                  })}
                 {activeChat && hasPage('ingame_chat') && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={pathname.startsWith('/app/ingame-chat')}>
@@ -408,6 +430,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 {item.url === '/app/notifications' && mounted && unreadCount > 0 && (
                   <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
                     {unreadCount > 9 ? '9+' : unreadCount}
+                  </SidebarMenuBadge>
+                )}
+                {item.url === '/support' && mounted && supportCount > 0 && (
+                  <SidebarMenuBadge className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+                    {supportCount > 9 ? '9+' : supportCount}
                   </SidebarMenuBadge>
                 )}
               </SidebarMenuItem>

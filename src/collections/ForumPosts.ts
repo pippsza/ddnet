@@ -62,6 +62,19 @@ export const ForumPosts: CollectionConfig = {
       label: 'Post Content',
     },
     {
+      name: 'images',
+      type: 'array',
+      label: 'Images',
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',

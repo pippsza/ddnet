@@ -14,9 +14,10 @@ import { ChatBubble, ChatMessages, ChatInput } from '@/components/chat'
 import { MessageImages } from '@/components/chat/MessageImages'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { isPlatformOnline } from '@/lib/online-utils'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Search } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -36,6 +37,9 @@ function ChatContent() {
 
   const [activeConversation, setActiveConversation] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
+  // searchQuery is the debounced value — updated by PlayerSearchInput after 300ms
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResetToken, setSearchResetToken] = useState(0)
 
   // Fetch current user
   const { data: meData } = useSWR('/api/users/me', fetcher)
@@ -58,6 +62,14 @@ function ChatContent() {
   } = useSWR(activeConversation ? `/api/chat/conversations/${activeConversation}` : null, fetcher, {
     refreshInterval: 3000,
   })
+
+  // Search platform users — searchQuery is already debounced (set by PlayerSearchInput)
+  const { data: searchData, isLoading: searchLoading } = useSWR(
+    searchQuery.length >= 2
+      ? `/api/users?where[ingameNick][contains]=${encodeURIComponent(searchQuery)}&limit=8&depth=1`
+      : null,
+    fetcher,
+  )
 
   // Fetch friends online status
   const { data: onlineData } = useSWR('/api/friends/online', fetcher, {
@@ -149,6 +161,31 @@ function ChatContent() {
     return entries
   }, [conversations, onlineFriends])
 
+  // IDs already shown in sidebar
+  const sidebarUserIds = useMemo(
+    () => new Set(sidebarEntries.map((e) => e.userId)),
+    [sidebarEntries],
+  )
+
+  // Filter sidebar by search query
+  const filteredEntries = useMemo(
+    () =>
+      searchQuery
+        ? sidebarEntries.filter((e) =>
+            e.ingameNick.toLowerCase().includes(searchQuery.toLowerCase()),
+          )
+        : sidebarEntries,
+    [sidebarEntries, searchQuery],
+  )
+
+  // Platform users not already in sidebar (shown as "Other players")
+  const otherPlayers = useMemo(() => {
+    if (searchQuery.length < 2 || !searchData?.docs) return []
+    return (searchData.docs as any[]).filter(
+      (u) => !sidebarUserIds.has(u.id) && u.id !== currentUserId,
+    )
+  }, [searchData, sidebarUserIds, currentUserId, searchQuery])
+
   // Auto-open conversation from ?user= URL param
   useEffect(() => {
     if (!targetUserId || urlHandledRef.current || convLoading) return
@@ -206,8 +243,33 @@ function ChatContent() {
   // Back to sidebar (mobile)
   const clearActiveConversation = useCallback(() => {
     setActiveConversation(null)
+    setSearchResetToken((t) => t + 1)
     router.replace('/app/chat', { scroll: false })
   }, [router])
+
+  // Open conversation with a platform user not yet in sidebar
+  const selectOtherPlayer = useCallback(
+    async (player: any) => {
+      const skin = player.ingameStats?.skin
+      await selectEntry({
+        key: player.id,
+        conversationId: conversations.find((c: any) => c.otherUser?.id === player.id)?.id || null,
+        userId: player.id,
+        ingameNick: player.ingameNick,
+        roles: player.roles || 'player',
+        primaryRole: player.primaryRole || null,
+        lastSeenAt: player.lastSeenAt || null,
+        skin: skin?.name
+          ? { name: skin.name, colorBody: skin.color_body || 0, colorFeet: skin.color_feet || 0 }
+          : null,
+        lastMessage: null,
+        lastMessageAt: null,
+        unreadCount: 0,
+      })
+      setSearchResetToken((t) => t + 1)
+    },
+    [conversations, selectEntry],
+  )
 
   // Refetch conversations when switching to mark-as-read
   useEffect(() => {
@@ -316,11 +378,15 @@ function ChatContent() {
           )}
         >
           <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none shadow-none py-0 gap-0 lg:border lg:rounded-xl lg:shadow-sm lg:py-6 lg:gap-6">
-            <CardHeader className="shrink-0 py-3 px-4 lg:px-6">
-              <CardTitle className="text-lg">Messages</CardTitle>
+            <CardHeader className="shrink-0 px-4 py-0 gap-2">
+              <CardTitle className="text-lg py-6 md:py-2">Messages</CardTitle>
+              <PlayerSearchInput
+                onSearch={setSearchQuery}
+                resetToken={searchResetToken}
+              />
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-0">
-              {convLoading ? (
+              {convLoading && !searchQuery ? (
                 <div className="space-y-2 p-4">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -332,9 +398,10 @@ function ChatContent() {
                     </div>
                   ))}
                 </div>
-              ) : sidebarEntries.length > 0 ? (
+              ) : (
                 <div className="divide-y">
-                  {sidebarEntries.map((entry) => {
+                  {/* Conversations / friends filtered by search */}
+                  {filteredEntries.map((entry) => {
                     const isTyping =
                       entry.conversationId && typingAll[entry.conversationId]?.length > 0
                     return (
@@ -400,13 +467,70 @@ function ChatContent() {
                       </button>
                     )
                   })}
-                </div>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground text-sm">
-                  <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  No friends yet.
-                  <br />
-                  Add friends to start chatting!
+
+                  {/* Other players section (only when searching) */}
+                  {searchQuery.length >= 2 && (searchLoading || otherPlayers.length > 0) && (
+                    <>
+                      <div className="px-4 py-2 text-xs font-medium text-muted-foreground bg-muted/30">
+                        Other players
+                      </div>
+                      {searchLoading ? (
+                        <div className="space-y-2 p-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                              <Skeleton className="h-4 w-28" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        otherPlayers.map((player: any) => (
+                          <button
+                            key={player.id}
+                            onClick={() => selectOtherPlayer(player)}
+                            className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+                          >
+                            <TeeAvatarWithFallback
+                              skinUrl={
+                                player.ingameStats?.skin?.name
+                                  ? getDDNetSkinUrl(player.ingameStats.skin.name)
+                                  : undefined
+                              }
+                              size="sm"
+                              className="shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className="flex items-center gap-1.5 truncate">
+                                <span className="text-sm font-medium truncate">
+                                  {player.ingameNick}
+                                </span>
+                                <RoleBadge
+                                  role={player.primaryRole || player.roles}
+                                  className="text-[10px] px-1 py-0"
+                                />
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </>
+                  )}
+
+                  {/* Empty state */}
+                  {filteredEntries.length === 0 && otherPlayers.length === 0 && !searchLoading && (
+                    <div className="p-8 text-center text-muted-foreground text-sm">
+                      {searchQuery ? (
+                        <p>No players found</p>
+                      ) : (
+                        <>
+                          <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          No friends yet.
+                          <br />
+                          Add friends to start chatting!
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -423,8 +547,8 @@ function ChatContent() {
           {activeConversation ? (
             <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none shadow-none py-0 gap-0 lg:border lg:rounded-xl lg:shadow-sm lg:py-6 lg:gap-6">
               {/* Chat Header */}
-              <CardHeader className="shrink-0 py-4 border-b px-4 lg:px-6">
-                <div className="flex items-center gap-3 ">
+              <CardHeader className="shrink-0 mt-4 py-0 border-b px-4 ">
+                <div className="flex items-center gap-3 pt-3">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -533,6 +657,41 @@ function ChatContent() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function PlayerSearchInput({
+  onSearch,
+  resetToken,
+}: {
+  onSearch: (q: string) => void
+  resetToken: number
+}) {
+  const [value, setValue] = useState('')
+
+  // Reset local state when parent requests it
+  useEffect(() => {
+    setValue('')
+    onSearch('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetToken])
+
+  // Debounce: only update parent after 300ms of inactivity
+  useEffect(() => {
+    const t = setTimeout(() => onSearch(value), 300)
+    return () => clearTimeout(t)
+  }, [value, onSearch])
+
+  return (
+    <div className="relative pb-2">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <Input
+        placeholder="Search players..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="pl-9 h-9 text-sm"
+      />
     </div>
   )
 }

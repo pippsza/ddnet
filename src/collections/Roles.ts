@@ -65,8 +65,19 @@ export const Roles: CollectionConfig = {
         }
       },
     ],
-    afterChange: [() => invalidateRoleCache()],
-    afterDelete: [() => invalidateRoleCache()],
+    afterChange: [
+      () => {
+        invalidateRoleCache()
+        // Bust Next.js layout cache so permission changes are reflected immediately
+        import('next/cache').then(({ revalidatePath }) => revalidatePath('/', 'layout')).catch(() => {})
+      },
+    ],
+    afterDelete: [
+      () => {
+        invalidateRoleCache()
+        import('next/cache').then(({ revalidatePath }) => revalidatePath('/', 'layout')).catch(() => {})
+      },
+    ],
   },
   fields: [
     {

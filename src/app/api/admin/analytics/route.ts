@@ -62,11 +62,12 @@ export async function GET(req: NextRequest) {
       botsStopped,
     ] = await Promise.all([
       // Users
-      payload.count({ collection: 'users' }),
-      payload.count({ collection: 'users', where: { isSystemVerified: { equals: true } } }),
-      payload.count({ collection: 'users', where: { roles: { equals: 'admin' } } }),
-      payload.find({ collection: 'roles', limit: 100, depth: 0 }),
+      payload.count({ overrideAccess: true, collection: 'users' }),
+      payload.count({ overrideAccess: true, collection: 'users', where: { isSystemVerified: { equals: true } } }),
+      payload.count({ overrideAccess: true, collection: 'users', where: { roles: { equals: 'admin' } } }),
+      payload.find({ overrideAccess: true, collection: 'roles', limit: 100, depth: 0 }),
       payload.find({
+        overrideAccess: true,
         collection: 'users',
         where: { createdAt: { greater_than: thirtyDaysAgoISO } },
         limit: 0,
@@ -74,27 +75,29 @@ export async function GET(req: NextRequest) {
       }),
 
       // Bingo
-      payload.count({ collection: 'bingo' }),
-      payload.count({ collection: 'bingo', where: { gameStatus: { equals: 'waiting' } } }),
-      payload.count({ collection: 'bingo', where: { gameStatus: { equals: 'in_progress' } } }),
-      payload.count({ collection: 'bingo', where: { gameStatus: { equals: 'completed' } } }),
-      payload.count({ collection: 'bingo', where: { gameStatus: { equals: 'cancelled' } } }),
-      payload.count({ collection: 'bingo', where: { mode: { equals: 'solo' } } }),
-      payload.count({ collection: 'bingo', where: { mode: { equals: 'team' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo' }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { gameStatus: { equals: 'waiting' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { gameStatus: { equals: 'in_progress' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { gameStatus: { equals: 'completed' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { gameStatus: { equals: 'cancelled' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { mode: { equals: 'solo' } } }),
+      payload.count({ overrideAccess: true, collection: 'bingo', where: { mode: { equals: 'team' } } }),
 
       // Races
-      payload.count({ collection: 'races' }),
-      payload.count({ collection: 'races', where: { status: { equals: 'in_progress' } } }),
-      payload.count({ collection: 'races', where: { status: { equals: 'completed' } } }),
+      payload.count({ overrideAccess: true, collection: 'races' }),
+      payload.count({ overrideAccess: true, collection: 'races', where: { gameStatus: { equals: 'in_progress' } } }),
+      payload.count({ overrideAccess: true, collection: 'races', where: { gameStatus: { equals: 'completed' } } }),
 
       // Recent games (30 days)
       payload.find({
+        overrideAccess: true,
         collection: 'bingo',
         where: { createdAt: { greater_than: thirtyDaysAgoISO } },
         limit: 0,
         select: { createdAt: true },
       }),
       payload.find({
+        overrideAccess: true,
         collection: 'races',
         where: { createdAt: { greater_than: thirtyDaysAgoISO } },
         limit: 0,
@@ -102,63 +105,68 @@ export async function GET(req: NextRequest) {
       }),
 
       // Articles
-      payload.count({ collection: 'articles' }),
-      payload.count({ collection: 'articles', where: { _status: { equals: 'published' } } }),
+      payload.count({ overrideAccess: true, collection: 'articles' }),
+      payload.count({ overrideAccess: true, collection: 'articles', where: { _status: { equals: 'published' } } }),
       payload.find({
+        overrideAccess: true,
         collection: 'articles',
         limit: 500,
         select: { views: true, likes: true, category: true },
       }),
 
       // Forum
-      payload.count({ collection: 'forum-posts' }),
+      payload.count({ overrideAccess: true, collection: 'forum-posts' }),
       payload.find({
+        overrideAccess: true,
         collection: 'forum-posts',
         limit: 500,
         select: { views: true, likes: true, category: true, replies: true },
       }),
 
       // Friend Requests
-      payload.count({ collection: 'friend-requests' }),
-      payload.count({ collection: 'friend-requests', where: { status: { equals: 'pending' } } }),
-      payload.count({ collection: 'friend-requests', where: { status: { equals: 'accepted' } } }),
-      payload.count({ collection: 'friend-requests', where: { status: { equals: 'rejected' } } }),
+      payload.count({ overrideAccess: true, collection: 'friend-requests' }),
+      payload.count({ overrideAccess: true, collection: 'friend-requests', where: { status: { equals: 'pending' } } }),
+      payload.count({ overrideAccess: true, collection: 'friend-requests', where: { status: { equals: 'accepted' } } }),
+      payload.count({ overrideAccess: true, collection: 'friend-requests', where: { status: { equals: 'rejected' } } }),
 
       // Conversations & Messages
-      payload.count({ collection: 'conversations' }),
-      payload.count({ collection: 'messages' }),
+      payload.count({ overrideAccess: true, collection: 'conversations' }),
+      payload.count({ overrideAccess: true, collection: 'messages' }),
 
       // Support
-      payload.count({ collection: 'support' }),
-      payload.count({ collection: 'support', where: { status: { equals: 'open' } } }),
-      payload.count({ collection: 'support', where: { status: { equals: 'in_progress' } } }),
-      payload.count({ collection: 'support', where: { status: { equals: 'resolved' } } }),
-      payload.count({ collection: 'support', where: { status: { equals: 'closed' } } }),
-      payload.count({ collection: 'support', where: { priority: { equals: 'low' } } }),
-      payload.count({ collection: 'support', where: { priority: { equals: 'medium' } } }),
-      payload.count({ collection: 'support', where: { priority: { equals: 'high' } } }),
-      payload.count({ collection: 'support', where: { priority: { equals: 'critical' } } }),
+      payload.count({ overrideAccess: true, collection: 'support' }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { status: { equals: 'open' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { status: { equals: 'in_progress' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { status: { equals: 'resolved' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { status: { equals: 'closed' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { priority: { equals: 'low' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { priority: { equals: 'medium' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { priority: { equals: 'high' } } }),
+      payload.count({ overrideAccess: true, collection: 'support', where: { priority: { equals: 'critical' } } }),
 
       // System
-      payload.count({ collection: 'notifications' }),
-      payload.count({ collection: 'notifications', where: { isRead: { equals: false } } }),
-      payload.count({ collection: 'push-subscriptions' }),
-      payload.count({ collection: 'verification-requests' }),
+      payload.count({ overrideAccess: true, collection: 'notifications' }),
+      payload.count({ overrideAccess: true, collection: 'notifications', where: { isRead: { equals: false } } }),
+      payload.count({ overrideAccess: true, collection: 'push-subscriptions' }),
+      payload.count({ overrideAccess: true, collection: 'verification-requests' }),
       payload.count({
+        overrideAccess: true,
         collection: 'verification-requests',
         where: { status: { equals: 'pending' } },
       }),
       payload.count({
+        overrideAccess: true,
         collection: 'verification-requests',
         where: { status: { equals: 'success' } },
       }),
       payload.count({
+        overrideAccess: true,
         collection: 'verification-requests',
         where: { status: { equals: 'failed' } },
       }),
-      payload.count({ collection: 'media' }),
-      payload.count({ collection: 'bots', where: { status: { equals: 'running' } } }),
-      payload.count({ collection: 'bots', where: { status: { equals: 'stopped' } } }),
+      payload.count({ overrideAccess: true, collection: 'media' }),
+      payload.count({ overrideAccess: true, collection: 'bots', where: { status: { equals: 'running' } } }),
+      payload.count({ overrideAccess: true, collection: 'bots', where: { status: { equals: 'stopped' } } }),
     ])
 
     // Aggregate recent registrations by day

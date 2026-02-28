@@ -3,6 +3,11 @@ import createNextIntlPlugin from 'next-intl/plugin'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+    },
+  },
   // Externalize dockerode and its native dependencies for server-side only
   serverExternalPackages: ['dockerode', 'ssh2', 'cpu-features'],
   // Proxy ddnet.org skin images to avoid CORS issues with TeeAssembler canvas

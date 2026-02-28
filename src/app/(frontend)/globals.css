@@ -360,6 +360,37 @@ svg {
   --sidebar-ring: #aa4444;
 }
 
+/* ── DDNet Dark ── */
+.theme-ddnet-dark {
+  --background: #2d2d2d;
+  --foreground: #dfdede;
+  --card: #555555;
+  --card-foreground: #dfdede;
+  --popover: #555555;
+  --popover-foreground: #dfdede;
+  --primary: #ffa500;
+  --primary-foreground: #1a0e00;
+  --secondary: #484848;
+  --secondary-foreground: #dfdede;
+  --muted: #3a3a3a;
+  --muted-foreground: #aaaaaa;
+  --accent: #606060;
+  --accent-foreground: #dfdede;
+  --destructive: #cc3333;
+  --destructive-foreground: #fff0f0;
+  --border: rgba(0, 0, 0, 0.5);
+  --input: #484848;
+  --ring: #e19201;
+  --sidebar: #2d2d2d;
+  --sidebar-foreground: #aaaaaa;
+  --sidebar-primary: #ffa500;
+  --sidebar-primary-foreground: #1a0e00;
+  --sidebar-accent: #484848;
+  --sidebar-accent-foreground: #dfdede;
+  --sidebar-border: rgba(0, 0, 0, 0.5);
+  --sidebar-ring: #e19201;
+}
+
 /* ── Cream (light) ── */
 .theme-cream {
   --background: #faf6f0;

@@ -57,6 +57,8 @@ export default function SettingsPage() {
   const { botSettings } = useBotSettings()
   const servers = serversData?.servers || []
   const { theme: currentTheme, setTheme } = useTheme()
+  const [themeMounted, setThemeMounted] = useState(false)
+  useEffect(() => setThemeMounted(true), [])
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -314,7 +316,7 @@ export default function SettingsPage() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {themes.map((t) => {
-              const isSelected = currentTheme === t.id
+              const isSelected = themeMounted && currentTheme === t.id
               const isDark = t.mode === 'dark'
               return (
                 <button

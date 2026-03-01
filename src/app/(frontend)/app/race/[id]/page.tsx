@@ -27,6 +27,7 @@ import { useBotSettings } from '@/hooks/use-bot-settings'
 import { RacePathGame } from '@/components/race/RacePathGame'
 import { RacePathPreview } from '@/components/race/RacePathPreview'
 import { RaceStartCountdown } from '@/components/race/RaceStartCountdown'
+import { GameEndOverlay } from '@/components/game/GameEndOverlay'
 import { CategoryModeSelector } from '@/components/race/CategoryModeSelector'
 import { GamePlayerBar } from '@/components/bingo/GamePlayerBar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -1289,11 +1290,12 @@ function GameView({
   const t = useTranslations('race')
   const { botSettings } = useBotSettings()
   const teams: Team[] = game.teams || []
-  const confettiFired = useRef(false)
+  const prevStatusRef = useRef(game.gameStatus)
   const rematchInitiatedByMe = useRef(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [rematchDismissed, setRematchDismissed] = useState(false)
   const [rematchAcceptLoading, setRematchAcceptLoading] = useState(false)
+  const [showEndOverlay, setShowEndOverlay] = useState(false)
 
   const winnerTeamIndex: number | null = game.winnerTeam ?? null
   const winnerTeam = winnerTeamIndex != null ? teams[winnerTeamIndex] : null
@@ -1323,21 +1325,14 @@ function GameView({
     }
   }, [game.startedAt, game.completedAt, game.gameStatus])
 
-  // Fire confetti on game completion
+  // Show game-end overlay when status transitions to completed/cancelled
   useEffect(() => {
-    if (game.gameStatus !== 'completed' || confettiFired.current) return
-    confettiFired.current = true
+    const prev = prevStatusRef.current
+    prevStatusRef.current = game.gameStatus
 
-    import('canvas-confetti').then((mod) => {
-      const confetti = mod.default
-      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } })
-      setTimeout(() => {
-        confetti({ particleCount: 60, spread: 90, origin: { y: 0.5, x: 0.3 } })
-      }, 300)
-      setTimeout(() => {
-        confetti({ particleCount: 60, spread: 90, origin: { y: 0.5, x: 0.7 } })
-      }, 600)
-    })
+    if (prev === 'in_progress' && (game.gameStatus === 'completed' || game.gameStatus === 'cancelled')) {
+      setShowEndOverlay(true)
+    }
   }, [game.gameStatus])
 
   // Surrender handler
@@ -1407,8 +1402,21 @@ function GameView({
       }
     : teams[1]
 
+  // Determine winner/loser for overlay
+  const myTeamIdx: number | null = game.currentUserTeamIndex
+  const isWinner = winnerTeamIndex != null && myTeamIdx === winnerTeamIndex
+  const isCancelled = game.gameStatus === 'cancelled'
+
   return (
     <div className="h-full flex flex-col max-w-xl mx-auto overflow-hidden">
+      {showEndOverlay && game.isCurrentUserInGame && (
+        <GameEndOverlay
+          isWinner={isWinner}
+          isCancelled={isCancelled}
+          winnerTeamName={winnerTeam?.teamName}
+          onDismiss={() => setShowEndOverlay(false)}
+        />
+      )}
       <Dialog
         open={showRematchPopup}
         onOpenChange={(open) => {

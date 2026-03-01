@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+bingo-client
+apps/bot/node_modules
+apps/bot/dist
+*.md
+.claude
+.env.local

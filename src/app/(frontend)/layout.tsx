@@ -3,6 +3,7 @@ import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
 import { NextIntlClientProvider } from 'next-intl'
+import { headers } from 'next/headers'
 
 import Script from 'next/script'
 import { ThemeProvider } from '@/components/theme/theme-provider'
@@ -11,6 +12,7 @@ import { AuthProvider } from '@/components/auth/AuthProvider'
 import { FloatingBackground } from '@/components/ui/floating-background'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants'
+import { getUserLocale } from '@/services/locale'
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -34,13 +36,16 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const locale = headersList.get('x-locale') || await getUserLocale()
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
         {/* Prevent crashes when browser translation tools modify the DOM */}
         <script

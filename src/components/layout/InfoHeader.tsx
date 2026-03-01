@@ -13,7 +13,7 @@ export function InfoHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-sm">
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
         <Link
-          href="/"
+          href={`/${locale}`}
           className="flex items-center gap-1.5 hover:opacity-80 transition-opacity shrink-0"
         >
           <Grid3x3 className="size-5 text-primary" />
@@ -21,16 +21,16 @@ export function InfoHeader() {
         </Link>
         <div className="flex items-center gap-1 sm:gap-3">
           <nav className="flex gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-            <Link href="/about" className="hover:text-foreground transition-colors">
+            <Link href={`/${locale}/about`} className="hover:text-foreground transition-colors">
               About
             </Link>
-            <Link href="/rules" className="hover:text-foreground transition-colors">
+            <Link href={`/${locale}/rules`} className="hover:text-foreground transition-colors">
               Rules
             </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
+            <Link href={`/${locale}/terms`} className="hover:text-foreground transition-colors">
               Terms
             </Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
+            <Link href={`/${locale}/privacy`} className="hover:text-foreground transition-colors">
               Privacy
             </Link>
           </nav>

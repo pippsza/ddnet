@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Globe } from 'lucide-react'
 import { setUserLocale } from '@/services/locale'
-import type { Locale } from '@/i18n/config'
+import { locales as allLocales, type Locale } from '@/i18n/config'
 
 const locales = [
   { code: 'en', name: 'English' },
@@ -23,10 +23,25 @@ const locales = [
 
 export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleLocaleChange = async (newLocale: string) => {
+    // Always set cookie so app pages use the same locale
     await setUserLocale(newLocale as Locale)
-    router.refresh()
+
+    // Check if we're on a locale-prefixed public page
+    const localePrefix = allLocales.find(
+      (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),
+    )
+
+    if (localePrefix) {
+      // Public page: change URL to new locale
+      const pathWithoutLocale = pathname.replace(`/${localePrefix}`, '') || ''
+      router.push(`/${newLocale}${pathWithoutLocale}`)
+    } else {
+      // App/auth page: cookie-based, just refresh
+      router.refresh()
+    }
   }
 
   return (

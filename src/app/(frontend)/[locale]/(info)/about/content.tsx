@@ -268,9 +268,9 @@ function TeamSection({ section }: { section: any }) {
   )
 }
 
-/* ─── Main Page ─── */
+/* ─── Main Content ─── */
 
-export default function AboutPage() {
+export default function AboutContent() {
   const t = useTranslations('about')
   const locale = useLocale()
   const { data, isLoading } = useSWR(`/api/globals/about-page?depth=0&locale=${locale}`, fetcher)
@@ -279,7 +279,7 @@ export default function AboutPage() {
     <PageTransition className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12">
       {/* Back link */}
       <Link
-        href="/"
+        href={`/${locale}`}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> {t('backToHome')}
@@ -428,9 +428,9 @@ export default function AboutPage() {
 
       {/* Footer nav */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground pt-4">
-        <Link href="/terms" className="hover:text-foreground transition-colors">{t('links.terms')}</Link>
-        <Link href="/privacy" className="hover:text-foreground transition-colors">{t('links.privacy')}</Link>
-        <Link href="/rules" className="hover:text-foreground transition-colors">{t('links.rules')}</Link>
+        <Link href={`/${locale}/terms`} className="hover:text-foreground transition-colors">{t('links.terms')}</Link>
+        <Link href={`/${locale}/privacy`} className="hover:text-foreground transition-colors">{t('links.privacy')}</Link>
+        <Link href={`/${locale}/rules`} className="hover:text-foreground transition-colors">{t('links.rules')}</Link>
       </div>
     </PageTransition>
   )

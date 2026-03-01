@@ -19,7 +19,7 @@ const FALLBACK_KEYS = [
   'changes',
 ] as const
 
-export default function PrivacyPage() {
+export default function PrivacyContent() {
   const t = useTranslations('privacy')
   const locale = useLocale()
   const { data } = useSWR(`/api/globals/privacy-page?depth=0&locale=${locale}`, fetcher)
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
   return (
     <PageTransition className="max-w-3xl mx-auto px-4 py-6 sm:py-12 space-y-6 sm:space-y-8">
       <Link
-        href="/"
+        href={`/${locale}`}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> {t('backToHome')}
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
       <FadeIn className="text-center text-sm text-muted-foreground">
         <p>
           {t('contact')}{' '}
-          <Link href="/about" className="text-primary hover:underline">
+          <Link href={`/${locale}/about`} className="text-primary hover:underline">
             {t('contactLink')}
           </Link>
         </p>

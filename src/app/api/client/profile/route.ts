@@ -60,6 +60,32 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Load recent completed games (last 5)
+    let recentGames: any[] = []
+    if (user.completedGames?.length) {
+      const recentRefs = (
+        user.completedGames as Array<{ relationTo: string; value: string }>
+      )
+        .slice(-5)
+        .reverse()
+
+      for (const ref of recentRefs) {
+        try {
+          const collection = ref.relationTo as 'bingo' | 'races'
+          const game = await payload.findByID({
+            collection,
+            id: typeof ref.value === 'string' ? ref.value : (ref.value as any).id,
+            depth: 2,
+          })
+          if (game) {
+            recentGames.push(formatGameForClient(game, collection, user, nick))
+          }
+        } catch {
+          // Game may have been deleted
+        }
+      }
+    }
+
     // Build response
     const response = {
       player: {
@@ -73,6 +99,7 @@ export async function GET(req: NextRequest) {
       },
 
       activeGame,
+      recentGames,
     }
 
     return NextResponse.json(response)

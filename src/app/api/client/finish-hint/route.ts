@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { authenticateClientToken } from '@/lib/client-auth'
 import { checkBingoProgress, checkRaceProgress } from '@/jobs/gameProgressJob'
-import type { User } from '@/payload-types'
 
 /**
  * POST /api/client/finish-hint — Client sends a hint that a player finished a map.
@@ -15,12 +13,9 @@ import type { User } from '@/payload-types'
  */
 export async function POST(req: NextRequest) {
   try {
-    // Extract bearer token
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Missing authorization' }, { status: 401 })
-    }
-    const token = authHeader.slice(7)
+    const auth = await authenticateClientToken(req)
+    if (auth instanceof NextResponse) return auth
+    const { user } = auth
 
     const body = await req.json()
     const { mapName, serverAddress, playerName } = body as {
@@ -35,23 +30,6 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       )
     }
-
-    const payload = await getPayload({ config })
-
-    // Authenticate by token
-    const { docs: users } = await payload.find({
-      collection: 'users',
-      where: { clientToken: { equals: token } },
-      overrideAccess: true,
-      limit: 1,
-      depth: 0,
-    })
-
-    if (users.length === 0) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
-    const user = users[0] as User
 
     // Verify the player name matches the token owner
     if (
@@ -82,7 +60,6 @@ export async function POST(req: NextRequest) {
     )
 
     // Trigger immediate verification using the existing game progress logic
-    // This reuses all DDNet API verification, timestamp checks, and win detection
     try {
       if (collection === 'bingo') {
         await checkBingoProgress(gameId)
@@ -91,7 +68,6 @@ export async function POST(req: NextRequest) {
       }
     } catch (checkError) {
       console.error(`[FinishHint] Error during immediate check:`, checkError)
-      // Don't fail the request — the regular poll job will catch it
     }
 
     return NextResponse.json({ accepted: true })

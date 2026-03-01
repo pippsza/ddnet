@@ -176,6 +176,7 @@ function formatGameForClient(
     categoryLabel: categoryEntry?.label ?? game.category,
     gameStatus: game.gameStatus,
     playerTeamIndex,
+    inviteCode: game.inviteCode ?? null,
     startedAt: game.startedAt ?? null,
     completedAt: game.completedAt ?? null,
     winnerTeam: game.winnerTeam ?? null,

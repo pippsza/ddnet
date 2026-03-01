@@ -2,7 +2,7 @@
   "navigation": {
     "title": "DDashBoard",
     "login": "Anmelden",
-    "adminPanel": "Admin-Bereich"
+    "goToApp": "Zur App"
   },
   "hero": {
     "badge": "Neuer Spielmodus",
@@ -69,6 +69,27 @@
       "description": "In Zukunft wird es die Möglichkeit geben, Server für besondere Events und Turniere bereitzustellen"
     }
   },
+  "raceMode": {
+    "title": "Renn-Modus",
+    "subtitle": "Ein Brettspiel-Rennen durch DDNet-Maps",
+    "description": "Bewege dich durch einen Pfad von Maps und schließe jede ab, um voranzukommen. Wer zuerst das Ziel erreicht, gewinnt! Jeder Knoten ist eine neue Herausforderung auf dem Weg zum Sieg."
+  },
+  "features": {
+    "title": "Plattform-Features",
+    "subtitle": "Alles was du brauchst an einem Ort",
+    "bingo": {
+      "title": "Bingo",
+      "description": "Vervollständige Herausforderungen auf dem Spielfeld. Erziele eine Reihe, ein Kreuz oder ein Full House!"
+    },
+    "race": {
+      "title": "Rennen",
+      "description": "Ein Brettspiel-Rennen durch DDNet-Maps. Wer zuerst im Ziel ist, gewinnt!"
+    },
+    "friends": {
+      "title": "Freunde-Monitoring",
+      "description": "Verfolge den Online-Status deiner Freunde und sieh in Echtzeit, auf welchem Server sie spielen."
+    }
+  },
   "cta": {
     "badge": "Jetzt beitreten",
     "title": "Bereit für die Herausforderung?",
@@ -78,6 +99,8 @@
   "footer": {
     "about": "Über uns",
     "rules": "Regeln",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutz",
     "support": "Support",
     "copyright": "© 2026 DDashBoard"
   }

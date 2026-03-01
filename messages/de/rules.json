@@ -1,0 +1,41 @@
+{
+  "backToHome": "Zurück zur Startseite",
+  "title": "Community-Regeln",
+  "subtitle": "Bitte halte dich an diese Regeln, damit DDashBoard ein spaßiger und einladender Ort für alle bleibt.",
+  "sections": {
+    "accounts": {
+      "title": "Kontoregeln",
+      "content": "• Ein Konto pro Person — keine Zweitkonten\n• Teile dein Konto nicht mit anderen\n• Verwende deinen echten DDNet-Nickname zur Verifizierung\n• Gib dich nicht als andere Spieler oder Mitarbeiter aus"
+    },
+    "fairPlay": {
+      "title": "Fair Play",
+      "content": "• Kein Cheaten oder Ausnutzen von Fehlern in Bingo-/Rennspielen\n• Verwende keine Bots oder automatisierte Tools zum Abschließen von Maps\n• Melde Fehler oder Exploits über das Support-System\n• Respektiere die Wettbewerbsintegrität aller Spielmodi"
+    },
+    "communication": {
+      "title": "Chat- & Forenregeln",
+      "content": "• Sei respektvoll gegenüber anderen Spielern\n• Keine Belästigung, Hassrede oder Diskriminierung\n• Kein Spammen oder Fluten in Chat/Foren\n• Bleibe beim Thema in den jeweiligen Kategorien\n• Keine Werbung oder Eigenwerbung ohne Erlaubnis"
+    },
+    "content": {
+      "title": "Inhaltsrichtlinien",
+      "content": "• Keine NSFW- oder unangemessenen Inhalte\n• Keine Weitergabe persönlicher Daten anderer\n• Forenbeiträge und Artikel müssen konstruktiv sein\n• Keine schädlichen Links oder Dateien veröffentlichen"
+    },
+    "enforcement": {
+      "title": "Durchsetzung",
+      "content": "Verstöße können folgende Konsequenzen haben:\n• Verwarnung durch Moderatoren\n• Vorübergehende Stummschaltung oder Sperre\n• Dauerhafte Kontosperrung\n\nDie Schwere der Maßnahme richtet sich nach Art und Häufigkeit des Verstoßes. Entscheidungen der Moderatoren sind endgültig."
+    },
+    "community": {
+      "title": "Gemeinschaftsgeist",
+      "content": "• Hilf neuen Spielern und beantworte Fragen\n• Trage positiv zu Diskussionen bei\n• Melde Regelverstöße über das Support-System\n• Hab Spaß und genieße die DDNet-Community!"
+    },
+    "bingo": {
+      "title": "Bingo-Spielregeln",
+      "content": "• Jedes Bingo-Spiel besteht aus einem Raster von DDNet-Maps\n• Schließe eine Map im Spiel ab, um das entsprechende Feld zu markieren\n• Die Siegbedingungen hängen von den Spieleinstellungen ab: Reihe, Diagonale oder volles Feld\n• Im Wettkampfmodus gewinnt der erste Spieler, der die Siegbedingung erfüllt\n• Im Solomodus fülle das Spielfeld in deinem eigenen Tempo aus\n• Map-Abschlüsse werden automatisch über DDNet-Server verifiziert\n• Verwende keine externen Tools oder Exploits, um Map-Abschlüsse zu fälschen\n• Das Verlassen eines laufenden Wettkampfspiels zählt als Aufgabe"
+    },
+    "race": {
+      "title": "Rennspielregeln",
+      "content": "• Jedes Rennen besteht aus einem Pfad von DDNet-Maps, die der Reihe nach abgeschlossen werden müssen\n• Schließe Maps so schnell wie möglich ab — die Zeit wird automatisch erfasst\n• Im Wettkampfmodus gewinnt der erste Spieler, der den gesamten Pfad abschließt\n• Im Solomodus versuche, deine persönliche Bestzeit zu schlagen\n• Map-Abschlüsse werden automatisch über DDNet-Server verifiziert\n• Du musst die Maps in der vorgegebenen Reihenfolge abschließen — Überspringen ist nicht erlaubt\n• Verwende keine externen Tools oder Exploits, um Abschlüsse zu fälschen\n• Das Verlassen eines laufenden Wettkampfrennens zählt als Aufgabe"
+    }
+  },
+  "footer": "Diese Regeln können aktualisiert werden. Schaue regelmäßig vorbei, um Änderungen zu sehen.",
+  "reportViolation": "Verstoß melden"
+}

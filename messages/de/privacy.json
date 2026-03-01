@@ -1,0 +1,41 @@
+{
+  "backToHome": "Zurück zur Startseite",
+  "title": "Datenschutzrichtlinie",
+  "lastUpdated": "Zuletzt aktualisiert: März 2026",
+  "sections": {
+    "dataCollected": {
+      "title": "1. Welche Daten wir erheben",
+      "content": "Wir erheben folgende Informationen:\n• Kontodaten: Benutzername, E-Mail-Adresse, Ingame-Nickname\n• Spielstatistiken: abgerufen von öffentlichen DDNet-APIs\n• Plattformaktivität: Forenbeiträge, Spielergebnisse, Freundesverbindungen\n• Technische Daten: Browsertyp, IP-Adresse (ausschließlich zu Sicherheitszwecken)"
+    },
+    "usage": {
+      "title": "2. Wie wir Ihre Daten verwenden",
+      "content": "Ihre Daten werden verwendet, um:\n• Plattformfunktionen bereitzustellen (Bingo-Spiele, Bestenlisten, Foren)\n• Ihre DDNet-Statistiken und Ihr Spielerprofil anzuzeigen\n• Soziale Funktionen zu ermöglichen (Freunde, Chat, Benachrichtigungen)\n• Die Plattform zu verbessern und Fehler zu beheben\n\nWir verkaufen Ihre Daten niemals an Dritte."
+    },
+    "cookies": {
+      "title": "3. Cookies & Lokaler Speicher",
+      "content": "Wir verwenden Cookies und lokalen Speicher für:\n• Authentifizierung (damit Sie angemeldet bleiben)\n• Design- und Spracheinstellungen\n• Sitzungsverwaltung\n\nEs werden keine Tracking-Cookies von Drittanbietern verwendet."
+    },
+    "thirdParty": {
+      "title": "4. Drittanbieterdienste",
+      "content": "Wir rufen Daten von folgenden externen Diensten ab:\n• DDNet API (ddnet.org) — Spielerstatistiken und Skin-Daten\n• DDStats API (ddstats.tw) — detaillierte Spielerstatistiken\n\nDiese Dienste haben eigene Datenschutzrichtlinien. Wir rufen ausschließlich öffentlich verfügbare Daten ab."
+    },
+    "retention": {
+      "title": "5. Datenspeicherung",
+      "content": "Kontodaten werden so lange gespeichert, wie Ihr Konto besteht. Sie können Ihr Konto jederzeit löschen.\n\nBenachrichtigungen werden automatisch gemäß Ihren Aufbewahrungseinstellungen bereinigt (1 Stunde bis 10 Tage).\n\nSpielstatistiken von DDNet werden zwischengespeichert und regelmäßig aktualisiert."
+    },
+    "rights": {
+      "title": "6. Ihre Rechte",
+      "content": "Sie haben das Recht:\n• Auf Ihre persönlichen Daten zuzugreifen\n• Die Korrektur ungenauer Daten zu verlangen\n• Ihr Konto und die zugehörigen Daten zu löschen\n• Ihre Daten zu exportieren\n\nUm diese Rechte auszuüben, kontaktieren Sie uns über das Support-System oder wenden Sie sich direkt an den Entwickler."
+    },
+    "children": {
+      "title": "7. Datenschutz für Kinder",
+      "content": "DDashBoard richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern. Wenn Sie glauben, dass ein Kind uns persönliche Daten übermittelt hat, kontaktieren Sie uns bitte."
+    },
+    "changes": {
+      "title": "8. Änderungen dieser Richtlinie",
+      "content": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Änderungen werden auf dieser Seite mit aktualisiertem Datum veröffentlicht.\n\nWesentliche Änderungen werden über das Benachrichtigungssystem der Plattform mitgeteilt."
+    }
+  },
+  "contact": "Fragen zu Ihrem Datenschutz?",
+  "contactLink": "Kontaktieren Sie uns"
+}

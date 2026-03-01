@@ -21,6 +21,7 @@ import Link from 'next/link'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { ArrowLeft, MessageCircle, Search, Trash2, X } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -457,7 +458,7 @@ function ChatContent() {
   }
 
   return (
-    <div className="-m-6 lg:m-0 h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-8rem)] overflow-hidden">
+    <PageTransition className="-m-6 lg:m-0 h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-8rem)] overflow-hidden">
       <div className="flex h-full lg:gap-4">
         {/* Conversations List */}
         <div
@@ -531,15 +532,15 @@ function ChatContent() {
                   ))}
                 </div>
               ) : (
-                <div className="divide-y">
+                <StaggerContainer className="divide-y">
                   {/* Conversations / friends filtered by search */}
                   {filteredEntries.map((entry) => {
                     const isTyping =
                       entry.conversationId && typingAll[entry.conversationId]?.length > 0
                     const isSelected = entry.conversationId ? selectedIds.has(entry.conversationId) : false
                     return (
+                      <StaggerItem key={entry.key}>
                       <button
-                        key={entry.key}
                         onClick={() => {
                           if (selectMode && entry.conversationId) {
                             toggleSelect(entry.conversationId)
@@ -633,6 +634,7 @@ function ChatContent() {
                           </div>
                         )}
                       </button>
+                      </StaggerItem>
                     )
                   })}
 
@@ -699,7 +701,7 @@ function ChatContent() {
                       )}
                     </div>
                   )}
-                </div>
+                </StaggerContainer>
               )}
             </CardContent>
           </Card>
@@ -825,7 +827,7 @@ function ChatContent() {
           )}
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }
 

@@ -2,7 +2,7 @@
   "navigation": {
     "title": "DDashBoard",
     "login": "Giriş Yap",
-    "adminPanel": "Yönetici Paneli"
+    "goToApp": "Uygulamaya Git"
   },
   "hero": {
     "badge": "Yeni Oyun Modu",
@@ -69,6 +69,27 @@
       "description": "Gelecekte özel etkinlikler ve turnuvalar için sunucu kurma seçeneği olacak"
     }
   },
+  "raceMode": {
+    "title": "Yarış Modu",
+    "subtitle": "DDNet haritalarında masa oyunu tarzı yarış",
+    "description": "Haritalardan oluşan bir yolda ilerle, her birini tamamlayarak bir sonraki düğüme geç. Bitiş çizgisine ilk ulaşan kazanır! Her düğüm zafere giden yolda yeni bir meydan okumadır."
+  },
+  "features": {
+    "title": "Platform Özellikleri",
+    "subtitle": "İhtiyacın olan her şey tek bir yerde",
+    "bingo": {
+      "title": "Bingo",
+      "description": "Tahtada harita görevlerini tamamla. Bir sıra, çapraz veya tam ev yap ve kazan!"
+    },
+    "race": {
+      "title": "Yarış",
+      "description": "DDNet haritalarında masa oyunu tarzı yarış. Bitiş çizgisine ilk ulaşan kazanır!"
+    },
+    "friends": {
+      "title": "Arkadaş Takibi",
+      "description": "Arkadaşlarının çevrimiçi durumunu takip et ve hangi sunucuda oynadıklarını gerçek zamanlı gör."
+    }
+  },
   "cta": {
     "badge": "Hemen Katıl",
     "title": "Meydan Okumaya Hazır mısın?",
@@ -78,6 +99,8 @@
   "footer": {
     "about": "Hakkında",
     "rules": "Kurallar",
+    "terms": "Kullanım Koşulları",
+    "privacy": "Gizlilik Politikası",
     "support": "Destek",
     "copyright": "© 2026 DDashBoard"
   }

@@ -118,20 +118,33 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('en' | 'ru' | 'uk' | 'de' | 'tr' | 'zh')
+    | ('en' | 'ru' | 'uk' | 'de' | 'tr' | 'zh')[];
   globals: {
     'verification-settings': VerificationSetting;
     'custom-categories': CustomCategory;
     'site-announcement': SiteAnnouncement;
     'bot-settings': BotSetting;
+    'about-page': AboutPage;
+    'terms-page': TermsPage;
+    'privacy-page': PrivacyPage;
+    'rules-page': RulesPage;
   };
   globalsSelect: {
     'verification-settings': VerificationSettingsSelect<false> | VerificationSettingsSelect<true>;
     'custom-categories': CustomCategoriesSelect<false> | CustomCategoriesSelect<true>;
     'site-announcement': SiteAnnouncementSelect<false> | SiteAnnouncementSelect<true>;
     'bot-settings': BotSettingsSelect<false> | BotSettingsSelect<true>;
+    'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
+    'terms-page': TermsPageSelect<false> | TermsPageSelect<true>;
+    'privacy-page': PrivacyPageSelect<false> | PrivacyPageSelect<true>;
+    'rules-page': RulesPageSelect<false> | RulesPageSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'ru' | 'uk' | 'de' | 'tr' | 'zh';
   user: User & {
     collection: 'users';
   };
@@ -2740,6 +2753,146 @@ export interface BotSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page".
+ */
+export interface AboutPage {
+  id: string;
+  /**
+   * Short description shown at the top of the About page.
+   */
+  projectDescription?: string | null;
+  /**
+   * Each section renders team members with a different visual preset.
+   */
+  teamSections?:
+    | {
+        sectionTitle: string;
+        preset: 'hero' | 'spotlight' | 'card' | 'minimal';
+        members?:
+          | {
+              name: string;
+              /**
+               * Skin name from DDNet (e.g. "default", "brownbear")
+               */
+              skinName?: string | null;
+              /**
+               * Teeworlds color code for body. Leave empty for default.
+               */
+              skinColorBody?: number | null;
+              /**
+               * Teeworlds color code for feet. Leave empty for default.
+               */
+              skinColorFeet?: number | null;
+              /**
+               * Badge text (e.g. "Lead Developer", "Tester")
+               */
+              title?: string | null;
+              /**
+               * Hex color for the title badge (e.g. #ef4444)
+               */
+              titleColor?: string | null;
+              description?: string | null;
+              links?:
+                | {
+                    platform: 'discord' | 'telegram' | 'github' | 'twitter' | 'ddnet';
+                    value: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Simple list of people to thank — name + skin avatar.
+   */
+  specialThanks?:
+    | {
+        name: string;
+        skinName?: string | null;
+        skinColorBody?: number | null;
+        skinColorFeet?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  supportSection?: {
+    enabled?: boolean | null;
+    title?: string | null;
+    description?: string | null;
+    donationUrl?: string | null;
+  };
+  contact?: {
+    enabled?: boolean | null;
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Contact methods (Discord, Telegram, GitHub, etc.)
+     */
+    links?:
+      | {
+          platform: 'discord' | 'telegram' | 'github' | 'twitter' | 'email';
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "terms-page".
+ */
+export interface TermsPage {
+  id: string;
+  lastUpdated?: string | null;
+  sections?:
+    | {
+        title: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-page".
+ */
+export interface PrivacyPage {
+  id: string;
+  lastUpdated?: string | null;
+  sections?:
+    | {
+        title: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rules-page".
+ */
+export interface RulesPage {
+  id: string;
+  sections?:
+    | {
+        title: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "verification-settings_select".
  */
 export interface VerificationSettingsSelect<T extends boolean = true> {
@@ -2806,6 +2959,123 @@ export interface BotSettingsSelect<T extends boolean = true> {
   verificationBotEnabled?: T;
   raceBotEnabled?: T;
   ingameChatBotEnabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page_select".
+ */
+export interface AboutPageSelect<T extends boolean = true> {
+  projectDescription?: T;
+  teamSections?:
+    | T
+    | {
+        sectionTitle?: T;
+        preset?: T;
+        members?:
+          | T
+          | {
+              name?: T;
+              skinName?: T;
+              skinColorBody?: T;
+              skinColorFeet?: T;
+              title?: T;
+              titleColor?: T;
+              description?: T;
+              links?:
+                | T
+                | {
+                    platform?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  specialThanks?:
+    | T
+    | {
+        name?: T;
+        skinName?: T;
+        skinColorBody?: T;
+        skinColorFeet?: T;
+        id?: T;
+      };
+  supportSection?:
+    | T
+    | {
+        enabled?: T;
+        title?: T;
+        description?: T;
+        donationUrl?: T;
+      };
+  contact?:
+    | T
+    | {
+        enabled?: T;
+        title?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              platform?: T;
+              value?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "terms-page_select".
+ */
+export interface TermsPageSelect<T extends boolean = true> {
+  lastUpdated?: T;
+  sections?:
+    | T
+    | {
+        title?: T;
+        content?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-page_select".
+ */
+export interface PrivacyPageSelect<T extends boolean = true> {
+  lastUpdated?: T;
+  sections?:
+    | T
+    | {
+        title?: T;
+        content?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rules-page_select".
+ */
+export interface RulesPageSelect<T extends boolean = true> {
+  sections?:
+    | T
+    | {
+        title?: T;
+        content?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

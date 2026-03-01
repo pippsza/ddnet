@@ -20,6 +20,10 @@ import { VerificationSettings } from './globals/VerificationSettings'
 import { CustomCategories } from './globals/CustomCategories'
 import { SiteAnnouncement } from './globals/SiteAnnouncement'
 import { BotSettings } from './globals/BotSettings'
+import { AboutPage } from './globals/AboutPage'
+import { TermsPage } from './globals/TermsPage'
+import { PrivacyPage } from './globals/PrivacyPage'
+import { RulesPage } from './globals/RulesPage'
 import { ChatSessions } from './collections/ChatSessions'
 import { PushSubscriptions } from './collections/PushSubscriptions'
 import { Conversations } from './collections/Conversations'
@@ -37,6 +41,18 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  localization: {
+    locales: [
+      { label: 'English', code: 'en' },
+      { label: 'Русский', code: 'ru' },
+      { label: 'Українська', code: 'uk' },
+      { label: 'Deutsch', code: 'de' },
+      { label: 'Türkçe', code: 'tr' },
+      { label: '中文', code: 'zh' },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
   },
   collections: [
     Users,
@@ -58,7 +74,7 @@ export default buildConfig({
     Roles,
     WatchedPlayers,
   ],
-  globals: [VerificationSettings, CustomCategories, SiteAnnouncement, BotSettings],
+  globals: [VerificationSettings, CustomCategories, SiteAnnouncement, BotSettings, AboutPage, TermsPage, PrivacyPage, RulesPage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

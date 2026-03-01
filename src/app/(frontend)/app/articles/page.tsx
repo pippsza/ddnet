@@ -20,6 +20,7 @@ import { isPlatformOnline } from '@/lib/online-utils'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useTranslations } from 'next-intl'
 import { Eye, Heart, Search, Clock, Plus } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -99,7 +100,7 @@ function ArticlesContent() {
   const totalDocs = data?.totalDocs || 0
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('articles.title')}</h1>
         {canCreateArticles && (
@@ -178,9 +179,10 @@ function ArticlesContent() {
       {isLoading ? (
         <ArticleGridSkeleton />
       ) : articles.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {articles.map((article: any) => (
-            <Link key={article.id} href={`/app/articles/${article.slug}`} className="block">
+            <StaggerItem key={article.id}>
+            <Link href={`/app/articles/${article.slug}`} className="block">
               <Card className="overflow-hidden hover:shadow-md hover:border-primary/30 transition-all h-full">
                 {article.coverImage?.url ? (
                   <div className="relative aspect-video bg-muted">
@@ -263,8 +265,9 @@ function ArticlesContent() {
                 </CardContent>
               </Card>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       ) : featured.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -281,7 +284,7 @@ function ArticlesContent() {
         limit={12}
         onPageChange={setPage}
       />
-    </div>
+    </PageTransition>
   )
 }
 

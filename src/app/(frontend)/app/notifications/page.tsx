@@ -35,6 +35,7 @@ import {
   LifeBuoy,
   Clock,
 } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -120,7 +121,7 @@ function NotificationsContent() {
   if (isLoading) return <CardListSkeleton />
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{t('title')}</h1>
@@ -151,7 +152,7 @@ function NotificationsContent() {
       </div>
 
       {notifications.length > 0 ? (
-        <div className="space-y-2">
+        <StaggerContainer className="space-y-2">
           {notifications.map((notif: any) => {
             const config = TYPE_CONFIG[notif.type] || TYPE_CONFIG.system
             const Icon = config.icon
@@ -205,22 +206,23 @@ function NotificationsContent() {
 
             if (notif.actionUrl) {
               return (
-                <Link
-                  key={notif.id}
-                  href={notif.actionUrl}
-                  className="block"
-                  onClick={() => {
-                    if (!notif.isRead) markAsRead(notif.id)
-                  }}
-                >
-                  {content}
-                </Link>
+                <StaggerItem key={notif.id}>
+                  <Link
+                    href={notif.actionUrl}
+                    className="block"
+                    onClick={() => {
+                      if (!notif.isRead) markAsRead(notif.id)
+                    }}
+                  >
+                    {content}
+                  </Link>
+                </StaggerItem>
               )
             }
 
-            return <div key={notif.id}>{content}</div>
+            return <StaggerItem key={notif.id}>{content}</StaggerItem>
           })}
-        </div>
+        </StaggerContainer>
       ) : (
         <Card>
           <CardContent className="p-12 text-center text-muted-foreground">
@@ -238,7 +240,7 @@ function NotificationsContent() {
         limit={20}
         onPageChange={setPage}
       />
-    </div>
+    </PageTransition>
   )
 }
 

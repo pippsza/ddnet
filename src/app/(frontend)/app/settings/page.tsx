@@ -27,6 +27,7 @@ import {
   Spinner,
   type VerificationServer,
 } from '@/components/auth/VerificationShared'
+import { PageTransition, ScaleIn, FadeIn } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 

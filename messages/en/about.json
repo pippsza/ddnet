@@ -1,0 +1,23 @@
+{
+  "backToHome": "Back to Home",
+  "title": "About DDashBoard",
+  "defaultDescription": "DDashBoard is a free community platform for DDraceNetwork players. Play bingo, race, track stats, and connect with friends — all in one place.",
+  "freeProject": {
+    "title": "Free & Open for Everyone",
+    "description": "DDashBoard is completely free to use. We don't charge anything and never will. The project is built by the community, for the community. We welcome any contributions — whether it's development, testing, translations, or financial support."
+  },
+  "specialThanks": "Special Thanks",
+  "support": {
+    "title": "Support the Project",
+    "description": "DDashBoard is a passion project maintained by volunteers. If you'd like to help, you can contribute code, report bugs, help with translations, or support us financially.",
+    "donate": "Support Us"
+  },
+  "contact": {
+    "title": "Get in Touch"
+  },
+  "links": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "rules": "Rules"
+  }
+}

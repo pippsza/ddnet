@@ -2,7 +2,7 @@
   "navigation": {
     "title": "DDashBoard",
     "login": "登录",
-    "adminPanel": "管理面板"
+    "goToApp": "进入应用"
   },
   "hero": {
     "badge": "全新游戏模式",
@@ -69,6 +69,27 @@
       "description": "未来将支持为特殊活动和锦标赛部署专属服务器"
     }
   },
+  "raceMode": {
+    "title": "竞速模式",
+    "subtitle": "桌游风格的 DDNet 地图竞速",
+    "description": "沿路径前进，完成每张地图以推进到下一个节点。第一个到达终点的玩家获胜！每个节点都是通往胜利之路上的新挑战。"
+  },
+  "features": {
+    "title": "平台功能",
+    "subtitle": "一站式满足你的所有需求",
+    "bingo": {
+      "title": "宾果",
+      "description": "在棋盘上完成地图挑战。连成一线、十字或全板即可获胜！"
+    },
+    "race": {
+      "title": "竞速",
+      "description": "桌游风格的 DDNet 地图竞速。第一个到达终点线的人获胜！"
+    },
+    "friends": {
+      "title": "好友监控",
+      "description": "追踪好友的在线状态，实时查看他们正在哪个服务器上游戏。"
+    }
+  },
   "cta": {
     "badge": "立即加入",
     "title": "准备好迎接挑战了吗？",
@@ -78,6 +99,8 @@
   "footer": {
     "about": "关于",
     "rules": "规则",
+    "terms": "服务条款",
+    "privacy": "隐私政策",
     "support": "支持",
     "copyright": "© 2026 DDashBoard"
   }

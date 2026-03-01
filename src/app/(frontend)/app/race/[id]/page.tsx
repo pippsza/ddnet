@@ -64,6 +64,7 @@ import { ModeSelector } from '@/components/bingo/ModePreview'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { PageTransition } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -850,7 +851,7 @@ function LobbyView({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
+    <PageTransition className="h-full flex flex-col overflow-hidden relative">
       {!botSettings.raceBotEnabled && (
         <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shrink-0 mb-2">
           <Wrench className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
@@ -1006,7 +1007,7 @@ function LobbyView({
           )}
         </Button>
       </div>
-    </div>
+    </PageTransition>
   )
 }
 

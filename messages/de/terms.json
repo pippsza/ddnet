@@ -1,0 +1,41 @@
+{
+  "backToHome": "Zurück zur Startseite",
+  "title": "Nutzungsbedingungen",
+  "lastUpdated": "Zuletzt aktualisiert: März 2026",
+  "sections": {
+    "acceptance": {
+      "title": "1. Annahme der Bedingungen",
+      "content": "Durch den Zugriff auf und die Nutzung von DDashBoard erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie nicht einverstanden sind, nutzen Sie die Plattform bitte nicht.\n\nDDashBoard ist eine kostenlose Community-Plattform für DDraceNetwork-Spieler. Diese Bedingungen regeln Ihre Nutzung der Website und aller damit verbundenen Dienste."
+    },
+    "accounts": {
+      "title": "2. Benutzerkonten",
+      "content": "Sie können ein Konto erstellen, um auf die Funktionen der Plattform zuzugreifen. Sie sind für die Sicherheit Ihres Kontos und alle darunter stattfindenden Aktivitäten verantwortlich.\n\nBei der Registrierung müssen Sie korrekte Angaben machen. Pro Person ist nur ein Konto erlaubt. Das Teilen von Konten ist nicht gestattet."
+    },
+    "conduct": {
+      "title": "3. Nutzerverhalten",
+      "content": "Sie verpflichten sich, Folgendes zu unterlassen:\n• Die Plattform für illegale Zwecke zu nutzen\n• Andere Nutzer zu belästigen, zu bedrohen oder zu misshandeln\n• Fehler oder Sicherheitslücken auszunutzen\n• Automatisierte Tools ohne Genehmigung für den Zugriff auf die Plattform zu verwenden\n• Andere Nutzer oder DDNet-Mitarbeiter zu imitieren\n• Spielstatistiken zu manipulieren oder auf irgendeine Weise zu betrügen"
+    },
+    "content": {
+      "title": "4. Nutzerinhalte",
+      "content": "Sie behalten das Eigentum an von Ihnen erstellten Inhalten (Forenbeiträge, Artikel usw.). Mit dem Veröffentlichen von Inhalten gewähren Sie DDashBoard eine nicht-exklusive Lizenz zur Anzeige und Verbreitung dieser Inhalte auf der Plattform.\n\nWir behalten uns das Recht vor, Inhalte zu entfernen, die gegen diese Bedingungen oder unsere Community-Regeln verstoßen."
+    },
+    "thirdParty": {
+      "title": "5. Drittanbieterdienste",
+      "content": "DDashBoard ist mit DDraceNetwork-Diensten (ddnet.org) für Spielerdaten, Statistiken und Skin-Darstellung integriert. Wir sind weder mit dem DDNet-Team verbunden noch von diesem unterstützt.\n\nSpielerstatistiken und Skin-Daten werden von öffentlichen DDNet-APIs abgerufen. Wir haben keinen Einfluss auf die Verfügbarkeit oder Genauigkeit dieser Daten."
+    },
+    "termination": {
+      "title": "6. Kündigung",
+      "content": "Wir können Ihr Konto jederzeit bei Verstoß gegen diese Bedingungen sperren oder löschen. Sie können Ihr Konto jederzeit über die Einstellungsseite löschen.\n\nMit der Kündigung erlischt Ihr Recht zur Nutzung der Plattform sofort."
+    },
+    "disclaimers": {
+      "title": "7. Haftungsausschluss",
+      "content": "DDashBoard wird ohne jegliche Gewährleistung zur Verfügung gestellt. Wir garantieren weder Verfügbarkeit, Datengenauigkeit noch unterbrechungsfreien Betrieb.\n\nDies ist ein kostenloses Community-Projekt. Wir haften nicht für Schäden, die aus Ihrer Nutzung der Plattform entstehen."
+    },
+    "changes": {
+      "title": "8. Änderungen der Bedingungen",
+      "content": "Wir können diese Bedingungen von Zeit zu Zeit aktualisieren. Die fortgesetzte Nutzung der Plattform nach Änderungen gilt als Annahme der neuen Bedingungen.\n\nWesentliche Änderungen werden über das Benachrichtigungssystem der Plattform bekannt gegeben."
+    }
+  },
+  "contact": "Fragen zu diesen Bedingungen?",
+  "contactLink": "Kontaktieren Sie uns"
+}

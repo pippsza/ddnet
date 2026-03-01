@@ -31,6 +31,7 @@ import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { DDNET_CATEGORIES, getCategoryLabel } from '@/lib/ddnet-constants'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { cn } from '@/lib/utils'
+import { PageTransition, ScaleIn, FadeIn } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -98,8 +99,10 @@ function LeaderboardContent() {
   const totalDocs = data?.totalDocs || 0
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
+    <PageTransition className="space-y-6">
+      <FadeIn direction="down">
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+      </FadeIn>
 
       <Tabs value={activeTab} onValueChange={setTab}>
         <TabsList className="w-full h-11">
@@ -155,9 +158,10 @@ function LeaderboardContent() {
               </CardContent>
             </Card>
           ) : docs.length > 0 ? (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
+            <ScaleIn>
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12">{t('columns.rank')}</TableHead>
@@ -242,12 +246,15 @@ function LeaderboardContent() {
                 </Table>
               </CardContent>
             </Card>
+            </ScaleIn>
           ) : (
-            <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
-                {category !== 'all' ? t('emptyForCategory', { category: getCategoryLabel(category as any) }) : t('empty')}
-              </CardContent>
-            </Card>
+            <ScaleIn>
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  {category !== 'all' ? t('emptyForCategory', { category: getCategoryLabel(category as any) }) : t('empty')}
+                </CardContent>
+              </Card>
+            </ScaleIn>
           )}
 
           {/* Pagination */}
@@ -260,7 +267,7 @@ function LeaderboardContent() {
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageTransition>
   )
 }
 

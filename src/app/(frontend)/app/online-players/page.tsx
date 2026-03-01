@@ -22,6 +22,7 @@ import {
   WifiOff,
   Search,
 } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -88,7 +89,7 @@ function OnlinePlayersContent() {
   if (isLoading) return <FriendsPageSkeleton />
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{t('online.title')}</h1>
@@ -124,8 +125,9 @@ function OnlinePlayersContent() {
 
       {/* Player List */}
       {players.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {players.map((player: any) => (
+            <StaggerItem key={player.id}>
             <PlayerCard
               key={player.id}
               name={player.nickname}
@@ -186,8 +188,9 @@ function OnlinePlayersContent() {
                 </div>
               }
             />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       ) : (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -199,7 +202,7 @@ function OnlinePlayersContent() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageTransition>
   )
 }
 

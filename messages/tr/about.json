@@ -1,0 +1,23 @@
+{
+  "backToHome": "Ana Sayfaya Dön",
+  "title": "DDashBoard Hakkında",
+  "defaultDescription": "DDashBoard, DDraceNetwork oyuncuları için ücretsiz bir topluluk platformudur. Bingo oynayın, yarışın, istatistikleri takip edin ve arkadaşlarınızla bağlantı kurun — hepsi tek bir yerde.",
+  "freeProject": {
+    "title": "Herkes İçin Ücretsiz ve Açık",
+    "description": "DDashBoard tamamen ücretsizdir. Hiçbir ücret almıyoruz ve asla almayacağız. Proje topluluk tarafından, topluluk için oluşturulmuştur. Geliştirme, test, çeviri veya mali destek — her türlü katkıya açığız."
+  },
+  "specialThanks": "Özel Teşekkürler",
+  "support": {
+    "title": "Projeyi Destekle",
+    "description": "DDashBoard gönüllüler tarafından sürdürülen bir tutkulu projedir. Yardım etmek istiyorsanız kod yazabilir, hata bildirebilir, çevirilere yardımcı olabilir veya bizi maddi olarak destekleyebilirsiniz.",
+    "donate": "Destekle"
+  },
+  "contact": {
+    "title": "İletişim"
+  },
+  "links": {
+    "terms": "Kullanım Koşulları",
+    "privacy": "Gizlilik Politikası",
+    "rules": "Kurallar"
+  }
+}

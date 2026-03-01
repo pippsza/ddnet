@@ -12,6 +12,7 @@ import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { Search } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -47,7 +48,7 @@ function PlayersContent() {
   const totalDocs = data?.totalDocs || 0
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('list.title')}</h1>
       </div>
@@ -72,21 +73,22 @@ function PlayersContent() {
               <h2 className="text-lg font-semibold text-muted-foreground">
                 {search ? t('list.registered') : t('list.community')}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.registered.map((player: any) => (
-                  <PlayerCard
-                    key={player.name}
-                    name={player.name}
-                    points={player.points}
-                    rank={player.rank}
-                    isVerified={player.isVerified}
-                    platformOnline={isPlatformOnline(player.lastSeenAt)}
-                    role={(player as any).primaryRole || player.roles}
-                    skin={player.skin}
-                    variant="registered"
-                  />
+                  <StaggerItem key={player.name}>
+                    <PlayerCard
+                      name={player.name}
+                      points={player.points}
+                      rank={player.rank}
+                      isVerified={player.isVerified}
+                      platformOnline={isPlatformOnline(player.lastSeenAt)}
+                      role={(player as any).primaryRole || player.roles}
+                      skin={player.skin}
+                      variant="registered"
+                    />
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </div>
           )}
 
@@ -94,17 +96,18 @@ function PlayersContent() {
           {data.ddnet?.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-muted-foreground">{t('list.ddnet')}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.ddnet.map((player: any) => (
-                  <PlayerCard
-                    key={player.name}
-                    name={player.name}
-                    points={player.points}
-                    rank={player.rank}
-                    variant="ddnet"
-                  />
+                  <StaggerItem key={player.name}>
+                    <PlayerCard
+                      name={player.name}
+                      points={player.points}
+                      rank={player.rank}
+                      variant="ddnet"
+                    />
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </div>
           )}
 
@@ -125,7 +128,7 @@ function PlayersContent() {
         limit={12}
         onPageChange={setPage}
       />
-    </div>
+    </PageTransition>
   )
 }
 

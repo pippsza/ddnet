@@ -18,6 +18,7 @@ import { RoleBadge } from '@/components/ui/status-badge'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { useTranslations } from 'next-intl'
 import { MessageSquare, Eye, Pin, Search, Plus } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -86,7 +87,7 @@ function ForumContent() {
   const totalPages = data?.totalPages || 1
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <PageTransition className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('list.title')}</h1>
         <Button asChild>
@@ -123,9 +124,10 @@ function ForumContent() {
       {isLoading ? (
         <CardListSkeleton />
       ) : posts.length > 0 ? (
-        <div className="space-y-2">
+        <StaggerContainer className="space-y-2">
           {posts.map((post: any) => (
-            <Link key={post.id} href={`/app/forum/${post.id}`} className="block">
+            <StaggerItem key={post.id}>
+            <Link href={`/app/forum/${post.id}`} className="block">
               <Card className="hover:shadow-md hover:border-primary/30 transition-all">
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Author Avatar */}
@@ -178,8 +180,9 @@ function ForumContent() {
                 </CardContent>
               </Card>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       ) : (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -195,7 +198,7 @@ function ForumContent() {
         limit={18}
         onPageChange={setPage}
       />
-    </div>
+    </PageTransition>
   )
 }
 

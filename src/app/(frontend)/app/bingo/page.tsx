@@ -26,6 +26,7 @@ import { usePagination } from '@/hooks/use-pagination'
 import { Badge } from '@/components/ui/badge'
 import { Grid3X3, Plus, X, Users, User, Mail, LogIn, Loader2 } from 'lucide-react'
 import { CategoryIcon } from '@/components/bingo/CategoryIcon'
+import { PageTransition, StaggerContainer, StaggerItem, FadeIn } from '@/components/ui/animations'
 import { toast } from 'sonner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -87,7 +88,7 @@ function BingoLobbyContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('lobby.title')}</h1>
         <div className="flex items-center gap-2">
@@ -129,23 +130,27 @@ function BingoLobbyContent() {
       ) : activeGames.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">{t('lobby.myActiveGames')}</h2>
-          <div className="grid gap-3">
+          <StaggerContainer className="grid gap-3">
             {activeGames.map((game: any) => (
-              <GameCard key={game.id} game={game} isMine onCancel={() => mutateMyGames()} />
+              <StaggerItem key={game.id}>
+                <GameCard game={game} isMine onCancel={() => mutateMyGames()} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </section>
       ) : null}
 
       {/* Public Lobby */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t('lobby.publicLobby')}</h2>
-        <div className="grid gap-3">
+        <StaggerContainer className="grid gap-3">
           {lobbyLoading ? (
             <GameCardSkeleton count={3} />
           ) : lobbyGames.length > 0 ? (
             lobbyGames.map((game: any) => (
-              <GameCard key={game.id} game={game} />
+              <StaggerItem key={game.id}>
+                <GameCard game={game} />
+              </StaggerItem>
             ))
           ) : (
             <Card>
@@ -154,7 +159,7 @@ function BingoLobbyContent() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </StaggerContainer>
         <PaginationControls
           page={lobbyPage}
           totalPages={lobbyTotalPages}
@@ -182,7 +187,7 @@ function BingoLobbyContent() {
           />
         </section>
       )}
-    </div>
+    </PageTransition>
   )
 }
 

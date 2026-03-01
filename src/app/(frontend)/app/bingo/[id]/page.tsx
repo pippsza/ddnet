@@ -61,6 +61,7 @@ import { ModeSelector } from '@/components/bingo/ModePreview'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { PageTransition, FadeIn } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -702,7 +703,7 @@ function LobbyView({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
+    <PageTransition className="h-full flex flex-col overflow-hidden relative">
       {/* Top bar */}
       <div className="shrink-0 border-b">
         <div className="flex items-center justify-between py-2">
@@ -842,7 +843,7 @@ function LobbyView({
           )}
         </Button>
       </div>
-    </div>
+    </PageTransition>
   )
 }
 

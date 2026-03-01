@@ -26,6 +26,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -260,7 +261,7 @@ function FriendsContent() {
   )
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         {incoming.length > 0 && (
@@ -294,11 +295,11 @@ function FriendsContent() {
       {(incoming.length > 0 || outgoing.length > 0) && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">{t('pending.title')}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             {/* Incoming */}
             {incoming.map((req: any) => (
+              <StaggerItem key={req.id}>
               <PlayerCard
-                key={req.id}
                 name={req.otherUser?.ingameNick || t('unknownUser')}
                 role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
@@ -335,12 +336,13 @@ function FriendsContent() {
                   </div>
                 }
               />
+              </StaggerItem>
             ))}
 
             {/* Outgoing */}
             {outgoing.map((req: any) => (
+              <StaggerItem key={req.id}>
               <PlayerCard
-                key={req.id}
                 name={req.otherUser?.ingameNick || t('unknownUser')}
                 role={(req.otherUser as any)?.primaryRole || req.otherUser?.roles}
                 skin={{
@@ -368,8 +370,9 @@ function FriendsContent() {
                   </Button>
                 }
               />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       )}
 
@@ -414,46 +417,47 @@ function FriendsContent() {
       {suggested.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-muted-foreground">{t('suggested.title')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {suggested.slice(0, 8).map((player: any) => {
               const alreadySent =
                 sentRequests.has(player.name?.toLowerCase()) ||
                 outgoingNicks.has(player.name?.toLowerCase())
 
               return (
-                <PlayerCard
-                  key={player.name}
-                  name={player.name}
-                  points={player.points}
-                  rank={player.rank}
-                  skin={player.skin}
-                  actions={
-                    <Button
-                      size="sm"
-                      variant={alreadySent ? 'secondary' : 'default'}
-                      disabled={alreadySent}
-                      onClick={() => handleAddFriend(player.name, player)}
-                    >
-                      {alreadySent ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 mr-1" />
-                          {t('suggested.sent')}
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          {t('suggested.add')}
-                        </>
-                      )}
-                    </Button>
-                  }
-                />
+                <StaggerItem key={player.name}>
+                  <PlayerCard
+                    name={player.name}
+                    points={player.points}
+                    rank={player.rank}
+                    skin={player.skin}
+                    actions={
+                      <Button
+                        size="sm"
+                        variant={alreadySent ? 'secondary' : 'default'}
+                        disabled={alreadySent}
+                        onClick={() => handleAddFriend(player.name, player)}
+                      >
+                        {alreadySent ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 mr-1" />
+                            {t('suggested.sent')}
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-3.5 w-3.5 mr-1" />
+                            {t('suggested.add')}
+                          </>
+                        )}
+                      </Button>
+                    }
+                  />
+                </StaggerItem>
               )
             })}
-          </div>
+          </StaggerContainer>
         </div>
       )}
-    </div>
+    </PageTransition>
   )
 }
 
@@ -476,10 +480,10 @@ function FriendsList({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+    <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
       {friends.map((friend: any) => (
+        <StaggerItem key={friend.userId}>
         <PlayerCard
-          key={friend.userId}
           name={friend.ingameNick || friend.nickname}
           role={(friend as any).primaryRole || friend.roles}
           skin={friend.skin}
@@ -517,8 +521,9 @@ function FriendsList({
             </button>
           }
         />
+        </StaggerItem>
       ))}
-    </div>
+    </StaggerContainer>
   )
 }
 

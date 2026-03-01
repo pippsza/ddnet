@@ -15,6 +15,7 @@ import { isPlatformOnline } from '@/lib/online-utils'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useTranslations } from 'next-intl'
 import { Eye, Heart, Clock, Pencil, ArrowLeft } from 'lucide-react'
+import { PageTransition } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -94,7 +95,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <Link
           href="/app/articles"
@@ -210,6 +211,6 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageTransition>
   )
 }

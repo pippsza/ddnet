@@ -1,0 +1,41 @@
+{
+  "backToHome": "Ana Sayfaya Dön",
+  "title": "Topluluk Kuralları",
+  "subtitle": "DDashBoard'u herkes için eğlenceli ve hoş bir yer tutmak için bu kurallara uyun.",
+  "sections": {
+    "accounts": {
+      "title": "Hesap Kuralları",
+      "content": "• Her kişi yalnızca bir hesap — yan hesap açmak yasaktır\n• Hesabınızı başkalarıyla paylaşmayın\n• Doğrulama için gerçek DDNet takma adınızı kullanın\n• Diğer oyuncuları veya yetkilileri taklit etmeyin"
+    },
+    "fairPlay": {
+      "title": "Adil Oyun",
+      "content": "• Bingo veya yarış oyunlarında hile yapmak veya hataları istismar etmek yasaktır\n• Haritaları tamamlamak için bot veya otomatik araçlar kullanmayın\n• Hataları veya güvenlik açıklarını destek sistemi üzerinden bildirin\n• Tüm oyun modlarının rekabet bütünlüğüne saygı gösterin"
+    },
+    "communication": {
+      "title": "Sohbet ve Forum Kuralları",
+      "content": "• Diğer oyunculara saygılı olun\n• Taciz, nefret söylemi veya ayrımcılık yasaktır\n• Sohbet veya forumlarda spam yapmayın veya mesaj yağmuru yapmayın\n• Tartışmaları ilgili kategorilerde konuyla ilgili tutun\n• İzinsiz reklam veya tanıtım yapmayın"
+    },
+    "content": {
+      "title": "İçerik Kuralları",
+      "content": "• Uygunsuz veya müstehcen içerik paylaşmak yasaktır\n• Başkalarının kişisel bilgilerini paylaşmayın\n• Forum gönderileri ve makaleler yapıcı olmalıdır\n• Zararlı bağlantılar veya dosyalar paylaşmayın"
+    },
+    "enforcement": {
+      "title": "Yaptırımlar",
+      "content": "İhlaller aşağıdaki sonuçlara yol açabilir:\n• Moderatörlerden uyarı\n• Geçici susturma veya yasaklama\n• Kalıcı hesap askıya alma\n\nAlınan önlemin ciddiyeti, ihlalin niteliğine ve sıklığına bağlıdır. Moderatör kararları kesindir."
+    },
+    "community": {
+      "title": "Topluluk Ruhu",
+      "content": "• Yeni oyunculara yardım edin ve soruları yanıtlayın\n• Tartışmalara olumlu katkıda bulunun\n• Kural ihlallerini destek sistemi üzerinden bildirin\n• Eğlenin ve DDNet topluluğunun tadını çıkarın!"
+    },
+    "bingo": {
+      "title": "Bingo Oyun Kuralları",
+      "content": "• Her bingo oyunu bir DDNet harita ızgarasından oluşur\n• Oyunda bir haritayı tamamlayarak ilgili hücreyi işaretleyin\n• Kazanma koşulları oyun ayarlarına bağlıdır: sıra, çapraz veya tam dolum\n• Rekabet modunda, kazanma koşulunu ilk tamamlayan oyuncu kazanır\n• Solo modda, tahtayı kendi hızınızda doldurun\n• Harita tamamlamaları DDNet sunucuları üzerinden otomatik olarak doğrulanır\n• Harita tamamlamalarını sahtelemek için harici araçlar veya açıklar kullanmayın\n• Devam eden bir rekabet oyunundan ayrılmak hükmen mağlubiyet sayılır"
+    },
+    "race": {
+      "title": "Yarış Oyun Kuralları",
+      "content": "• Her yarış, sırayla tamamlanması gereken bir DDNet harita rotasından oluşur\n• Haritaları mümkün olduğunca hızlı tamamlayın — süre otomatik olarak takip edilir\n• Rekabet modunda, tüm rotayı ilk tamamlayan oyuncu kazanır\n• Solo modda, kişisel en iyi sürenizi geçmeye çalışın\n• Harita tamamlamaları DDNet sunucuları üzerinden otomatik olarak doğrulanır\n• Haritaları verilen sırada tamamlamalısınız — atlama yapılamaz\n• Tamamlamaları sahtelemek için harici araçlar veya açıklar kullanmayın\n• Devam eden bir rekabet yarışından ayrılmak hükmen mağlubiyet sayılır"
+    }
+  },
+  "footer": "Bu kurallar güncellenebilir. Değişiklikler için düzenli olarak kontrol edin.",
+  "reportViolation": "İhlal bildirin"
+}

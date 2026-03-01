@@ -17,6 +17,7 @@ import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 import { isPlatformOnline } from '@/lib/online-utils'
 import { useTranslations } from 'next-intl'
 import { Eye, MessageSquare, Pin, Lock, EyeOff, ArrowLeft } from 'lucide-react'
+import { PageTransition } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -152,7 +153,7 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
   const isLocked = post.status === 'locked'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <PageTransition className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Compact header */}
       <div className="shrink-0 pb-3 space-y-2">
         <div className="flex items-center gap-3">
@@ -261,6 +262,6 @@ export default function ForumPostPage({ params }: { params: Promise<{ id: string
         disabledMessage={t('post.lockedMessage')}
         onTyping={notifyTyping}
       />
-    </div>
+    </PageTransition>
   )
 }

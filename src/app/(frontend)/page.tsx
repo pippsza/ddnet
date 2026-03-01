@@ -3,15 +3,15 @@ import { getPayload } from 'payload'
 import React from 'react'
 import {
   Trophy,
-  Users,
   Zap,
   Grid3x3,
   Target,
   Swords,
   Clock,
   ChevronRight,
-  UserPlus,
-  Server,
+  Route,
+  Eye,
+  LayoutDashboard,
 } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
@@ -25,6 +25,10 @@ import './globals.css'
 import { ThemeToggleButton } from '@/components/theme/theme-toggle'
 import { DevQuickLogin } from '@/components/auth/DevQuickLogin'
 import Link from 'next/link'
+import { BingoDemo } from '@/components/bingo/BingoDemo'
+import { RaceDemo } from '@/components/race/RaceDemo'
+import { PeekingTee } from '@/components/tee/PeekingTee'
+import { FadeIn, ScaleIn } from '@/components/ui/animations'
 
 export async function generateMetadata() {
   const t = await getTranslations('home')
@@ -43,29 +47,28 @@ export default async function HomePage() {
   const locale = await getUserLocale()
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-background/80 backdrop-blur-md border-b z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Grid3x3 className="size-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
+            <Grid3x3 className="size-7 sm:size-8 text-primary" />
+            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
               {t('navigation.title')}
             </span>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-2 sm:gap-3 items-center">
             <LocaleSwitcher currentLocale={locale} />
             <ThemeToggleButton start="top-right" variant="circle-blur" />
             {user ? (
-              <>
-                <span className="text-sm text-muted-foreground hidden sm:inline">{user.email}</span>
-                <Button asChild>
-                  <a href={payloadConfig.routes.admin}>{t('navigation.adminPanel')}</a>
-                </Button>
-              </>
+              <Button asChild size="icon">
+                <Link href="/app/dashboard">
+                  <LayoutDashboard className="size-4" />
+                </Link>
+              </Button>
             ) : (
               <Button asChild variant="outline">
-                <Link href={'/login'}>{t('navigation.login')}</Link>
+                <Link href="/login">{t('navigation.login')}</Link>
               </Button>
             )}
           </div>
@@ -73,245 +76,303 @@ export default async function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 overflow-hidden">
+        <PeekingTee skinName="default" side="left" verticalPosition="45%" size="xl" />
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-4xl mx-auto mb-16">
-            <Badge className="mb-6 text-base px-4 py-1.5" variant="secondary">
-              <Zap className="size-4" />
-              {t('hero.badge')}
-            </Badge>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-              {t('hero.title')}
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8">{t('hero.subtitle')}</p>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              {t('hero.description')}
-            </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button size="lg" asChild className="group">
-                <a href="#bingo">
-                  {t('hero.learnMore')}
-                  <ChevronRight className="ml-1 transition-transform group-hover:translate-x-1" />
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href={payloadConfig.routes.admin}>{t('hero.startPlaying')}</a>
-              </Button>
-            </div>
-          </div>
-
-          {/* Bingo Preview Grid */}
-          <div className="max-w-2xl mx-auto">
-            <Card className="overflow-hidden border-primary/20 shadow-lg">
-              <CardContent className="p-8">
-                <div className="grid grid-cols-5 gap-2 mb-4">
-                  {Array.from({ length: 25 }).map((_, i) => {
-                    const completed = [0, 6, 12, 18, 24].includes(i)
-                    return (
-                      <div
-                        key={i}
-                        className={`aspect-square rounded-xl border-2 transition-all hover:scale-105 cursor-pointer flex items-center justify-center text-xs font-mono ${
-                          completed
-                            ? 'bg-primary/20 border-primary shadow-sm'
-                            : 'bg-card border-border hover:border-primary/50'
-                        }`}
-                      >
-                        {completed ? <Trophy className="size-4 text-primary" /> : i + 1}
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Target className="size-4" />
-                  <span>{t('preview.caption')}</span>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="text-center max-w-4xl mx-auto mb-12 sm:mb-16">
+            <FadeIn delay={0.1}>
+              <Badge className="mb-4 sm:mb-6 text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-1.5" variant="secondary">
+                <Zap className="size-4" />
+                {t('hero.badge')}
+              </Badge>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+                {t('hero.title')}
+              </h1>
+            </FadeIn>
+            <FadeIn delay={0.3}>
+              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8">
+                {t('hero.subtitle')}
+              </p>
+            </FadeIn>
+            <FadeIn delay={0.4}>
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto">
+                {t('hero.description')}
+              </p>
+            </FadeIn>
+            <FadeIn delay={0.5}>
+              <div className="flex gap-3 sm:gap-4 justify-center flex-wrap">
+                <Button size="lg" asChild className="group">
+                  <a href="#bingo">
+                    {t('hero.learnMore')}
+                    <ChevronRight className="ml-1 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/login">{t('hero.startPlaying')}</Link>
+                </Button>
+              </div>
+            </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* Main Bingo Section */}
-      <section id="bingo" className="py-20 px-6 bg-muted/30">
+      {/* Bingo Demo Section */}
+      <section id="bingo" className="py-16 sm:py-20 px-4 sm:px-6 bg-muted/30">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">{t('howItWorks.title')}</h2>
-            <p className="text-xl text-muted-foreground">{t('howItWorks.subtitle')}</p>
+          <FadeIn>
+            <div className="text-center mb-10 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
+                {t('howItWorks.title')}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground">{t('howItWorks.subtitle')}</p>
+            </div>
+          </FadeIn>
+
+          {/* How It Works Steps */}
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12">
+            <FadeIn delay={0.1}>
+              <Card className="border-primary/20 hover:border-primary/40 transition-colors h-full">
+                <CardHeader>
+                  <div className="size-10 sm:size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Grid3x3 className="size-5 sm:size-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">{t('howItWorks.steps.chooseMode.title')}</CardTitle>
+                  <CardDescription>{t('howItWorks.steps.chooseMode.description')}</CardDescription>
+                </CardHeader>
+              </Card>
+            </FadeIn>
+
+            <FadeIn delay={0.2}>
+              <Card className="border-chart-2/20 hover:border-chart-2/40 transition-colors h-full">
+                <CardHeader>
+                  <div className="size-10 sm:size-12 rounded-lg bg-chart-2/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Target className="size-5 sm:size-6 text-chart-2" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">{t('howItWorks.steps.completeMaps.title')}</CardTitle>
+                  <CardDescription>{t('howItWorks.steps.completeMaps.description')}</CardDescription>
+                </CardHeader>
+              </Card>
+            </FadeIn>
+
+            <FadeIn delay={0.3}>
+              <Card className="border-chart-4/20 hover:border-chart-4/40 transition-colors h-full">
+                <CardHeader>
+                  <div className="size-10 sm:size-12 rounded-lg bg-chart-4/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Trophy className="size-5 sm:size-6 text-chart-4" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">{t('howItWorks.steps.getCombination.title')}</CardTitle>
+                  <CardDescription>{t('howItWorks.steps.getCombination.description')}</CardDescription>
+                </CardHeader>
+              </Card>
+            </FadeIn>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <Card className="border-primary/20 hover:border-primary/40 transition-colors">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Grid3x3 className="size-6 text-primary" />
-                </div>
-                <CardTitle>{t('howItWorks.steps.chooseMode.title')}</CardTitle>
-                <CardDescription>{t('howItWorks.steps.chooseMode.description')}</CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-chart-2/20 hover:border-chart-2/40 transition-colors">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-chart-2/10 flex items-center justify-center mb-4">
-                  <Target className="size-6 text-chart-2" />
-                </div>
-                <CardTitle>{t('howItWorks.steps.completeMaps.title')}</CardTitle>
-                <CardDescription>{t('howItWorks.steps.completeMaps.description')}</CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-chart-4/20 hover:border-chart-4/40 transition-colors">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-chart-4/10 flex items-center justify-center mb-4">
-                  <Trophy className="size-6 text-chart-4" />
-                </div>
-                <CardTitle>{t('howItWorks.steps.getCombination.title')}</CardTitle>
-                <CardDescription>
-                  {t('howItWorks.steps.getCombination.description')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
+          {/* Bingo Demo */}
+          <ScaleIn>
+            <div className="max-w-sm sm:max-w-md mx-auto">
+              <Card className="overflow-hidden border-primary/20 shadow-lg">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <BingoDemo />
+                  <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4">
+                    <Target className="size-3.5 sm:size-4" />
+                    <span>{t('preview.caption')}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </ScaleIn>
 
           {/* Bingo Types */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="size-5 text-primary" />
-                  {t('modes.solo.title')}
-                </CardTitle>
-                <CardDescription>{t('modes.solo.description')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
-                    <span>{t('modes.solo.features.ownPace')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
-                    <span>{t('modes.solo.features.trackStats')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
-                    <span>{t('modes.solo.features.improveAchievements')}</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8 mt-10 sm:mt-12">
+            <FadeIn direction="left" delay={0.1}>
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="size-5 text-primary" />
+                    {t('modes.solo.title')}
+                  </CardTitle>
+                  <CardDescription>{t('modes.solo.description')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 sm:space-y-3">
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.solo.features.ownPace')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.solo.features.trackStats')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.solo.features.improveAchievements')}</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </FadeIn>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Swords className="size-5 text-chart-2" />
-                  {t('modes.competitive.title')}
-                </CardTitle>
-                <CardDescription>{t('modes.competitive.description')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
-                    <span>{t('modes.competitive.features.competeWithPlayers')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
-                    <span>{t('modes.competitive.features.onlineProgress')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
-                    <span>{t('modes.competitive.features.ratingSystem')}</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+            <FadeIn direction="right" delay={0.2}>
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Swords className="size-5 text-chart-2" />
+                    {t('modes.competitive.title')}
+                  </CardTitle>
+                  <CardDescription>{t('modes.competitive.description')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 sm:space-y-3">
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.competitive.features.competeWithPlayers')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.competitive.features.onlineProgress')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="size-5 text-chart-2 shrink-0 mt-0.5" />
+                      <span className="text-sm sm:text-base">{t('modes.competitive.features.ratingSystem')}</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* Additional Features */}
-      <section className="py-20 px-6">
+      {/* Race Demo Section */}
+      <section className="relative py-16 sm:py-20 px-4 sm:px-6 overflow-hidden">
+        <PeekingTee skinName="brownbear" side="right" verticalPosition="35%" size="xl" />
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">{t('additionalFeatures.title')}</h2>
-            <p className="text-xl text-muted-foreground">{t('additionalFeatures.subtitle')}</p>
+          <FadeIn>
+            <div className="text-center mb-10 sm:mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
+                {t('raceMode.title')}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground">{t('raceMode.subtitle')}</p>
+            </div>
+          </FadeIn>
+
+          <ScaleIn>
+            <div className="max-w-2xl mx-auto">
+              <Card className="overflow-hidden border-chart-2/20 shadow-lg">
+                <CardContent className="p-4 sm:p-6">
+                  <RaceDemo />
+                </CardContent>
+              </Card>
+            </div>
+          </ScaleIn>
+
+          <FadeIn delay={0.2}>
+            <p className="text-center text-base sm:text-lg text-muted-foreground mt-6 sm:mt-8 max-w-2xl mx-auto">
+              {t('raceMode.description')}
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Game Modes Overview */}
+      <section className="relative py-16 sm:py-20 px-4 sm:px-6 bg-muted/30 overflow-hidden">
+        <PeekingTee skinName="coala" side="left" verticalPosition="40%" />
+        <div className="max-w-7xl mx-auto">
+          <FadeIn>
+            <div className="text-center mb-10 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
+                {t('features.title')}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground">{t('features.subtitle')}</p>
+            </div>
+          </FadeIn>
+
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto">
+            <FadeIn direction="left" delay={0.1}>
+              <Card className="border-primary/20 hover:border-primary/40 transition-colors h-full">
+                <CardHeader>
+                  <div className="size-10 sm:size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Grid3x3 className="size-5 sm:size-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">{t('features.bingo.title')}</CardTitle>
+                  <CardDescription>{t('features.bingo.description')}</CardDescription>
+                </CardHeader>
+              </Card>
+            </FadeIn>
+
+            <FadeIn direction="right" delay={0.2}>
+              <Card className="border-chart-2/20 hover:border-chart-2/40 transition-colors h-full">
+                <CardHeader>
+                  <div className="size-10 sm:size-12 rounded-lg bg-chart-2/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Route className="size-5 sm:size-6 text-chart-2" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">{t('features.race.title')}</CardTitle>
+                  <CardDescription>{t('features.race.description')}</CardDescription>
+                </CardHeader>
+              </Card>
+            </FadeIn>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="border-primary/20">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Users className="size-6 text-primary" />
-                </div>
-                <CardTitle>{t('additionalFeatures.onlineFriends.title')}</CardTitle>
-                <CardDescription>
-                  {t('additionalFeatures.onlineFriends.description')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-chart-2/20">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-chart-2/10 flex items-center justify-center mb-4">
-                  <UserPlus className="size-6 text-chart-2" />
-                </div>
-                <CardTitle>{t('additionalFeatures.accountSystem.title')}</CardTitle>
-                <CardDescription>
-                  {t('additionalFeatures.accountSystem.description')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-chart-4/20 md:col-span-2">
-              <CardHeader>
-                <div className="size-12 rounded-lg bg-chart-4/10 flex items-center justify-center mb-4">
-                  <Server className="size-6 text-chart-4" />
-                </div>
-                <CardTitle>{t('additionalFeatures.eventServers.title')}</CardTitle>
-                <CardDescription>
-                  {t('additionalFeatures.eventServers.description')}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
+          {/* Friends Monitoring */}
+          <FadeIn delay={0.3}>
+            <div className="max-w-3xl mx-auto mt-8 sm:mt-10">
+              <Card className="border-chart-4/20 hover:border-chart-4/40 transition-colors">
+                <CardHeader className="flex flex-row items-start gap-4">
+                  <div className="size-10 sm:size-12 rounded-lg bg-chart-4/10 flex items-center justify-center shrink-0">
+                    <Eye className="size-5 sm:size-6 text-chart-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base sm:text-lg">{t('features.friends.title')}</CardTitle>
+                    <CardDescription className="mt-1">{t('features.friends.description')}</CardDescription>
+                  </div>
+                </CardHeader>
+              </Card>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background">
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-muted/30 to-transparent">
         <div className="max-w-4xl mx-auto text-center">
-          <Badge className="mb-6 text-base px-4 py-1.5" variant="default">
-            <Trophy className="size-4" />
-            {t('cta.badge')}
-          </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('cta.title')}</h2>
-          <p className="text-xl text-muted-foreground mb-10">{t('cta.description')}</p>
-          <Button size="lg" className="text-lg px-8" asChild>
-            <a href={payloadConfig.routes.admin}>
-              {t('cta.createAccount')}
-              <ChevronRight className="ml-1" />
-            </a>
-          </Button>
+          <FadeIn>
+            <Badge className="mb-4 sm:mb-6 text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-1.5" variant="default">
+              <Trophy className="size-4" />
+              {t('cta.badge')}
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">{t('cta.title')}</h2>
+            <p className="text-lg sm:text-xl text-muted-foreground mb-8 sm:mb-10">{t('cta.description')}</p>
+          </FadeIn>
+          <ScaleIn>
+            <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8" asChild>
+              <Link href="/login">
+                {t('cta.createAccount')}
+                <ChevronRight className="ml-1" />
+              </Link>
+            </Button>
+          </ScaleIn>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t">
+      <FadeIn>
+      <footer className="py-8 sm:py-12 px-4 sm:px-6 border-t bg-background/60">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-2">
               <Grid3x3 className="size-6 text-primary" />
               <span className="font-bold text-lg">{t('navigation.title')}</span>
             </div>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">
+            <div className="flex gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
+              <a href="/about" className="hover:text-foreground transition-colors">
                 {t('footer.about')}
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">
+              <a href="/rules" className="hover:text-foreground transition-colors">
                 {t('footer.rules')}
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">
+              <a href="/support" className="hover:text-foreground transition-colors">
                 {t('footer.support')}
               </a>
               <a
@@ -324,11 +385,21 @@ export default async function HomePage() {
               </a>
             </div>
           </div>
-          <div className="text-center text-sm text-muted-foreground mt-8">
+          <div className="flex justify-center gap-4 text-xs text-muted-foreground mt-4 sm:mt-6">
+            <a href="/terms" className="hover:text-foreground transition-colors">
+              {t('footer.terms')}
+            </a>
+            <span>&middot;</span>
+            <a href="/privacy" className="hover:text-foreground transition-colors">
+              {t('footer.privacy')}
+            </a>
+          </div>
+          <div className="text-center text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4">
             {t('footer.copyright')}
           </div>
         </div>
       </footer>
+      </FadeIn>
       <DevQuickLogin />
     </div>
   )

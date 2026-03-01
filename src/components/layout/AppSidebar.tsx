@@ -160,8 +160,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const supportCount = notifications.filter((n) => !n.isRead && n.type === 'support_reply').length
   const friendCount = notifications.filter((n) => !n.isRead && n.type === 'friend_request').length
 
-  const sidebarBadge = (count: number) =>
-    count > 0 ? (count > 9 ? '9+' : count) : null
+  const sidebarBadge = (count: number) => (count > 0 ? (count > 9 ? '9+' : count) : null)
 
   const badgeByUrl: Record<string, number> = {
     '/app/chat': dmCount,
@@ -234,7 +233,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/app" className="flex items-baseline">
+        <Link href="/" className="flex items-baseline">
           <span className="text-xl font-bold">{APP_SHORT_NAME}</span>
           <span className="text-md font-medium text-muted-foreground ml-0.5">
             {APP_SECONDARY_NAME}
@@ -260,13 +259,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={
-                      pathname.startsWith(
-                        activeGame.relationTo === 'bingo'
-                          ? `/app/bingo/${activeGame.value}`
-                          : `/app/race/${activeGame.value}`,
-                      )
-                    }
+                    isActive={pathname.startsWith(
+                      activeGame.relationTo === 'bingo'
+                        ? `/app/bingo/${activeGame.value}`
+                        : `/app/race/${activeGame.value}`,
+                    )}
                   >
                     <Link
                       href={

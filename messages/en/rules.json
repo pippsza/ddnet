@@ -1,0 +1,41 @@
+{
+  "backToHome": "Back to Home",
+  "title": "Community Rules",
+  "subtitle": "Please follow these rules to keep DDashBoard a fun and welcoming place for everyone.",
+  "sections": {
+    "accounts": {
+      "title": "Account Rules",
+      "content": "• One account per person — no alt accounts\n• Do not share your account with others\n• Use your real DDNet nickname for verification\n• Do not impersonate other players or staff"
+    },
+    "fairPlay": {
+      "title": "Fair Play",
+      "content": "• No cheating or exploiting bugs in bingo/race games\n• Do not use bots or automated tools to complete maps\n• Report any bugs or exploits through the support system\n• Respect the competitive integrity of all game modes"
+    },
+    "communication": {
+      "title": "Chat & Forum Rules",
+      "content": "• Be respectful to other players\n• No harassment, hate speech, or discrimination\n• No spamming or flooding in chat/forums\n• Keep discussions on-topic in their respective categories\n• No advertising or self-promotion without permission"
+    },
+    "content": {
+      "title": "Content Guidelines",
+      "content": "• No NSFW or inappropriate content\n• No sharing of personal information of others\n• Forum posts and articles must be constructive\n• Do not post malicious links or files"
+    },
+    "enforcement": {
+      "title": "Enforcement",
+      "content": "Violations may result in:\n• Warning from moderators\n• Temporary mute or ban\n• Permanent account suspension\n\nThe severity of the action depends on the nature and frequency of the violation. Moderator decisions are final."
+    },
+    "community": {
+      "title": "Community Spirit",
+      "content": "• Help new players and answer questions\n• Contribute positively to discussions\n• Report rule violations through the support system\n• Have fun and enjoy the DDNet community!"
+    },
+    "bingo": {
+      "title": "Bingo Game Rules",
+      "content": "• Each bingo game consists of a grid of DDNet maps\n• Complete a map in-game to mark the corresponding cell\n• Win conditions depend on the game settings: line, diagonal, or full house\n• In competitive mode, the first player to complete the win condition wins\n• In solo mode, complete the board at your own pace\n• Map completions are verified automatically through DDNet servers\n• Do not use any external tools or exploits to fake map completions\n• Leaving a competitive game in progress counts as a forfeit"
+    },
+    "race": {
+      "title": "Race Game Rules",
+      "content": "• Each race consists of a path of DDNet maps to complete in order\n• Complete maps as fast as possible — time is tracked automatically\n• In competitive mode, the first player to finish the entire path wins\n• In solo mode, try to beat your personal best time\n• Map completions are verified automatically through DDNet servers\n• You must complete maps in the given order — skipping is not allowed\n• Do not use any external tools or exploits to fake completions\n• Leaving a competitive race in progress counts as a forfeit"
+    }
+  },
+  "footer": "These rules may be updated. Check back periodically for changes.",
+  "reportViolation": "Report a violation"
+}

@@ -1,0 +1,41 @@
+{
+  "backToHome": "Back to Home",
+  "title": "Privacy Policy",
+  "lastUpdated": "Last updated: March 2026",
+  "sections": {
+    "dataCollected": {
+      "title": "1. Data We Collect",
+      "content": "We collect the following information:\n• Account data: username, email, in-game nickname\n• Game statistics: fetched from public DDNet APIs\n• Platform activity: forum posts, game results, friend connections\n• Technical data: browser type, IP address (for security purposes only)"
+    },
+    "usage": {
+      "title": "2. How We Use Your Data",
+      "content": "Your data is used to:\n• Provide platform features (bingo games, leaderboards, forums)\n• Display your DDNet statistics and player profile\n• Enable social features (friends, chat, notifications)\n• Improve the platform and fix bugs\n\nWe never sell your data to third parties."
+    },
+    "cookies": {
+      "title": "3. Cookies & Local Storage",
+      "content": "We use cookies and local storage for:\n• Authentication (keeping you logged in)\n• Theme and language preferences\n• Session management\n\nNo third-party tracking cookies are used."
+    },
+    "thirdParty": {
+      "title": "4. Third-Party Services",
+      "content": "We fetch data from the following external services:\n• DDNet API (ddnet.org) — player statistics and skin data\n• DDStats API (ddstats.tw) — detailed player statistics\n\nThese services have their own privacy policies. We only fetch publicly available data."
+    },
+    "retention": {
+      "title": "5. Data Retention",
+      "content": "Account data is retained as long as your account exists. You can delete your account at any time.\n\nNotifications are automatically cleaned up based on your retention settings (1 hour to 10 days).\n\nGame statistics from DDNet are cached and refreshed periodically."
+    },
+    "rights": {
+      "title": "6. Your Rights",
+      "content": "You have the right to:\n• Access your personal data\n• Request correction of inaccurate data\n• Delete your account and associated data\n• Export your data\n\nTo exercise these rights, contact us through the support system or reach out to the developer directly."
+    },
+    "children": {
+      "title": "7. Children's Privacy",
+      "content": "DDashBoard is not directed at children under 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal data, please contact us."
+    },
+    "changes": {
+      "title": "8. Changes to This Policy",
+      "content": "We may update this privacy policy from time to time. Changes will be posted on this page with an updated date.\n\nSignificant changes will be communicated through the platform's notification system."
+    }
+  },
+  "contact": "Questions about your privacy?",
+  "contactLink": "Contact us"
+}

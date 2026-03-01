@@ -12,6 +12,10 @@ import settings from './settings.json'
 import leaderboard from './leaderboard.json'
 import players from './players.json'
 import forum from './forum.json'
+import about from './about.json'
+import terms from './terms.json'
+import privacy from './privacy.json'
+import rules from './rules.json'
 
 const messages = {
   home,
@@ -28,6 +32,10 @@ const messages = {
   leaderboard,
   players,
   forum,
+  about,
+  terms,
+  privacy,
+  rules,
 }
 
 export default messages

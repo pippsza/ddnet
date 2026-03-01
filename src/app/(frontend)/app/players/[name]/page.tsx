@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { OnlineStatusIndicator, AfkBadge } from '@/components/tee/OnlineStatusIndicator'
 import { toast } from 'sonner'
+import { PageTransition } from '@/components/ui/animations'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
 import { DDNetSection } from '@/components/stats/DDNetSection'
@@ -322,7 +323,7 @@ function PlayerDetailContent({ name }: { name: string }) {
     : null
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <Link
         href="/app/players"
         className=" items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex"
@@ -634,7 +635,7 @@ function PlayerDetailContent({ name }: { name: string }) {
           />
         </div>
       )}
-    </div>
+    </PageTransition>
   )
 }
 

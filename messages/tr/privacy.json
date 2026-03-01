@@ -1,0 +1,41 @@
+{
+  "backToHome": "Ana Sayfaya Dön",
+  "title": "Gizlilik Politikası",
+  "lastUpdated": "Son güncelleme: Mart 2026",
+  "sections": {
+    "dataCollected": {
+      "title": "1. Topladığımız Veriler",
+      "content": "Aşağıdaki bilgileri topluyoruz:\n• Hesap verileri: kullanıcı adı, e-posta, oyun içi takma ad\n• Oyun istatistikleri: herkese açık DDNet API'lerinden alınır\n• Platform etkinliği: forum gönderileri, oyun sonuçları, arkadaşlık bağlantıları\n• Teknik veriler: tarayıcı türü, IP adresi (yalnızca güvenlik amacıyla)"
+    },
+    "usage": {
+      "title": "2. Verilerinizi Nasıl Kullanırız",
+      "content": "Verileriniz şu amaçlarla kullanılır:\n• Platform özelliklerini sağlamak (bingo oyunları, sıralamalar, forumlar)\n• DDNet istatistiklerinizi ve oyuncu profilinizi görüntülemek\n• Sosyal özellikleri etkinleştirmek (arkadaşlar, sohbet, bildirimler)\n• Platformu iyileştirmek ve hataları düzeltmek\n\nVerilerinizi asla üçüncü taraflara satmayız."
+    },
+    "cookies": {
+      "title": "3. Çerezler ve Yerel Depolama",
+      "content": "Çerezleri ve yerel depolamayı şu amaçlarla kullanıyoruz:\n• Kimlik doğrulama (oturumunuzun açık kalması)\n• Tema ve dil tercihleri\n• Oturum yönetimi\n\nÜçüncü taraf izleme çerezleri kullanılmamaktadır."
+    },
+    "thirdParty": {
+      "title": "4. Üçüncü Taraf Hizmetler",
+      "content": "Aşağıdaki harici hizmetlerden veri alıyoruz:\n• DDNet API (ddnet.org) — oyuncu istatistikleri ve görünüm verileri\n• DDStats API (ddstats.tw) — ayrıntılı oyuncu istatistikleri\n\nBu hizmetlerin kendi gizlilik politikaları vardır. Yalnızca herkese açık verileri alıyoruz."
+    },
+    "retention": {
+      "title": "5. Veri Saklama",
+      "content": "Hesap verileri, hesabınız var olduğu sürece saklanır. Hesabınızı istediğiniz zaman silebilirsiniz.\n\nBildirimler, saklama ayarlarınıza göre otomatik olarak temizlenir (1 saat ile 10 gün arası).\n\nDDNet'ten alınan oyun istatistikleri önbelleğe alınır ve periyodik olarak yenilenir."
+    },
+    "rights": {
+      "title": "6. Haklarınız",
+      "content": "Aşağıdaki haklara sahipsiniz:\n• Kişisel verilerinize erişim\n• Yanlış verilerin düzeltilmesini talep etme\n• Hesabınızı ve ilişkili verileri silme\n• Verilerinizi dışa aktarma\n\nBu haklarınızı kullanmak için destek sistemi üzerinden bizimle iletişime geçebilir veya doğrudan geliştiriciye ulaşabilirsiniz."
+    },
+    "children": {
+      "title": "7. Çocukların Gizliliği",
+      "content": "DDashBoard 13 yaşın altındaki çocuklara yönelik değildir. Çocuklardan bilerek kişisel bilgi toplamıyoruz. Bir çocuğun bize kişisel veri sağladığını düşünüyorsanız lütfen bizimle iletişime geçin."
+    },
+    "changes": {
+      "title": "8. Politika Değişiklikleri",
+      "content": "Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Değişiklikler güncellenmiş tarihle birlikte bu sayfada yayınlanacaktır.\n\nÖnemli değişiklikler platformun bildirim sistemi aracılığıyla iletilecektir."
+    }
+  },
+  "contact": "Gizliliğiniz hakkında sorularınız mı var?",
+  "contactLink": "Bize ulaşın"
+}

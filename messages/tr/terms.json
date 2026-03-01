@@ -1,0 +1,41 @@
+{
+  "backToHome": "Ana Sayfaya Dön",
+  "title": "Kullanım Koşulları",
+  "lastUpdated": "Son güncelleme: Mart 2026",
+  "sections": {
+    "acceptance": {
+      "title": "1. Koşulların Kabulü",
+      "content": "DDashBoard'a erişerek ve kullanarak bu Kullanım Koşullarına bağlı kalmayı kabul etmiş olursunuz. Kabul etmiyorsanız lütfen platformu kullanmayın.\n\nDDashBoard, DDraceNetwork oyuncuları için ücretsiz bir topluluk platformudur. Bu koşullar, web sitesi ve ilgili tüm hizmetlerin kullanımını düzenler."
+    },
+    "accounts": {
+      "title": "2. Kullanıcı Hesapları",
+      "content": "Platform özelliklerine erişmek için hesap oluşturabilirsiniz. Hesabınızın güvenliğinden ve hesabınız altındaki tüm etkinliklerden siz sorumlusunuz.\n\nKayıt sırasında doğru bilgi vermelisiniz. Her kişi yalnızca bir hesap sahibi olabilir. Hesap paylaşımına izin verilmez."
+    },
+    "conduct": {
+      "title": "3. Kullanıcı Davranışı",
+      "content": "Aşağıdakileri yapmamayı kabul ediyorsunuz:\n• Platformu herhangi bir yasadışı amaçla kullanmak\n• Diğer kullanıcılara taciz, tehdit veya kötü muamelede bulunmak\n• Hataları veya güvenlik açıklarını istismar etmeye çalışmak\n• İzinsiz otomatik araçlarla platforma erişmek\n• Diğer kullanıcıları veya DDNet ekibini taklit etmek\n• Oyun istatistiklerini manipüle etmek veya herhangi bir şekilde hile yapmak"
+    },
+    "content": {
+      "title": "4. Kullanıcı İçeriği",
+      "content": "Oluşturduğunuz içeriklerin (forum gönderileri, makaleler vb.) mülkiyeti size aittir. İçerik yayınlayarak DDashBoard'a platformda gösterme ve dağıtma konusunda münhasır olmayan bir lisans vermiş olursunuz.\n\nBu koşulları veya topluluk kurallarımızı ihlal eden içerikleri kaldırma hakkımız saklıdır."
+    },
+    "thirdParty": {
+      "title": "5. Üçüncü Taraf Hizmetler",
+      "content": "DDashBoard, oyuncu verileri, istatistikler ve görünüm oluşturma için DDraceNetwork hizmetleriyle (ddnet.org) entegre çalışır. DDNet ekibi tarafından desteklenmemekte veya onaylanmamaktayız.\n\nOyuncu istatistikleri ve görünüm verileri herkese açık DDNet API'lerinden alınmaktadır. Bu verilerin erişilebilirliğini veya doğruluğunu kontrol etmemiz mümkün değildir."
+    },
+    "termination": {
+      "title": "6. Hesap Sonlandırma",
+      "content": "Bu koşulların ihlali durumunda hesabınızı herhangi bir zamanda askıya alabilir veya sonlandırabiliriz. Hesabınızı istediğiniz zaman ayarlar sayfasından silebilirsiniz.\n\nSonlandırma durumunda platformu kullanma hakkınız derhal sona erer."
+    },
+    "disclaimers": {
+      "title": "7. Sorumluluk Reddi",
+      "content": "DDashBoard herhangi bir garanti olmaksızın \"olduğu gibi\" sunulmaktadır. Kesintisiz hizmet, veri doğruluğu veya sürekli erişim garantisi vermiyoruz.\n\nBu ücretsiz bir topluluk projesidir. Platformu kullanımınızdan doğabilecek herhangi bir zarardan sorumlu değiliz."
+    },
+    "changes": {
+      "title": "8. Koşul Değişiklikleri",
+      "content": "Bu koşulları zaman zaman güncelleyebiliriz. Değişikliklerden sonra platformu kullanmaya devam etmeniz, yeni koşulları kabul ettiğiniz anlamına gelir.\n\nÖnemli değişiklikler platformun bildirim sistemi aracılığıyla duyurulacaktır."
+    }
+  },
+  "contact": "Bu koşullar hakkında sorularınız mı var?",
+  "contactLink": "Bize ulaşın"
+}

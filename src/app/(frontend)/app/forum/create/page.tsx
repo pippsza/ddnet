@@ -18,6 +18,7 @@ import { LexicalRichTextEditor } from '@/components/ui/lexical-editor'
 import { MediaAttachments, type UploadedFile } from '@/components/ui/media-attachments'
 import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
+import { PageTransition } from '@/components/ui/animations'
 
 const CATEGORY_KEYS = ['general', 'help', 'suggestions', 'bugs', 'maps', 'clans', 'offtopic'] as const
 
@@ -62,7 +63,7 @@ export default function ForumCreatePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <Link
         href="/app/forum"
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -127,6 +128,6 @@ export default function ForumCreatePage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageTransition>
   )
 }

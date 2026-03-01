@@ -2,7 +2,7 @@
   "navigation": {
     "title": "DDashBoard",
     "login": "Login",
-    "adminPanel": "Admin Panel"
+    "goToApp": "Go to App"
   },
   "hero": {
     "badge": "New Game Mode",
@@ -69,6 +69,27 @@
       "description": "In the future, there will be an option to deploy servers for special events and tournaments"
     }
   },
+  "raceMode": {
+    "title": "Race Mode",
+    "subtitle": "A board-game style race through DDNet maps",
+    "description": "Progress through a path of maps, completing each one to advance. The first player to reach the finish line wins! Each node is a new challenge on your way to victory."
+  },
+  "features": {
+    "title": "Platform Features",
+    "subtitle": "Everything you need in one place",
+    "bingo": {
+      "title": "Bingo",
+      "description": "Complete map challenges on a grid. Get a line, cross, or full house to win!"
+    },
+    "race": {
+      "title": "Race",
+      "description": "A board-game style race through DDNet maps. First to the finish line wins!"
+    },
+    "friends": {
+      "title": "Friends Monitoring",
+      "description": "Track your friends' online status and see which server they're playing on in real-time."
+    }
+  },
   "cta": {
     "badge": "Join Now",
     "title": "Ready to Take the Challenge?",
@@ -79,6 +100,8 @@
     "about": "About",
     "rules": "Rules",
     "support": "Support",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
     "copyright": "© 2026 DDashBoard"
   }
 }

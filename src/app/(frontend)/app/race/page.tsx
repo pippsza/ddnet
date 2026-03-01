@@ -24,6 +24,7 @@ import { LobbyPageSkeleton, GameCardSkeleton } from '@/components/ui/page-skelet
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
 import { Flag, Plus, X, Users, Server, LogIn, Loader2 } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 import { toast } from 'sonner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -96,7 +97,7 @@ function RaceLobbyContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('lobby.title')}</h1>
         <div className="flex items-center gap-2">
@@ -137,22 +138,26 @@ function RaceLobbyContent() {
       ) : activeRaces.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">{t('lobby.myActiveRaces')}</h2>
-          <div className="grid gap-3">
+          <StaggerContainer className="grid gap-3">
             {activeRaces.map((race: any) => (
-              <RaceCard key={race.id} race={race} isMine onCancel={() => mutateMyRaces()} />
+              <StaggerItem key={race.id}>
+                <RaceCard race={race} isMine onCancel={() => mutateMyRaces()} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </section>
       ) : null}
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t('lobby.publicLobby')}</h2>
-        <div className="grid gap-3">
+        <StaggerContainer className="grid gap-3">
           {lobbyLoading ? (
             <GameCardSkeleton count={3} />
           ) : lobbyRaces.length > 0 ? (
             lobbyRaces.map((race: any) => (
-              <RaceCard key={race.id} race={race} />
+              <StaggerItem key={race.id}>
+                <RaceCard race={race} />
+              </StaggerItem>
             ))
           ) : (
             <Card>
@@ -161,7 +166,7 @@ function RaceLobbyContent() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </StaggerContainer>
         <PaginationControls
           page={lobbyPage}
           totalPages={lobbyTotalPages}
@@ -188,7 +193,7 @@ function RaceLobbyContent() {
           />
         </section>
       )}
-    </div>
+    </PageTransition>
   )
 }
 

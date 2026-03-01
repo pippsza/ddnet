@@ -1,0 +1,41 @@
+{
+  "backToHome": "Back to Home",
+  "title": "Terms of Service",
+  "lastUpdated": "Last updated: March 2026",
+  "sections": {
+    "acceptance": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using DDashBoard, you agree to be bound by these Terms of Service. If you do not agree, please do not use the platform.\n\nDDashBoard is a free community platform for DDraceNetwork players. These terms govern your use of the website and all associated services."
+    },
+    "accounts": {
+      "title": "2. User Accounts",
+      "content": "You may create an account to access platform features. You are responsible for maintaining the security of your account and all activity under it.\n\nYou must provide accurate information during registration. One person may only have one account. Sharing accounts is not permitted."
+    },
+    "conduct": {
+      "title": "3. User Conduct",
+      "content": "You agree not to:\n• Use the platform for any illegal purpose\n• Harass, threaten, or abuse other users\n• Attempt to exploit bugs or vulnerabilities\n• Use automated tools to access the platform without permission\n• Impersonate other users or DDNet staff\n• Manipulate game statistics or cheat in any way"
+    },
+    "content": {
+      "title": "4. User Content",
+      "content": "You retain ownership of content you create (forum posts, articles, etc.). By posting content, you grant DDashBoard a non-exclusive license to display and distribute it on the platform.\n\nWe reserve the right to remove content that violates these terms or our community rules."
+    },
+    "thirdParty": {
+      "title": "5. Third-Party Services",
+      "content": "DDashBoard integrates with DDraceNetwork services (ddnet.org) for player data, statistics, and skin rendering. We are not affiliated with or endorsed by the DDNet team.\n\nPlayer statistics and skin data are fetched from public DDNet APIs. We do not control the availability or accuracy of this data."
+    },
+    "termination": {
+      "title": "6. Termination",
+      "content": "We may suspend or terminate your account at any time for violation of these terms. You may delete your account at any time through the settings page.\n\nUpon termination, your right to use the platform ceases immediately."
+    },
+    "disclaimers": {
+      "title": "7. Disclaimers",
+      "content": "DDashBoard is provided \"as is\" without warranties of any kind. We do not guarantee uptime, data accuracy, or uninterrupted service.\n\nThis is a free community project. We are not liable for any damages arising from your use of the platform."
+    },
+    "changes": {
+      "title": "8. Changes to Terms",
+      "content": "We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the new terms.\n\nSignificant changes will be announced through the platform's notification system."
+    }
+  },
+  "contact": "Questions about these terms?",
+  "contactLink": "Contact us"
+}

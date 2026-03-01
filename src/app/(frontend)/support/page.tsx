@@ -16,6 +16,7 @@ import { PaginationControls } from '@/components/ui/pagination-controls'
 import { usePagination } from '@/hooks/use-pagination'
 import { usePermissions } from '@/hooks/use-permissions'
 import { CheckCircle } from 'lucide-react'
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -108,7 +109,7 @@ function SupportContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Support</h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -216,28 +217,32 @@ function SupportContent() {
       ) : tickets.length > 0 ? (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">{isStaff ? 'All Tickets' : 'Your Tickets'}</h2>
-          {tickets.map((ticket: any) => (
-            <Link key={ticket.id} href={`/support/${ticket.id}`} className="block">
-              <Card className="hover:shadow-md hover:border-primary/30 transition-all">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm truncate">{ticket.subject}</span>
-                      <StatusBadge status={ticket.status} />
-                    </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <span>{CATEGORIES.find((c) => c.value === ticket.category)?.label || ticket.category}</span>
-                      <span>&middot;</span>
-                      <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                      <span>&middot;</span>
-                      <span>{ticket.responses?.length || 0} responses</span>
-                    </div>
-                  </div>
-                  <StatusBadge status={ticket.priority} />
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+          <StaggerContainer className="space-y-3">
+            {tickets.map((ticket: any) => (
+              <StaggerItem key={ticket.id}>
+                <Link href={`/support/${ticket.id}`} className="block">
+                  <Card className="hover:shadow-md hover:border-primary/30 transition-all">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm truncate">{ticket.subject}</span>
+                          <StatusBadge status={ticket.status} />
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <span>{CATEGORIES.find((c) => c.value === ticket.category)?.label || ticket.category}</span>
+                          <span>&middot;</span>
+                          <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                          <span>&middot;</span>
+                          <span>{ticket.responses?.length || 0} responses</span>
+                        </div>
+                      </div>
+                      <StatusBadge status={ticket.priority} />
+                    </CardContent>
+                  </Card>
+                </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
         </div>
       ) : null}
 
@@ -250,7 +255,7 @@ function SupportContent() {
           onPageChange={setPage}
         />
       )}
-    </div>
+    </PageTransition>
   )
 }
 

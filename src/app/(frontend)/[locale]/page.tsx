@@ -373,9 +373,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <Link href={`/${locale}/rules`} className="hover:text-foreground transition-colors">
                 {t('footer.rules')}
               </Link>
-              <a href="/support" className="hover:text-foreground transition-colors">
+              <Link href="/support" className="hover:text-foreground transition-colors">
                 {t('footer.support')}
-              </a>
+              </Link>
               <a
                 href="https://ddnet.org"
                 target="_blank"

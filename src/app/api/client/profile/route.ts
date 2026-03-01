@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Load recent completed games (last 5)
-    let recentGames: any[] = []
+    const recentGames: any[] = []
     if (user.completedGames?.length) {
       const recentRefs = (
         user.completedGames as Array<{ relationTo: string; value: string }>

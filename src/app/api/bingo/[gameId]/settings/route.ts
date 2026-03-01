@@ -8,7 +8,6 @@ interface SettingsUpdate {
   title?: string
   mode?: 'solo' | 'team'
   category?: string
-  subcategory?: string
   gridSize?: '3x3' | '5x5' | '7x7'
   winCondition?: 'line' | 'cross' | 'full_house'
   difficultyMin?: number
@@ -64,14 +63,12 @@ export async function PATCH(
 
     // Check if grid-affecting settings changed
     const newCategory = body.category ?? game.category
-    const newSubcategory = body.subcategory ?? game.subcategory ?? undefined
     const newGridSize = body.gridSize ?? game.gridSize
     const newDiffMin = body.difficultyMin ?? game.difficultyRange?.min ?? 0
     const newDiffMax = body.difficultyMax ?? game.difficultyRange?.max ?? 5
 
     const gridChanged =
       body.category !== undefined ||
-      body.subcategory !== undefined ||
       body.gridSize !== undefined ||
       body.difficultyMin !== undefined ||
       body.difficultyMax !== undefined
@@ -79,7 +76,6 @@ export async function PATCH(
     if (gridChanged) {
       const validation = validateGridOptions({
         category: newCategory,
-        subcategory: newSubcategory,
         gridSize: newGridSize,
         difficultyMin: newDiffMin,
         difficultyMax: newDiffMax,
@@ -91,7 +87,6 @@ export async function PATCH(
 
       const maps = await generateBingoGrid({
         category: newCategory,
-        subcategory: newSubcategory,
         gridSize: newGridSize,
         difficultyMin: newDiffMin,
         difficultyMax: newDiffMax,
@@ -99,7 +94,6 @@ export async function PATCH(
 
       updateData.maps = maps
       updateData.category = newCategory
-      updateData.subcategory = newSubcategory
       updateData.gridSize = newGridSize
       updateData.difficultyRange = { min: newDiffMin, max: newDiffMax }
 

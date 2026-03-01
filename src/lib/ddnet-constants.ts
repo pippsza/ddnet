@@ -11,6 +11,10 @@ export const DDNET_CATEGORIES = [
   { label: 'Insane', value: 'insane', icon: 'Skull' },
   { label: 'Dummy', value: 'dummy', icon: 'Bot' },
   { label: 'DDmaX', value: 'ddmax', icon: 'Crown' },
+  { label: 'DDmaX.Easy', value: 'ddmax_easy', icon: 'Crown' },
+  { label: 'DDmaX.Next', value: 'ddmax_next', icon: 'Crown' },
+  { label: 'DDmaX.Pro', value: 'ddmax_pro', icon: 'Crown' },
+  { label: 'DDmaX.Nut', value: 'ddmax_nut', icon: 'Crown' },
   { label: 'Oldschool', value: 'oldschool', icon: 'Clock' },
   { label: 'Solo', value: 'solo_maps', icon: 'User' },
   { label: 'Race', value: 'race', icon: 'Timer' },
@@ -22,13 +26,6 @@ export const AVAILABLE_CATEGORY_ICONS = [
   'Gamepad2', 'Sword', 'Shield', 'Rocket', 'Globe',
   'Compass', 'Crosshair', 'Dice1', 'Music', 'BookOpen',
   'Palette', 'Sparkles', 'Zap', 'Map',
-]
-
-export const DDNET_SUBCATEGORIES = [
-  { label: 'DDmaX.Easy', value: 'ddmax_easy', parent: 'ddmax' },
-  { label: 'DDmaX.Next', value: 'ddmax_next', parent: 'ddmax' },
-  { label: 'DDmaX.Pro', value: 'ddmax_pro', parent: 'ddmax' },
-  { label: 'DDmaX.Nut', value: 'ddmax_nut', parent: 'ddmax' },
 ]
 
 export const BINGO_MODES = [
@@ -83,11 +80,13 @@ export type DDNetCategory =
   | 'insane'
   | 'dummy'
   | 'ddmax'
+  | 'ddmax_easy'
+  | 'ddmax_next'
+  | 'ddmax_pro'
+  | 'ddmax_nut'
   | 'oldschool'
   | 'solo_maps'
   | 'race'
-
-export type DDNetSubcategory = 'ddmax_easy' | 'ddmax_next' | 'ddmax_pro' | 'ddmax_nut'
 
 export type BingoMode = 'solo' | 'team'
 
@@ -104,18 +103,6 @@ export type TeamStatus = 'not_ready' | 'ready' | 'playing' | 'winner' | 'loser'
 // Helper functions
 export const getCategoryLabel = (value: DDNetCategory): string => {
   return DDNET_CATEGORIES.find((c) => c.value === value)?.label || value
-}
-
-export const getSubcategoryLabel = (value: DDNetSubcategory): string => {
-  return DDNET_SUBCATEGORIES.find((c) => c.value === value)?.label || value
-}
-
-export const hasSubcategories = (category: DDNetCategory): boolean => {
-  return category === 'ddmax' || category === 'oldschool'
-}
-
-export const getSubcategoriesForCategory = (category: DDNetCategory) => {
-  return DDNET_SUBCATEGORIES.filter((sub) => sub.parent === category)
 }
 
 /**
@@ -152,6 +139,10 @@ export const CATEGORY_MULTIPLIERS = {
   insane: { multiplier: 4, offset: 30 },
   dummy: { multiplier: 5, offset: 5 },
   ddmax: { multiplier: 4, offset: 0 },
+  ddmax_easy: { multiplier: 4, offset: 0 },
+  ddmax_next: { multiplier: 4, offset: 0 },
+  ddmax_pro: { multiplier: 4, offset: 0 },
+  ddmax_nut: { multiplier: 4, offset: 0 },
   oldschool: { multiplier: 6, offset: 0 },
   solo_maps: { multiplier: 4, offset: 0 },
   race: { multiplier: 2, offset: 0 },

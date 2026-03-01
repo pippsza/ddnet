@@ -149,7 +149,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
       mode: game.mode,
       category: game.category,
       categoryIcon,
-      subcategory: game.subcategory,
       gridSize: game.gridSize,
       winCondition: game.winCondition,
       gameStatus: game.gameStatus,

@@ -60,6 +60,7 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { FriendInviteSearch } from '@/components/bingo/FriendInviteSearch'
 import { CategorySelect } from '@/components/CategorySelect'
 import { CategoryIcon } from '@/components/bingo/CategoryIcon'
+import { getCategoryLabelUniversal } from '@/lib/ddnet-constants'
 import { ModeSelector } from '@/components/bingo/ModePreview'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -616,7 +617,7 @@ function LobbyView({
               iconName={game.categoryIcon}
               className="h-4 w-4 text-muted-foreground"
             />
-            <span className="font-medium capitalize">{game.category}</span>
+            <span className="font-medium">{getCategoryLabelUniversal(game.category)}</span>
           </div>
         ))}
 
@@ -1454,7 +1455,7 @@ function GameView({
               iconName={game.categoryIcon}
               className="h-3 w-3"
             />
-            <span className="capitalize">{game.category}</span>
+            <span>{getCategoryLabelUniversal(game.category)}</span>
             <span>&middot;</span>
             <span>{game.pathLength} {t('settings.pathLengthSteps')}</span>
             <span>&middot;</span>

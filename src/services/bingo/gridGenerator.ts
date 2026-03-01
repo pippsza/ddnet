@@ -9,7 +9,6 @@ interface MapInfo {
 
 interface GridGeneratorOptions {
   category: string
-  subcategory?: string
   gridSize: '3x3' | '5x5' | '7x7'
   difficultyMin: number
   difficultyMax: number
@@ -61,14 +60,14 @@ interface DDNetMapData {
  * Uses DDNet API to fetch maps and filter by difficulty
  */
 export async function generateBingoGrid(options: GridGeneratorOptions): Promise<MapInfo[]> {
-  const { category, subcategory, gridSize, difficultyMin, difficultyMax } = options
+  const { category, gridSize, difficultyMin, difficultyMax } = options
 
   const count = GRID_SIZES[gridSize]
 
   // Fetch maps: custom categories use stored maps, standard use DDNet API
   const allMaps = isCustomCategory(category)
     ? await fetchCustomCategoryMaps(category)
-    : await fetchMapsByCategory(category, subcategory)
+    : await fetchMapsByCategory(category)
 
   // Filter by difficulty range (in stars)
   const filteredMaps = allMaps.filter(
@@ -77,7 +76,7 @@ export async function generateBingoGrid(options: GridGeneratorOptions): Promise<
 
   if (filteredMaps.length < count) {
     throw new Error(
-      `Not enough maps in category ${category}${subcategory ? `.${subcategory}` : ''} with difficulty ${difficultyMin}-${difficultyMax} stars. Need ${count}, got ${filteredMaps.length}`,
+      `Not enough maps in category ${category} with difficulty ${difficultyMin}-${difficultyMax} stars. Need ${count}, got ${filteredMaps.length}`,
     )
   }
 
@@ -119,16 +118,10 @@ async function fetchAllMaps(): Promise<DDNetMapRaw[]> {
 /**
  * Fetch maps by category from DDNet API
  */
-async function fetchMapsByCategory(
-  category: string,
-  subcategory?: string,
-): Promise<DDNetMapData[]> {
+async function fetchMapsByCategory(category: string): Promise<DDNetMapData[]> {
   const allMaps = await fetchAllMaps()
 
-  // Determine the DDNet type to filter by
-  const ddnetType = subcategory
-    ? CATEGORY_TO_DDNET_TYPE[subcategory] || CATEGORY_TO_DDNET_TYPE[category]
-    : CATEGORY_TO_DDNET_TYPE[category]
+  const ddnetType = CATEGORY_TO_DDNET_TYPE[category]
 
   if (!ddnetType) {
     throw new Error(`Unknown category: ${category}`)
@@ -175,11 +168,8 @@ export async function getAllDDNetMaps(): Promise<DDNetMapRaw[]> {
 /**
  * Get maps by category (public, for use in other services)
  */
-export async function getMapsByCategory(
-  category: string,
-  subcategory?: string,
-): Promise<DDNetMapData[]> {
-  return fetchMapsByCategory(category, subcategory)
+export async function getMapsByCategory(category: string): Promise<DDNetMapData[]> {
+  return fetchMapsByCategory(category)
 }
 
 /**

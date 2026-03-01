@@ -145,7 +145,7 @@ function formatRaceStats(user: User) {
 function formatGameForClient(
   game: Bingo | Race,
   collection: 'bingo' | 'races',
-  user: User,
+  _user: User,
   nick: string,
 ): any {
   const type = collection === 'bingo' ? 'bingo' : 'race'
@@ -166,6 +166,11 @@ function formatGameForClient(
 
   const categoryEntry = DDNET_CATEGORIES.find((c) => c.value === game.category)
 
+  // Determine creator
+  const creatorObj = typeof game.createdBy === 'object' ? (game.createdBy as User) : null
+  const creatorNick = creatorObj?.ingameNick ?? null
+  const isCreator = creatorNick?.toLowerCase() === nick.toLowerCase()
+
   // Common fields
   const base = {
     type,
@@ -180,6 +185,8 @@ function formatGameForClient(
     startedAt: game.startedAt ?? null,
     completedAt: game.completedAt ?? null,
     winnerTeam: game.winnerTeam ?? null,
+    creatorNick,
+    isCreator,
   }
 
   if (type === 'bingo') {
@@ -203,6 +210,7 @@ function formatGameForClient(
           const u = typeof p.user === 'object' ? (p.user as User) : null
           return {
             ingameNick: u?.ingameNick ?? '?',
+            isReady: p.isReady ?? false,
           }
         }),
         completedCells: (t.completedCells ?? []).map((c) => ({
@@ -238,6 +246,7 @@ function formatGameForClient(
         const u = typeof p.user === 'object' ? (p.user as User) : null
         return {
           ingameNick: u?.ingameNick ?? '?',
+          isReady: p.isReady ?? false,
         }
       }),
       completedSteps: (t.completedSteps ?? []).map((s) => ({

@@ -151,7 +151,6 @@ export async function POST(
     // Generate new grid with same settings
     const maps = await generateBingoGrid({
       category: game.category,
-      subcategory: game.subcategory || undefined,
       gridSize: game.gridSize,
       difficultyMin: game.difficultyRange?.min ?? 0,
       difficultyMax: game.difficultyRange?.max ?? 5,
@@ -184,7 +183,6 @@ export async function POST(
         title: game.title,
         mode: game.mode,
         category: game.category,
-        subcategory: game.subcategory,
         gridSize: game.gridSize,
         winCondition: game.winCondition,
         isPublic: false,

@@ -8,7 +8,6 @@ interface CreateGameRequest {
   title: string
   mode: 'solo' | 'team'
   category: string
-  subcategory?: string
   gridSize: '3x3' | '5x5' | '7x7'
   winCondition: 'line' | 'cross' | 'full_house'
   isPublic: boolean
@@ -42,7 +41,6 @@ export async function POST(req: NextRequest) {
     // Validate grid options
     const validation = validateGridOptions({
       category: body.category,
-      subcategory: body.subcategory,
       gridSize: body.gridSize,
       difficultyMin: body.difficultyMin || 0,
       difficultyMax: body.difficultyMax || 5,
@@ -89,7 +87,6 @@ export async function POST(req: NextRequest) {
     // Generate grid maps
     const maps = await generateBingoGrid({
       category: body.category,
-      subcategory: body.subcategory,
       gridSize: body.gridSize,
       difficultyMin: body.difficultyMin || 0,
       difficultyMax: body.difficultyMax || 5,
@@ -129,7 +126,6 @@ export async function POST(req: NextRequest) {
         title: body.title,
         mode: body.mode,
         category: body.category as Bingo['category'],
-        subcategory: body.subcategory as Bingo['subcategory'],
         gridSize: body.gridSize,
         winCondition: body.winCondition,
         isPublic: body.isPublic,

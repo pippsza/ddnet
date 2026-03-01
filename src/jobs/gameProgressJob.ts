@@ -664,26 +664,14 @@ async function updateRacePlayerStats(game: Race, finalTeams: any[]) {
 }
 
 /**
- * Get category stats from the nested raceStats object.
- * Handles both flat categories (novice, moderate) and ddmax subcategories (ddmax_easy, etc.)
+ * Get category stats from the raceStats object (all categories stored flat).
  */
 function getCategoryStats(raceStats: any, category: string): any {
-  // Check for ddmax subcategories (e.g., "ddmax_easy" → raceStats.ddmax.easy)
-  if (category.startsWith('ddmax_')) {
-    const sub = category.replace('ddmax_', '')
-    return raceStats?.ddmax?.[sub] ?? {}
-  }
   return raceStats?.[category] ?? {}
 }
 
 function setCategoryStats(raceStats: any, category: string, stats: any): void {
-  if (category.startsWith('ddmax_')) {
-    const sub = category.replace('ddmax_', '')
-    if (!raceStats.ddmax) raceStats.ddmax = {}
-    raceStats.ddmax[sub] = stats
-  } else {
-    raceStats[category] = stats
-  }
+  raceStats[category] = stats
 }
 
 // =============================================================================

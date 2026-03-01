@@ -744,10 +744,6 @@ export interface Bingo {
   title: string;
   mode: 'solo' | 'team';
   category: string;
-  /**
-   * Available for DDmaX and Oldschool categories
-   */
-  subcategory?: ('ddmax_easy' | 'ddmax_next' | 'ddmax_pro' | 'ddmax_nut') | null;
   gridSize: '3x3' | '5x5' | '7x7';
   winCondition: 'line' | 'cross' | 'full_house';
   /**
@@ -2163,7 +2159,6 @@ export interface BingoSelect<T extends boolean = true> {
   title?: T;
   mode?: T;
   category?: T;
-  subcategory?: T;
   gridSize?: T;
   winCondition?: T;
   isPublic?: T;

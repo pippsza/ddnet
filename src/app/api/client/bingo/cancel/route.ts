@@ -37,9 +37,17 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Don't clear activeGame here — let clients see the cancelled state
-    // and trigger appropriate UI transitions. activeGame is auto-cleared
-    // when users create a new game (stale ref handling).
+    // Clear activeGame for all players in this game
+    const playerIds = (game.teams ?? []).flatMap((team: any) =>
+      (team.players ?? []).map((p: any) => (typeof p.user === 'string' ? p.user : p.user.id)),
+    )
+    for (const playerId of playerIds) {
+      await payload.update({
+        collection: 'users',
+        id: playerId,
+        data: { activeGame: null },
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

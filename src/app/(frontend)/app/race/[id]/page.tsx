@@ -1413,7 +1413,7 @@ function GameView({
         <GameEndOverlay
           isWinner={isWinner}
           isCancelled={isCancelled}
-          winnerTeamName={winnerTeam?.teamName}
+          winnerTeamName={winnerTeam?.name}
           onDismiss={() => setShowEndOverlay(false)}
         />
       )}

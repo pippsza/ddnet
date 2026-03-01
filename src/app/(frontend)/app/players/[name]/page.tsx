@@ -31,6 +31,7 @@ import {
   Settings,
 } from 'lucide-react'
 import { OnlineStatusIndicator, AfkBadge } from '@/components/tee/OnlineStatusIndicator'
+import { JoinGameButton } from '@/components/ui/JoinGameButton'
 import { toast } from 'sonner'
 import { PageTransition } from '@/components/ui/animations'
 
@@ -427,6 +428,10 @@ function PlayerDetailContent({ name }: { name: string }) {
                   >
                     <Copy className="h-3 w-3" />
                   </button>
+                  <JoinGameButton
+                    serverIp={online.server.ip}
+                    serverPort={online.server.port}
+                  />
                 </span>
               </div>
             )}

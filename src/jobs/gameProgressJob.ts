@@ -94,11 +94,16 @@ export async function checkBingoProgress(gameId: string) {
       const team = game.teams[teamIndex]
       const completedPositions = new Set((team.completedCells || []).map((c) => c.cellPosition))
 
-      for (const playerObj of team.players ?? []) {
+      const teamPlayers = team.players ?? []
+      // Track which players finished each map position: position → Set of player IDs
+      const positionFinishes = new Map<number, Map<string, number>>() // position → (playerId → finishTimestamp)
+
+      for (const playerObj of teamPlayers) {
         const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
         if (!playerUser) continue
 
         const playerName = playerUser.ingameNick || playerUser.username
+        const playerId = playerUser.id
 
         try {
           const finishes = await fetchPlayerFinishes(playerName)
@@ -114,20 +119,17 @@ export async function checkBingoProgress(gameId: string) {
             const position = mapPositions.get(mapNameLower)
 
             if (position !== undefined && !completedPositions.has(position)) {
-              completedPositions.add(position)
-
-              if (!team.completedCells) {
-                team.completedCells = []
+              if (!positionFinishes.has(position)) {
+                positionFinishes.set(position, new Map())
+              }
+              const playerMap = positionFinishes.get(position)!
+              // Keep the earliest finish per player
+              if (!playerMap.has(playerId)) {
+                playerMap.set(playerId, finishTimestamp)
               }
 
-              team.completedCells.push({
-                cellPosition: position,
-                completedAt: new Date(finishTimestamp).toISOString(),
-              })
-              updated = true
-
               console.log(
-                `[Bingo] ${playerName} completed cell ${position} (${finish.map}) in game ${gameId}`,
+                `[Bingo] ${playerName} finished cell ${position} (${finish.map}) in game ${gameId}`,
               )
             }
           }
@@ -135,6 +137,36 @@ export async function checkBingoProgress(gameId: string) {
           await sleep(200)
         } catch (error) {
           console.error(`[Bingo] Error checking player ${playerName}:`, error)
+        }
+      }
+
+      // Now check which cells ALL team players have completed
+      const totalPlayers = teamPlayers.filter(
+        (p) => typeof p.user === 'object' && p.user !== null,
+      ).length
+
+      for (const [position, playerMap] of positionFinishes) {
+        if (playerMap.size >= totalPlayers) {
+          // All players finished this map — mark cell complete
+          const latestFinish = Math.max(...playerMap.values())
+
+          if (!team.completedCells) {
+            team.completedCells = []
+          }
+
+          team.completedCells.push({
+            cellPosition: position,
+            completedAt: new Date(latestFinish).toISOString(),
+          })
+          updated = true
+
+          console.log(
+            `[Bingo] All ${totalPlayers} players completed cell ${position} in game ${gameId}`,
+          )
+        } else {
+          console.log(
+            `[Bingo] Cell ${position}: ${playerMap.size}/${totalPlayers} players finished in game ${gameId}`,
+          )
         }
       }
     }

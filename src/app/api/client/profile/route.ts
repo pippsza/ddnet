@@ -60,13 +60,13 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Load recent completed games (last 5)
+    // Load recent completed games (last 20)
     const recentGames: any[] = []
     if (user.completedGames?.length) {
       const recentRefs = (
         user.completedGames as Array<{ relationTo: string; value: string }>
       )
-        .slice(-5)
+        .slice(-20)
         .reverse()
 
       for (const ref of recentRefs) {

@@ -187,6 +187,9 @@ function formatGameForClient(
     winnerTeam: game.winnerTeam ?? null,
     creatorNick,
     isCreator,
+    isPublic: game.isPublic ?? false,
+    difficultyMin: game.difficultyRange?.min ?? 0,
+    difficultyMax: game.difficultyRange?.max ?? 5,
   }
 
   if (type === 'bingo') {

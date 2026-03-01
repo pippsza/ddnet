@@ -22,6 +22,11 @@ import {
   Sun,
   Moon,
   Globe,
+  Key,
+  Eye,
+  EyeOff,
+  Copy,
+  RefreshCw,
 } from 'lucide-react'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useTheme } from 'next-themes'
@@ -89,6 +94,38 @@ export default function SettingsPage() {
   const { theme: currentTheme, setTheme } = useTheme()
   const [themeMounted, setThemeMounted] = useState(false)
   useEffect(() => setThemeMounted(true), [])
+
+  // Client token state
+  const { data: tokenData, mutate: mutateToken } = useSWR('/api/client/token', fetcher)
+  const [clientToken, setClientToken] = useState<string | null>(null)
+  const [tokenVisible, setTokenVisible] = useState(false)
+  const [tokenLoading, setTokenLoading] = useState(false)
+  const [tokenCopied, setTokenCopied] = useState(false)
+  const [tokenConfirmRegen, setTokenConfirmRegen] = useState(false)
+
+  const handleGenerateToken = async () => {
+    setTokenLoading(true)
+    try {
+      const res = await fetch('/api/client/token', { method: 'POST' })
+      const data = await res.json()
+      if (data.token) {
+        setClientToken(data.token)
+        setTokenVisible(true)
+        setTokenConfirmRegen(false)
+        mutateToken()
+      }
+    } finally {
+      setTokenLoading(false)
+    }
+  }
+
+  const handleCopyToken = async () => {
+    if (clientToken) {
+      await navigator.clipboard.writeText(clientToken)
+      setTokenCopied(true)
+      setTimeout(() => setTokenCopied(false), 2000)
+    }
+  }
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -724,6 +761,122 @@ export default function SettingsPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t('pushNotifications.notSupported')}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Client Token Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Key className="h-5 w-5" />
+            Client Token
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Link your DDNet Bingo client to your account for faster game progress updates.
+            When linked, your client sends finish hints directly, reducing update latency.
+          </p>
+
+          {!tokenData?.hasToken && !clientToken ? (
+            <Button onClick={handleGenerateToken} disabled={tokenLoading} className="w-full sm:w-auto">
+              {tokenLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Key className="h-4 w-4 mr-2" />
+              )}
+              Generate Token
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              {/* Token display */}
+              {clientToken && (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <code
+                      className={`block w-full px-3 py-2 rounded-md bg-muted text-xs font-mono break-all select-all transition-all ${
+                        !tokenVisible ? 'blur-sm' : ''
+                      }`}
+                    >
+                      {clientToken}
+                    </code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTokenVisible(!tokenVisible)}
+                    title={tokenVisible ? 'Hide' : 'Show'}
+                  >
+                    {tokenVisible ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                {clientToken && (
+                  <Button variant="outline" size="sm" onClick={handleCopyToken}>
+                    {tokenCopied ? (
+                      <Check className="h-4 w-4 mr-1.5 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-1.5" />
+                    )}
+                    {tokenCopied ? 'Copied!' : 'Copy'}
+                  </Button>
+                )}
+                {!tokenConfirmRegen ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTokenConfirmRegen(true)}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1.5" />
+                    {clientToken ? 'Regenerate' : 'Generate New Token'}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      This will invalidate the current token.
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleGenerateToken}
+                      disabled={tokenLoading}
+                    >
+                      {tokenLoading && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                      Confirm
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTokenConfirmRegen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Warning */}
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
+                <p className="text-xs text-muted-foreground">
+                  Do not share this token. Anyone with it can send game updates on your behalf.
+                </p>
+              </div>
+
+              {/* Instructions */}
+              <p className="text-xs text-muted-foreground">
+                Set in your DDNet Bingo client console:{' '}
+                <code className="px-1.5 py-0.5 rounded bg-muted text-xs">cl_bingo_token {'<token>'}</code>
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>

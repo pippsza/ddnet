@@ -628,6 +628,24 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'clientToken',
+      type: 'text',
+      unique: true,
+      label: 'Client Linking Token',
+      hidden: true,
+      admin: {
+        description: 'Bearer token for DDNet client account linking and finish hints',
+        readOnly: true,
+      },
+      access: {
+        read: ({ req, doc }: { req: PayloadRequest; doc?: any }) => {
+          if (!req.user || !doc) return false
+          return req.user.id === doc.id || req.user.roles === 'admin'
+        },
+        update: () => false,
+      },
+    },
+    {
       name: 'notificationRetention',
       type: 'select',
       defaultValue: '5d',

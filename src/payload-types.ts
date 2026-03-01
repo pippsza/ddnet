@@ -615,6 +615,10 @@ export interface User {
    */
   savedLoginToken?: string | null;
   /**
+   * Bearer token for DDNet client account linking and finish hints
+   */
+  clientToken?: string | null;
+  /**
    * How long notifications are kept before automatic deletion
    */
   notificationRetention?: ('1h' | '24h' | '5d' | '10d') | null;
@@ -2110,6 +2114,7 @@ export interface UsersSelect<T extends boolean = true> {
         favoriteCategory?: T;
       };
   savedLoginToken?: T;
+  clientToken?: T;
   notificationRetention?: T;
   updatedAt?: T;
   createdAt?: T;

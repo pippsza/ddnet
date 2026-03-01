@@ -200,6 +200,20 @@ export const Bingo: CollectionConfig = {
           min: 0,
           max: 48,
         },
+        {
+          name: 'points',
+          type: 'number',
+          label: 'Points',
+          defaultValue: 0,
+        },
+        {
+          name: 'difficulty',
+          type: 'number',
+          label: 'Difficulty (stars)',
+          defaultValue: 0,
+          min: 0,
+          max: 5,
+        },
       ],
     },
     {

@@ -12,7 +12,17 @@ import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvat
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { RoleBadge } from '@/components/ui/status-badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, ShieldAlert, AlertTriangle, Loader2, Wrench, Check, Sun, Moon, Globe } from 'lucide-react'
+import {
+  ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
+  Loader2,
+  Wrench,
+  Check,
+  Sun,
+  Moon,
+  Globe,
+} from 'lucide-react'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useTheme } from 'next-themes'
 import { themes } from '@/lib/themes'
@@ -58,7 +68,10 @@ export default function SettingsPage() {
   const currentLocale = useLocale()
   const router = useRouter()
   const { data: user, mutate } = useSWR('/api/users/me', fetcher)
-  const { data: serversData } = useSWR<{ servers: VerificationServer[] }>('/api/verification/servers', fetcher)
+  const { data: serversData } = useSWR<{ servers: VerificationServer[] }>(
+    '/api/verification/servers',
+    fetcher,
+  )
   const [message, setMessage] = useState('')
   const [pushSupported, setPushSupported] = useState(false)
   const [pushSubscribed, setPushSubscribed] = useState(false)
@@ -138,7 +151,11 @@ export default function SettingsPage() {
     try {
       // 1. Check SW registration
       const registrations = await navigator.serviceWorker.getRegistrations()
-      console.log('[Push] SW registrations:', registrations.length, registrations.map((r) => r.scope))
+      console.log(
+        '[Push] SW registrations:',
+        registrations.length,
+        registrations.map((r) => r.scope),
+      )
 
       if (registrations.length === 0) {
         console.log('[Push] No SW registered, registering now...')
@@ -166,7 +183,12 @@ export default function SettingsPage() {
       // 3. Get VAPID key
       const keyRes = await fetch('/api/push/subscribe')
       const keyData = await keyRes.json()
-      console.log('[Push] VAPID key response:', keyRes.status, 'key length:', keyData.vapidPublicKey?.length)
+      console.log(
+        '[Push] VAPID key response:',
+        keyRes.status,
+        'key length:',
+        keyData.vapidPublicKey?.length,
+      )
 
       if (!keyData.vapidPublicKey) {
         setMessage(t('pushNotifications.errors.notConfigured'))
@@ -175,7 +197,11 @@ export default function SettingsPage() {
 
       // 4. Subscribe
       const convertedKey = urlBase64ToUint8Array(keyData.vapidPublicKey)
-      console.log('[Push] Subscribing with key (converted to Uint8Array, length:', convertedKey.length, ')')
+      console.log(
+        '[Push] Subscribing with key (converted to Uint8Array, length:',
+        convertedKey.length,
+        ')',
+      )
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey,
@@ -299,13 +325,21 @@ export default function SettingsPage() {
           ) : (
             <>
               <div className="flex items-center gap-4">
-                <OnlineStatusIndicator status={{ platformOnline: true, inGameOnline: false }} size="lg">
+                <OnlineStatusIndicator
+                  status={{ platformOnline: true, inGameOnline: false }}
+                  size="lg"
+                >
                   <TeeAvatarWithFallback
                     skinUrl={skinUrl}
                     bodyColor={user?.user?.ingameStats?.skin?.colorBody}
                     feetColor={user?.user?.ingameStats?.skin?.colorFeet}
                     size="lg"
-                    useCustomColors={!!(user?.user?.ingameStats?.skin?.colorBody || user?.user?.ingameStats?.skin?.colorFeet)}
+                    useCustomColors={
+                      !!(
+                        user?.user?.ingameStats?.skin?.colorBody ||
+                        user?.user?.ingameStats?.skin?.colorFeet
+                      )
+                    }
                   />
                 </OnlineStatusIndicator>
                 <div>
@@ -365,9 +399,15 @@ export default function SettingsPage() {
                         style={{ background: themeItem.preview.primary }}
                       >
                         {isDark ? (
-                          <Moon className="w-3 h-3" style={{ color: themeItem.preview.background }} />
+                          <Moon
+                            className="w-3 h-3"
+                            style={{ color: themeItem.preview.background }}
+                          />
                         ) : (
-                          <Sun className="w-3 h-3" style={{ color: themeItem.preview.background }} />
+                          <Sun
+                            className="w-3 h-3"
+                            style={{ color: themeItem.preview.background }}
+                          />
                         )}
                       </div>
                       <div
@@ -492,7 +532,9 @@ export default function SettingsPage() {
                 <ShieldCheck className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-400">{t('verification.accountVerified')}</p>
+                <p className="font-medium text-green-700 dark:text-green-400">
+                  {t('verification.accountVerified')}
+                </p>
                 <p className="text-sm text-muted-foreground">{t('verification.fullAccess')}</p>
               </div>
             </div>
@@ -506,7 +548,10 @@ export default function SettingsPage() {
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t('verification.unavailableDescription')}{' '}
-                    <Link href="/support" className="text-primary hover:underline">{t('verification.supportTicket')}</Link>.
+                    <Link href="/support" className="text-primary hover:underline">
+                      {t('verification.supportTicket')}
+                    </Link>
+                    .
                   </p>
                 </div>
               </div>
@@ -543,22 +588,23 @@ export default function SettingsPage() {
               )}
 
               {verifyStep === 'idle' && (
-                <p className="text-sm text-muted-foreground">
-                  {t('verification.description')}
-                </p>
+                <p className="text-sm text-muted-foreground">{t('verification.description')}</p>
               )}
 
               {/* Server List */}
-              {(verifyStep === 'idle' || verifyStep === 'failed' || verifyStep === 'expired') && servers.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('verification.serversLabel')}</p>
-                  <div className="space-y-1.5">
-                    {servers.map((s, i) => (
-                      <ServerListItem key={i} server={s} />
-                    ))}
+              {(verifyStep === 'idle' || verifyStep === 'failed' || verifyStep === 'expired') &&
+                servers.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('verification.serversLabel')}
+                    </p>
+                    <div className="space-y-1.5">
+                      {servers.map((s, i) => (
+                        <ServerListItem key={i} server={s} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {verifyStep === 'idle' && (
                 <Button onClick={startVerification} className="w-full sm:w-auto">
@@ -602,8 +648,12 @@ export default function SettingsPage() {
                       <ShieldCheck className="w-5 h-5 text-green-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-green-700 dark:text-green-400">{t('verification.successTitle')}</p>
-                      <p className="text-sm text-muted-foreground">{t('verification.successDescription')}</p>
+                      <p className="font-medium text-green-700 dark:text-green-400">
+                        {t('verification.successTitle')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('verification.successDescription')}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -618,7 +668,9 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <p className="font-medium text-red-700 dark:text-red-400">
-                          {verifyStep === 'expired' ? t('verification.expiredTitle') : t('verification.failedTitle')}
+                          {verifyStep === 'expired'
+                            ? t('verification.expiredTitle')
+                            : t('verification.failedTitle')}
                         </p>
                         <p className="text-sm text-muted-foreground">{verifyError}</p>
                       </div>
@@ -634,7 +686,9 @@ export default function SettingsPage() {
               <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-yellow-500" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">{t('verification.unverifiedTitle')}</p>
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                    {t('verification.unverifiedTitle')}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t('verification.unverifiedWarning')}
                   </p>
@@ -659,23 +713,22 @@ export default function SettingsPage() {
                   {t('pushNotifications.description')}
                 </p>
               </div>
-              <Button variant={pushSubscribed ? 'secondary' : 'default'} onClick={handlePushToggle} disabled={pushLoading}>
+              <Button
+                variant={pushSubscribed ? 'secondary' : 'default'}
+                onClick={handlePushToggle}
+                disabled={pushLoading}
+              >
                 {pushLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {pushSubscribed ? t('pushNotifications.disable') : t('pushNotifications.enable')}
               </Button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              {t('pushNotifications.notSupported')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('pushNotifications.notSupported')}</p>
           )}
         </CardContent>
       </Card>
 
-      {message && (
-        <p className="text-sm text-muted-foreground text-center">{message}</p>
-      )}
+      {message && <p className="text-sm text-muted-foreground text-center">{message}</p>}
     </div>
   )
 }
-

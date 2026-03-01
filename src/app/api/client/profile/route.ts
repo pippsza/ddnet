@@ -163,6 +163,8 @@ function formatGameForClient(
       maps: (bingo.maps ?? []).map((m) => ({
         name: m.mapName,
         position: m.position,
+        points: m.points ?? 0,
+        difficulty: m.difficulty ?? 0,
       })),
       teams: bingo.teams.map((t, i) => ({
         index: i,
@@ -187,6 +189,7 @@ function formatGameForClient(
   const race = game as Race
   return {
     ...base,
+    serverTarget: race.server?.ip ? `${race.server.ip}:${race.server.port || 8303}` : null,
     categoryMode: race.categoryMode,
     pathLength: race.pathLength,
     currentStep: race.currentStep ?? 0,
@@ -194,6 +197,8 @@ function formatGameForClient(
     maps: (race.maps ?? []).map((m) => ({
       name: m.mapName,
       position: m.position,
+      points: m.points ?? 0,
+      difficulty: m.difficulty ?? 0,
     })),
     teams: race.teams.map((t, i) => ({
       index: i,

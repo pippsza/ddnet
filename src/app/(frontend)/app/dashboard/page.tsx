@@ -69,22 +69,30 @@ function DashboardContent() {
       <ScaleIn>
         <Card>
           <CardContent className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6">
-            <OnlineStatusIndicator status={{ platformOnline: true, inGameOnline: false }} size="xl" className="shrink-0">
+            <OnlineStatusIndicator
+              status={{ platformOnline: true, inGameOnline: false }}
+              size="xl"
+              className="shrink-0"
+            >
               <TeeAvatarWithFallback
                 skinUrl={skinUrl}
                 bodyColor={userData?.ingameStats?.skin?.colorBody}
                 feetColor={userData?.ingameStats?.skin?.colorFeet}
                 size="xl"
                 lookAtCursor
-                useCustomColors={!!(userData?.ingameStats?.skin?.colorBody || userData?.ingameStats?.skin?.colorFeet)}
+                useCustomColors={
+                  !!(
+                    userData?.ingameStats?.skin?.colorBody || userData?.ingameStats?.skin?.colorFeet
+                  )
+                }
               />
             </OnlineStatusIndicator>
             <div className="flex-1 min-w-0 text-center sm:text-left">
               <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-                <h1 className="text-2xl font-bold truncate">{userData?.ingameNick || t('fallbackName')}</h1>
-                {userData?.isSystemVerified && (
-                  <StatusBadge status="verified" />
-                )}
+                <h1 className="text-2xl font-bold truncate">
+                  {userData?.ingameNick || t('fallbackName')}
+                </h1>
+                {userData?.isSystemVerified && <StatusBadge status="verified" />}
                 <RoleBadge role={(userData as any)?.primaryRole || userData?.roles} />
               </div>
               {userData?.ingameStats?.points !== undefined && (
@@ -92,9 +100,13 @@ function DashboardContent() {
                   <span className="text-lg font-semibold text-foreground">
                     {userData.ingameStats.points.toLocaleString()} {t('points')}
                   </span>
-                  {userData.ingameStats.rank && <span>{t('rank', { rank: userData.ingameStats.rank })}</span>}
+                  {userData.ingameStats.rank && (
+                    <span>{t('rank', { rank: userData.ingameStats.rank })}</span>
+                  )}
                   {totalPlaytime ? (
-                    <span>{formatPlaytime(totalPlaytime)} {t('played')}</span>
+                    <span>
+                      {formatPlaytime(totalPlaytime)} {t('played')}
+                    </span>
                   ) : null}
                 </div>
               )}
@@ -128,19 +140,25 @@ function DashboardContent() {
                 <Card className="group hover:shadow-md hover:border-primary/30 transition-all">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">B</span>
+                      <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
+                        B
+                      </span>
                       {t('bingo.title')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {t('bingo.description')}
-                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">{t('bingo.description')}</p>
                     <div className="flex gap-2 flex-wrap">
-                      <Link href="/app/bingo/create" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+                      <Link
+                        href="/app/bingo/create"
+                        className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+                      >
                         {t('bingo.createButton')}
                       </Link>
-                      <Link href="/app/bingo" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
+                      <Link
+                        href="/app/bingo"
+                        className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                      >
                         {t('bingo.browseButton')}
                       </Link>
                     </div>
@@ -153,19 +171,25 @@ function DashboardContent() {
                 <Card className="group hover:shadow-md hover:border-primary/30 transition-all">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold">R</span>
+                      <span className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold">
+                        R
+                      </span>
                       {t('race.title')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {t('race.description')}
-                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">{t('race.description')}</p>
                     <div className="flex gap-2 flex-wrap">
-                      <Link href="/app/race/create" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+                      <Link
+                        href="/app/race/create"
+                        className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+                      >
                         {t('race.createButton')}
                       </Link>
-                      <Link href="/app/race" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
+                      <Link
+                        href="/app/race"
+                        className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                      >
                         {t('race.browseButton')}
                       </Link>
                     </div>

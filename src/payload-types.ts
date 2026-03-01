@@ -762,6 +762,8 @@ export interface Bingo {
   maps: {
     mapName: string;
     position: number;
+    points?: number | null;
+    difficulty?: number | null;
     id?: string | null;
   }[];
   /**
@@ -859,6 +861,8 @@ export interface Race {
     | {
         mapName: string;
         position: number;
+        points?: number | null;
+        difficulty?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -2171,6 +2175,8 @@ export interface BingoSelect<T extends boolean = true> {
     | {
         mapName?: T;
         position?: T;
+        points?: T;
+        difficulty?: T;
         id?: T;
       };
   teams?:
@@ -2242,6 +2248,8 @@ export interface RacesSelect<T extends boolean = true> {
     | {
         mapName?: T;
         position?: T;
+        points?: T;
+        difficulty?: T;
         id?: T;
       };
   teams?:

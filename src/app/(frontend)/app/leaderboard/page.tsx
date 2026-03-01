@@ -63,7 +63,11 @@ function RankBadge({ rank }: { rank: number }) {
       </span>
     )
   }
-  return <span className="text-sm text-muted-foreground font-mono w-6 text-center inline-block">#{rank}</span>
+  return (
+    <span className="text-sm text-muted-foreground font-mono w-6 text-center inline-block">
+      #{rank}
+    </span>
+  )
 }
 
 function LeaderboardContent() {
@@ -106,8 +110,12 @@ function LeaderboardContent() {
 
       <Tabs value={activeTab} onValueChange={setTab}>
         <TabsList className="w-full h-11">
-          <TabsTrigger value="bingo" className="flex-1">{t('tabs.bingo')}</TabsTrigger>
-          <TabsTrigger value="race" className="flex-1">{t('tabs.race')}</TabsTrigger>
+          <TabsTrigger value="bingo" className="flex-1">
+            {t('tabs.bingo')}
+          </TabsTrigger>
+          <TabsTrigger value="race" className="flex-1">
+            {t('tabs.race')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4 mt-4">
@@ -146,7 +154,10 @@ function LeaderboardContent() {
             <Card>
               <CardContent className="p-0">
                 {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 border-b last:border-0 animate-pulse">
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-4 border-b last:border-0 animate-pulse"
+                  >
                     <div className="h-6 w-6 rounded-full bg-muted" />
                     <div className="h-8 w-8 rounded-full bg-muted" />
                     <div className="h-4 w-28 rounded bg-muted" />
@@ -162,96 +173,104 @@ function LeaderboardContent() {
               <Card>
                 <CardContent className="p-0">
                   <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">{t('columns.rank')}</TableHead>
-                      <TableHead>{t('columns.player')}</TableHead>
-                      <TableHead className="text-right">{t('columns.games')}</TableHead>
-                      <TableHead className="text-right">{t('columns.wins')}</TableHead>
-                      <TableHead className="text-right">{t('columns.winRate')}</TableHead>
-                      {activeTab === 'bingo' && (
-                        <TableHead className="text-right">{t('columns.maps')}</TableHead>
-                      )}
-                      {activeTab === 'race' && (
-                        <TableHead className="text-right">{t('columns.rounds')}</TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {docs.map((entry: any) => {
-                      const skin = entry.user.skin
-                      const platformOn = isPlatformOnline(entry.user.lastSeenAt)
-                      return (
-                        <TableRow key={entry.user.id}>
-                          <TableCell>
-                            <RankBadge rank={entry.rank} />
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/app/players/${encodeURIComponent(entry.user.ingameNick)}`}
-                              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
-                            >
-                              <OnlineStatusIndicator
-                                status={{ platformOnline: platformOn, inGameOnline: false }}
-                                size="sm"
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">{t('columns.rank')}</TableHead>
+                        <TableHead>{t('columns.player')}</TableHead>
+                        <TableHead className="text-right">{t('columns.games')}</TableHead>
+                        <TableHead className="text-right">{t('columns.wins')}</TableHead>
+                        <TableHead className="text-right">{t('columns.winRate')}</TableHead>
+                        {activeTab === 'bingo' && (
+                          <TableHead className="text-right">{t('columns.maps')}</TableHead>
+                        )}
+                        {activeTab === 'race' && (
+                          <TableHead className="text-right">{t('columns.rounds')}</TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {docs.map((entry: any) => {
+                        const skin = entry.user.skin
+                        const platformOn = isPlatformOnline(entry.user.lastSeenAt)
+                        return (
+                          <TableRow key={entry.user.id}>
+                            <TableCell>
+                              <RankBadge rank={entry.rank} />
+                            </TableCell>
+                            <TableCell>
+                              <Link
+                                href={`/app/players/${encodeURIComponent(entry.user.ingameNick)}`}
+                                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
                               >
-                                <TeeAvatarWithFallback
-                                  skinUrl={skin?.name ? getDDNetSkinUrl(skin.name) : undefined}
-                                  bodyColor={skin?.color_body}
-                                  feetColor={skin?.color_feet}
-                                  useCustomColors={!!(skin?.color_body || skin?.color_feet)}
+                                <OnlineStatusIndicator
+                                  status={{ platformOnline: platformOn, inGameOnline: false }}
                                   size="sm"
+                                >
+                                  <TeeAvatarWithFallback
+                                    skinUrl={skin?.name ? getDDNetSkinUrl(skin.name) : undefined}
+                                    bodyColor={skin?.color_body}
+                                    feetColor={skin?.color_feet}
+                                    useCustomColors={!!(skin?.color_body || skin?.color_feet)}
+                                    size="sm"
+                                  />
+                                </OnlineStatusIndicator>
+                                <span className="font-medium text-sm truncate">
+                                  {entry.user.ingameNick}
+                                </span>
+                                {entry.user.isSystemVerified && (
+                                  <StatusBadge
+                                    status="verified"
+                                    className="text-[10px] px-1.5 py-0"
+                                  />
+                                )}
+                                <RoleBadge
+                                  role={(entry.user as any).primaryRole || entry.user.roles}
+                                  className="text-[10px] px-1.5 py-0"
                                 />
-                              </OnlineStatusIndicator>
-                              <span className="font-medium text-sm truncate">
-                                {entry.user.ingameNick}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              {entry.stats.gamesPlayed}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {entry.stats.gamesWon}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span
+                                className={cn(
+                                  'font-medium',
+                                  entry.stats.winRate >= 60 && 'text-green-600 dark:text-green-400',
+                                  entry.stats.winRate < 40 && 'text-red-500 dark:text-red-400',
+                                )}
+                              >
+                                {entry.stats.winRate}%
                               </span>
-                              {entry.user.isSystemVerified && (
-                                <StatusBadge status="verified" className="text-[10px] px-1.5 py-0" />
-                              )}
-                              <RoleBadge role={(entry.user as any).primaryRole || entry.user.roles} className="text-[10px] px-1.5 py-0" />
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {entry.stats.gamesPlayed}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {entry.stats.gamesWon}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span
-                              className={cn(
-                                'font-medium',
-                                entry.stats.winRate >= 60 && 'text-green-600 dark:text-green-400',
-                                entry.stats.winRate < 40 && 'text-red-500 dark:text-red-400',
-                              )}
-                            >
-                              {entry.stats.winRate}%
-                            </span>
-                          </TableCell>
-                          {activeTab === 'bingo' && (
-                            <TableCell className="text-right text-muted-foreground">
-                              {entry.stats.totalMapsCompleted}
                             </TableCell>
-                          )}
-                          {activeTab === 'race' && (
-                            <TableCell className="text-right text-muted-foreground">
-                              {entry.stats.roundsWon}
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                            {activeTab === 'bingo' && (
+                              <TableCell className="text-right text-muted-foreground">
+                                {entry.stats.totalMapsCompleted}
+                              </TableCell>
+                            )}
+                            {activeTab === 'race' && (
+                              <TableCell className="text-right text-muted-foreground">
+                                {entry.stats.roundsWon}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             </ScaleIn>
           ) : (
             <ScaleIn>
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  {category !== 'all' ? t('emptyForCategory', { category: getCategoryLabel(category as any) }) : t('empty')}
+                  {category !== 'all'
+                    ? t('emptyForCategory', { category: getCategoryLabel(category as any) })
+                    : t('empty')}
                 </CardContent>
               </Card>
             </ScaleIn>

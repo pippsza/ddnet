@@ -178,6 +178,7 @@ export async function POST(
         difficultyRange: game.difficultyRange,
         server: game.server,
         createdBy: user.id,
+        createdVia: game.createdVia ?? 'web',
         maps,
         teams,
         gameStatus: 'waiting',

@@ -128,6 +128,7 @@ export async function POST(req: NextRequest) {
           name: body.server?.name,
         },
         createdBy: user.id,
+        createdVia: 'web',
         maps,
         teams,
         gameStatus: 'waiting',

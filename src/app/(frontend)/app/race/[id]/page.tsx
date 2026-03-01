@@ -227,12 +227,13 @@ function LobbyView({
 
   const serverTeams: Team[] = game.teams || []
   const isCreator = game.isCreator
+  const canEditSettings = isCreator && game.createdVia !== 'client'
   const isInGame = game.isCurrentUserInGame
   const myTeamIndex: number | null = game.currentUserTeamIndex
 
   // Optimistic teams: show/hide Team 2 immediately on mode switch
   const teams: Team[] = (() => {
-    if (!isCreator) return serverTeams
+    if (!canEditSettings) return serverTeams
     if (mode === 'team' && serverTeams.length === 1) {
       return [
         serverTeams[0],
@@ -580,7 +581,7 @@ function LobbyView({
   const settingsContent = (
     <div className="space-y-4">
       {/* Title */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div>
           <Label htmlFor="title">{t('settings.raceTitle')}</Label>
           <Input
@@ -598,8 +599,8 @@ function LobbyView({
       )}
 
       {/* Category (hidden in free mode) */}
-      {(isCreator ? categoryMode : game.categoryMode) !== 'free' &&
-        (isCreator ? (
+      {(canEditSettings ? categoryMode : game.categoryMode) !== 'free' &&
+        (canEditSettings ? (
           <div>
             <Label>{t('settings.category')}</Label>
             <CategorySelect
@@ -622,7 +623,7 @@ function LobbyView({
         ))}
 
       {/* Path Length (read-only for non-creator; interactive preview controls it for creator) */}
-      {!isCreator && (
+      {!canEditSettings && (
         <div className="text-sm">
           <span className="text-muted-foreground">{t('settings.pathLengthLabel')}</span>{' '}
           <span className="font-medium">{game.pathLength} {t('settings.pathLengthSteps')}</span>
@@ -630,8 +631,8 @@ function LobbyView({
       )}
 
       {/* Difficulty (hidden in free mode) */}
-      {(isCreator ? categoryMode : game.categoryMode) !== 'free' &&
-        (isCreator ? (
+      {(canEditSettings ? categoryMode : game.categoryMode) !== 'free' &&
+        (canEditSettings ? (
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>{t('settings.minDifficulty')}</Label>
@@ -666,7 +667,7 @@ function LobbyView({
         ))}
 
       {/* Server */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div className="space-y-2">
           <Label className="flex items-center gap-1.5">
             <Server className="h-3.5 w-3.5" />
@@ -694,7 +695,7 @@ function LobbyView({
       )}
 
       {/* Mode */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div>
           <Label>{t('settings.mode')}</Label>
           <ModeSelector
@@ -711,7 +712,7 @@ function LobbyView({
       )}
 
       {/* Public toggle */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div className="flex items-center gap-2">
           <Switch
             id="isPublic"
@@ -751,7 +752,7 @@ function LobbyView({
       {settingsError && <p className="text-sm text-red-500">{settingsError}</p>}
 
       {/* Teams */}
-      {(isCreator ? mode : game.mode) === 'team' ? (
+      {(canEditSettings ? mode : game.mode) === 'team' ? (
         <div className="flex flex-col md:flex-row items-stretch gap-4">
           {teams[0] && (
             <div className="flex-1">
@@ -810,7 +811,7 @@ function LobbyView({
   const effectiveCategoryMode = isCreator ? categoryMode : game.categoryMode
   const effectiveMaxLength = effectiveCategoryMode === 'free' ? 20 : (availableMapCount ?? 20)
 
-  const categoryModeContent = isCreator ? (
+  const categoryModeContent = canEditSettings ? (
     <div className="w-full max-w-sm">
       <Label>{t('settings.categoryMode')}</Label>
       <CategoryModeSelector
@@ -829,7 +830,7 @@ function LobbyView({
   const pathPreviewContent = (
     <div className="flex flex-col items-center gap-6 w-full">
       {categoryModeContent}
-      {isCreator ? (
+      {canEditSettings ? (
         <RacePathPreview
           pathLength={pathLength}
           categoryMode={categoryMode}

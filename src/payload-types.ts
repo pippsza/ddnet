@@ -755,6 +755,7 @@ export interface Bingo {
     max?: number | null;
   };
   createdBy: string | User;
+  createdVia?: ('web' | 'client') | null;
   /**
    * Auto-generated code for private games. Share this link: /bingo/join/{code}
    */
@@ -850,6 +851,7 @@ export interface Race {
     name?: string | null;
   };
   createdBy: string | User;
+  createdVia?: ('web' | 'client') | null;
   /**
    * Auto-generated code for private games
    */
@@ -2169,6 +2171,7 @@ export interface BingoSelect<T extends boolean = true> {
         max?: T;
       };
   createdBy?: T;
+  createdVia?: T;
   inviteCode?: T;
   maps?:
     | T
@@ -2242,6 +2245,7 @@ export interface RacesSelect<T extends boolean = true> {
         name?: T;
       };
   createdBy?: T;
+  createdVia?: T;
   inviteCode?: T;
   maps?:
     | T

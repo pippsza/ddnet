@@ -134,6 +134,7 @@ export async function POST(req: NextRequest) {
           max: body.difficultyMax || 5,
         },
         createdBy: user.id,
+        createdVia: 'web',
         maps,
         teams,
         gameStatus: 'waiting',

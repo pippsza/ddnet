@@ -211,12 +211,13 @@ function LobbyView({
 
   const serverTeams: Team[] = game.teams || []
   const isCreator = game.isCreator
+  const canEditSettings = isCreator && game.createdVia !== 'client'
   const isInGame = game.isCurrentUserInGame
   const myTeamIndex: number | null = game.currentUserTeamIndex
 
   // Optimistic teams: show/hide Team 2 immediately on mode switch
   const teams: Team[] = (() => {
-    if (!isCreator) return serverTeams
+    if (!canEditSettings) return serverTeams
     if (mode === 'team' && serverTeams.length === 1) {
       return [
         serverTeams[0],
@@ -487,7 +488,7 @@ function LobbyView({
   const settingsContent = (
     <div className="space-y-4">
       {/* Title */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div>
           <Label htmlFor="title">{t('settings.gameTitle')}</Label>
           <Input
@@ -505,7 +506,7 @@ function LobbyView({
       )}
 
       {/* Category */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div>
           <Label>{t('settings.category')}</Label>
           <CategorySelect
@@ -528,7 +529,7 @@ function LobbyView({
       )}
 
       {/* Difficulty */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>{t('settings.minDifficulty')}</Label>
@@ -563,7 +564,7 @@ function LobbyView({
       )}
 
       {/* Mode */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div>
           <Label>{t('settings.mode')}</Label>
           <ModeSelector
@@ -580,7 +581,7 @@ function LobbyView({
       )}
 
       {/* Public toggle */}
-      {isCreator ? (
+      {canEditSettings ? (
         <div className="flex items-center gap-2">
           <Switch
             id="isPublic"
@@ -620,7 +621,7 @@ function LobbyView({
       {settingsError && <p className="text-sm text-red-500">{settingsError}</p>}
 
       {/* Teams */}
-      {(isCreator ? mode : game.mode) === 'team' ? (
+      {(canEditSettings ? mode : game.mode) === 'team' ? (
         <div className="flex flex-col md:flex-row items-stretch gap-4">
           {teams[0] && (
             <div className="flex-1">
@@ -676,7 +677,7 @@ function LobbyView({
 
   // ─── Grid preview ─────────────────────────────────────────────────────────
 
-  const gridPreviewContent = isCreator ? (
+  const gridPreviewContent = canEditSettings ? (
     <BingoGridPreview
       gridSize={gridSize}
       winCondition={winCondition}

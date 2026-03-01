@@ -181,6 +181,16 @@ export const Races: CollectionConfig = {
       },
     },
     {
+      name: 'createdVia',
+      type: 'select',
+      options: [
+        { label: 'Web', value: 'web' },
+        { label: 'Client', value: 'client' },
+      ],
+      defaultValue: 'web',
+      admin: { readOnly: true },
+    },
+    {
       name: 'inviteCode',
       type: 'text',
       unique: true,

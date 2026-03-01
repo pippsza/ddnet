@@ -45,6 +45,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Only the creator can update settings' }, { status: 403 })
     }
 
+    if (game.createdVia === 'client') {
+      return NextResponse.json(
+        { error: 'Settings for this game can only be changed from the client' },
+        { status: 403 },
+      )
+    }
+
     if (game.gameStatus !== 'waiting' && game.gameStatus !== 'ready') {
       return NextResponse.json({ error: 'Cannot update settings after game has started' }, { status: 400 })
     }

@@ -139,6 +139,7 @@ export async function GET(
       pathLength: game.pathLength,
       gameStatus: game.gameStatus,
       isPublic: game.isPublic,
+      createdVia: game.createdVia ?? 'web',
       inviteCode: game.isPublic ? undefined : game.inviteCode,
       difficultyRange: game.difficultyRange,
       server: game.server,

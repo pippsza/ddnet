@@ -190,6 +190,7 @@ function formatGameForClient(
     isPublic: game.isPublic ?? false,
     difficultyMin: game.difficultyRange?.min ?? 0,
     difficultyMax: game.difficultyRange?.max ?? 5,
+    createdVia: game.createdVia ?? 'web',
   }
 
   if (type === 'bingo') {

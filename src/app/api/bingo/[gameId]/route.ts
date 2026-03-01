@@ -153,6 +153,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
       winCondition: game.winCondition,
       gameStatus: game.gameStatus,
       isPublic: game.isPublic,
+      createdVia: game.createdVia ?? 'web',
       inviteCode: game.isPublic ? undefined : game.inviteCode,
       difficultyRange: game.difficultyRange,
       createdBy: creator

@@ -48,11 +48,9 @@ export async function POST(req: NextRequest) {
 
     const updatedTeams = game.teams.map((team, idx) => ({
       ...team,
-      teamStatus: (isSolo
-        ? 'loser'
-        : idx === winnerTeamIndex
-          ? 'winner'
-          : 'loser') as 'winner' | 'loser',
+      teamStatus: (isSolo ? 'loser' : idx === winnerTeamIndex ? 'winner' : 'loser') as
+        | 'winner'
+        | 'loser',
     }))
 
     const now = new Date().toISOString()

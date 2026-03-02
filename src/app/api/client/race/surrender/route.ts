@@ -71,9 +71,22 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Don't clear activeGame here — let the game persist as completed/cancelled
-    // so clients can see the status transition and trigger celebration animations.
-    // activeGame is auto-cleared when users create a new game (stale ref handling).
+    // Clear activeGame and add to completedGames for all players
+    const playerIds = (game.teams ?? []).flatMap((team: any) =>
+      (team.players ?? []).map((p: any) => (typeof p.user === 'string' ? p.user : p.user.id)),
+    )
+    for (const playerId of playerIds) {
+      const playerUser = await payload.findByID({ collection: 'users', id: playerId })
+      const existing = (playerUser.completedGames as any[]) || []
+      await payload.update({
+        collection: 'users',
+        id: playerId,
+        data: {
+          activeGame: null,
+          completedGames: [...existing, { relationTo: 'races', value: gameId }],
+        },
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

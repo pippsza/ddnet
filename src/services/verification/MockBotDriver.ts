@@ -29,7 +29,7 @@ export class MockBotDriver implements BotDriverInterface {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Bot-Secret': process.env.BACKEND_SECRET || 'dev-secret',
+            'X-Bot-Secret': process.env.BACKEND_SECRET!,
           },
           body: JSON.stringify({
             requestId,
@@ -81,7 +81,7 @@ export class MockBotDriver implements BotDriverInterface {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Bot-Secret': process.env.BACKEND_SECRET || 'dev-secret',
+            'X-Bot-Secret': process.env.BACKEND_SECRET!,
           },
           body: JSON.stringify({
             raceId,

@@ -50,6 +50,7 @@ export const Roles: CollectionConfig = {
               id: doc.id,
               data: { isDefault: false },
               depth: 0,
+              req,
               context: { skipDefaultCheck: true },
             })
           }

@@ -67,7 +67,7 @@ export interface MonthlyGameData {
 
 export function useGameStats(userId?: string) {
   const { data: bingoData } = useSWR<{ games: BingoGameEntry[] }>(
-    userId ? `/api/bingo/my-games?userId=${userId}` : null,
+    userId ? `/api/game/my-games?type=bingo&userId=${userId}` : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )

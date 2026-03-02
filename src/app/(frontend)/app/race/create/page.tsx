@@ -19,10 +19,11 @@ export default function CreateRacePage() {
 
     creatingRef.current = true
 
-    fetch('/api/race/create', {
+    fetch('/api/game/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        type: 'race',
         title: t('create.defaultTitle', { nick: user.ingameNick }),
         mode: 'solo',
         categoryMode: 'selected',

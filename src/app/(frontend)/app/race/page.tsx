@@ -75,7 +75,7 @@ function RaceLobbyContent() {
 
     setJoiningByCode(true)
     try {
-      const res = await fetch(`/api/race/join/${encodeURIComponent(trimmed)}`, {
+      const res = await fetch(`/api/game/join/${encodeURIComponent(trimmed)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -204,7 +204,7 @@ function RaceCard({ race, isMine, onCancel }: { race: any; isMine?: boolean; onC
   const handleCancel = async () => {
     setCancelling(true)
     try {
-      await fetch(`/api/race/${race.id}/cancel`, { method: 'POST' })
+      await fetch(`/api/game/${race.id}/cancel`, { method: 'POST' })
       onCancel?.()
     } finally {
       setCancelling(false)

@@ -19,10 +19,11 @@ export default function CreateBingoPage() {
 
     creatingRef.current = true
 
-    fetch('/api/bingo/create', {
+    fetch('/api/game/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        type: 'bingo',
         title: t('create.defaultTitle', { nick: user.ingameNick }),
         mode: 'solo',
         category: 'novice',

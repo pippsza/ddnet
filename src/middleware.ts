@@ -3,6 +3,14 @@ import { locales, defaultLocale, type Locale } from './i18n/config'
 
 const PUBLIC_PATHS = new Set(['', 'about', 'privacy', 'rules', 'terms'])
 
+function withSecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  return response
+}
+
 function detectLocale(request: NextRequest): Locale {
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value
   if (cookieLocale && locales.includes(cookieLocale as Locale)) {
@@ -29,7 +37,7 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/app/') || pathname === '/app') {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-pathname', pathname)
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    return withSecurityHeaders(NextResponse.next({ request: { headers: requestHeaders } }))
   }
 
   // Check if path starts with a valid locale prefix
@@ -40,7 +48,7 @@ export function middleware(request: NextRequest) {
     // Locale-prefixed route — set x-locale header and pass through
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-locale', firstSegment)
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    return withSecurityHeaders(NextResponse.next({ request: { headers: requestHeaders } }))
   }
 
   // Bare public paths → redirect to /{locale}{path}
@@ -49,11 +57,11 @@ export function middleware(request: NextRequest) {
     const locale = detectLocale(request)
     const url = request.nextUrl.clone()
     url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`
-    return NextResponse.redirect(url, 307)
+    return withSecurityHeaders(NextResponse.redirect(url, 307))
   }
 
   // Everything else (login, register, support, api, etc.) — pass through
-  return NextResponse.next()
+  return withSecurityHeaders(NextResponse.next())
 }
 
 export const config = {

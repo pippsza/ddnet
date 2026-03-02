@@ -85,6 +85,10 @@ export class BotManager implements BotDriverInterface {
       HostConfig: {
         AutoRemove: false,
         NetworkMode: 'host',
+        Memory: 256 * 1024 * 1024,
+        MemoryReservation: 128 * 1024 * 1024,
+        CpuShares: 256,
+        PidsLimit: 50,
       },
     })
 
@@ -146,6 +150,10 @@ export class BotManager implements BotDriverInterface {
       HostConfig: {
         AutoRemove: false,
         NetworkMode: 'host',
+        Memory: 256 * 1024 * 1024,
+        MemoryReservation: 128 * 1024 * 1024,
+        CpuShares: 256,
+        PidsLimit: 50,
         Binds: ['/tmp/bot-logs:/app/logs'],
       },
     })
@@ -206,6 +214,10 @@ export class BotManager implements BotDriverInterface {
       HostConfig: {
         AutoRemove: false,
         NetworkMode: 'host',
+        Memory: 256 * 1024 * 1024,
+        MemoryReservation: 128 * 1024 * 1024,
+        CpuShares: 256,
+        PidsLimit: 50,
       },
     })
 
@@ -272,6 +284,10 @@ export class BotManager implements BotDriverInterface {
       HostConfig: {
         AutoRemove: false,
         NetworkMode: 'host',
+        Memory: 256 * 1024 * 1024,
+        MemoryReservation: 128 * 1024 * 1024,
+        CpuShares: 256,
+        PidsLimit: 50,
       },
     })
 

@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import payloadConfig from '@payload-config'
+import { timingSafeEqual } from 'crypto'
 import type { BotCallbackResult } from '@/services/verification/types'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify bot secret
-    const botSecret = request.headers.get('X-Bot-Secret')
-    if (botSecret !== process.env.BACKEND_SECRET) {
+    // Verify bot secret (timing-safe comparison)
+    const botSecret = request.headers.get('X-Bot-Secret') || ''
+    const expected = process.env.BACKEND_SECRET || ''
+    const isValid =
+      botSecret.length > 0 &&
+      botSecret.length === expected.length &&
+      timingSafeEqual(Buffer.from(botSecret), Buffer.from(expected))
+    if (!isValid) {
       console.warn('[Bot Callback] Invalid or missing X-Bot-Secret header')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

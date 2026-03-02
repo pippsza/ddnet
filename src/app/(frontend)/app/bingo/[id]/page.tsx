@@ -122,7 +122,7 @@ export default function BingoGamePage({ params }: { params: Promise<{ id: string
     data: game,
     error,
     mutate,
-  } = useSWR(`/api/bingo/${id}`, fetcher, {
+  } = useSWR(`/api/game/${id}`, fetcher, {
     refreshInterval: 3000,
   })
 
@@ -302,7 +302,7 @@ function LobbyView({
     const batchKeys = Object.keys(batch)
     setSettingsError('')
     try {
-      const res = await fetch(`/api/bingo/${gameId}/settings`, {
+      const res = await fetch(`/api/game/${gameId}/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(batch),
@@ -416,21 +416,21 @@ function LobbyView({
 
   const handleReady = async () => {
     setActionLoading(true)
-    await fetch(`/api/bingo/${gameId}/ready`, { method: 'POST' })
+    await fetch(`/api/game/${gameId}/ready`, { method: 'POST' })
     mutate()
     setActionLoading(false)
   }
 
   const handleStart = async () => {
     setActionLoading(true)
-    await fetch(`/api/bingo/${gameId}/start`, { method: 'POST' })
+    await fetch(`/api/game/${gameId}/start`, { method: 'POST' })
     mutate()
     setActionLoading(false)
   }
 
   const handleJoin = async () => {
     setActionLoading(true)
-    await fetch(`/api/bingo/${gameId}/join`, {
+    await fetch(`/api/game/${gameId}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ teamIndex: inviteTeamIndex }),
@@ -440,13 +440,13 @@ function LobbyView({
   }
 
   const handleCancel = async () => {
-    await fetch(`/api/bingo/${gameId}/cancel`, { method: 'POST' })
+    await fetch(`/api/game/${gameId}/cancel`, { method: 'POST' })
     router.push('/app/bingo')
   }
 
   const handleLeave = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/bingo/${gameId}/leave`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/leave`, { method: 'POST' })
     if (res.ok) {
       router.push('/app/bingo')
     } else {
@@ -467,7 +467,7 @@ function LobbyView({
   const handleSwitchTeam = async (targetTeamIndex: number) => {
     setActionLoading(true)
     try {
-      const res = await fetch(`/api/bingo/${gameId}/switch-team`, {
+      const res = await fetch(`/api/game/${gameId}/switch-team`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTeamIndex }),
@@ -914,7 +914,7 @@ function LobbyTeamCard({
     setInviteLoading(true)
 
     try {
-      const res = await fetch(`/api/bingo/${gameId}/invite`, {
+      const res = await fetch(`/api/game/${gameId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId: player.id, teamIndex: team.index }),
@@ -940,7 +940,7 @@ function LobbyTeamCard({
     setOptimisticPending((prev) => prev.filter((p) => p.id !== playerId))
 
     try {
-      const res = await fetch(`/api/bingo/${gameId}/invite`, {
+      const res = await fetch(`/api/game/${gameId}/invite`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId, teamIndex: team.index }),
@@ -1180,7 +1180,7 @@ function GameView({
   // Surrender handler
   const handleSurrender = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/bingo/${gameId}/surrender`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/surrender`, { method: 'POST' })
     if (res.ok) {
       mutate()
     } else {
@@ -1193,7 +1193,7 @@ function GameView({
   // Rematch handler (for the button — initiator)
   const handleRematch = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/bingo/${gameId}/rematch`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/rematch`, { method: 'POST' })
     const data = await res.json()
     if (res.ok && data.gameId) {
       rematchInitiatedByMe.current = true
@@ -1207,7 +1207,7 @@ function GameView({
   // Rematch popup: accept handler (for the receiver)
   const handleAcceptRematch = async () => {
     setRematchAcceptLoading(true)
-    const res = await fetch(`/api/bingo/${gameId}/rematch`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/rematch`, { method: 'POST' })
     const data = await res.json()
     if (res.ok && data.gameId) {
       router.push(`/app/bingo/${data.gameId}`)

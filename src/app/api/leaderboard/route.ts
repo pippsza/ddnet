@@ -5,9 +5,11 @@ import config from '@/payload.config'
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams
+    const ALLOWED_SORTS = ['wins', 'winRate', 'games', 'maps'] as const
     const type = sp.get('type') || 'bingo'
     const category = sp.get('category') || 'all'
-    const sort = sp.get('sort') || 'wins'
+    const sortParam = sp.get('sort') || 'wins'
+    const sort = (ALLOWED_SORTS as readonly string[]).includes(sortParam) ? sortParam : 'wins'
     const page = Math.max(1, parseInt(sp.get('page') || '1'))
     const limit = Math.min(50, Math.max(1, parseInt(sp.get('limit') || '20')))
 

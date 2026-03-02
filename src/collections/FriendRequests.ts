@@ -89,8 +89,9 @@ export const FriendRequests: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, req, operation }) => {
-        // Prevent sending request to yourself
         if (operation === 'create' && data && req.user) {
+          // Force sender to authenticated user (prevent spoofing)
+          data.sender = req.user.id
           if (data.sender === data.recipient) {
             throw new Error('Cannot send friend request to yourself')
           }

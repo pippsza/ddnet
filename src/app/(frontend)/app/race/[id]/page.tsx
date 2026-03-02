@@ -122,7 +122,7 @@ export default function RaceGamePage({ params }: { params: Promise<{ id: string 
     data: game,
     error,
     mutate,
-  } = useSWR(`/api/race/${id}`, fetcher, {
+  } = useSWR(`/api/game/${id}`, fetcher, {
     refreshInterval: 3000,
   })
 
@@ -362,7 +362,7 @@ function LobbyView({
     mutate((prev: any) => buildOptimisticGame(prev, batch), { revalidate: false })
 
     try {
-      const res = await fetch(`/api/race/${gameId}/settings`, {
+      const res = await fetch(`/api/game/${gameId}/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(batch),
@@ -500,7 +500,7 @@ function LobbyView({
 
   const handleReady = async () => {
     setActionLoading(true)
-    await fetch(`/api/race/${gameId}/ready`, { method: 'POST' })
+    await fetch(`/api/game/${gameId}/ready`, { method: 'POST' })
     mutate()
     setActionLoading(false)
   }
@@ -508,7 +508,7 @@ function LobbyView({
   const handleStart = async () => {
     setActionLoading(true)
     try {
-      const res = await fetch(`/api/race/${gameId}/start`, { method: 'POST' })
+      const res = await fetch(`/api/game/${gameId}/start`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
         toast.error(data.error || t('leave.failedToStart'))
@@ -523,7 +523,7 @@ function LobbyView({
 
   const handleJoin = async () => {
     setActionLoading(true)
-    await fetch(`/api/race/${gameId}/join`, {
+    await fetch(`/api/game/${gameId}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ teamIndex: inviteTeamIndex }),
@@ -533,13 +533,13 @@ function LobbyView({
   }
 
   const handleCancel = async () => {
-    await fetch(`/api/race/${gameId}/cancel`, { method: 'POST' })
+    await fetch(`/api/game/${gameId}/cancel`, { method: 'POST' })
     router.push('/app/race')
   }
 
   const handleLeave = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/race/${gameId}/leave`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/leave`, { method: 'POST' })
     if (res.ok) {
       router.push('/app/race')
     } else {
@@ -560,7 +560,7 @@ function LobbyView({
   const handleSwitchTeam = async (targetTeamIndex: number) => {
     setActionLoading(true)
     try {
-      const res = await fetch(`/api/race/${gameId}/switch-team`, {
+      const res = await fetch(`/api/game/${gameId}/switch-team`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTeamIndex }),
@@ -1076,7 +1076,7 @@ function LobbyTeamCard({
     setInviteLoading(true)
 
     try {
-      const res = await fetch(`/api/race/${gameId}/invite`, {
+      const res = await fetch(`/api/game/${gameId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId: player.id, teamIndex: team.index }),
@@ -1100,7 +1100,7 @@ function LobbyTeamCard({
     setOptimisticPending((prev) => prev.filter((p) => p.id !== playerId))
 
     try {
-      const res = await fetch(`/api/race/${gameId}/invite`, {
+      const res = await fetch(`/api/game/${gameId}/invite`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId, teamIndex: team.index }),
@@ -1338,7 +1338,7 @@ function GameView({
   // Surrender handler
   const handleSurrender = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/race/${gameId}/surrender`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/surrender`, { method: 'POST' })
     if (res.ok) {
       mutate()
     } else {
@@ -1351,7 +1351,7 @@ function GameView({
   // Rematch handler (for the button — initiator)
   const handleRematch = async () => {
     setActionLoading(true)
-    const res = await fetch(`/api/race/${gameId}/rematch`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/rematch`, { method: 'POST' })
     const data = await res.json()
     if (res.ok && data.gameId) {
       rematchInitiatedByMe.current = true
@@ -1365,7 +1365,7 @@ function GameView({
   // Rematch popup: accept handler (for the receiver)
   const handleAcceptRematch = async () => {
     setRematchAcceptLoading(true)
-    const res = await fetch(`/api/race/${gameId}/rematch`, { method: 'POST' })
+    const res = await fetch(`/api/game/${gameId}/rematch`, { method: 'POST' })
     const data = await res.json()
     if (res.ok && data.gameId) {
       router.push(`/app/race/${data.gameId}`)

@@ -44,7 +44,7 @@ function BingoLobbyContent() {
     fetcher,
     { refreshInterval: 5000 },
   )
-  const { data: myData, isLoading: myLoading, mutate: mutateMyGames } = useSWR('/api/bingo/my-games', fetcher, { refreshInterval: 5000 })
+  const { data: myData, isLoading: myLoading, mutate: mutateMyGames } = useSWR('/api/game/my-games?type=bingo', fetcher, { refreshInterval: 5000 })
 
   const myGames = myData?.games || []
   const lobbyGames = lobbyData?.docs || []
@@ -66,7 +66,7 @@ function BingoLobbyContent() {
 
     setJoiningByCode(true)
     try {
-      const res = await fetch(`/api/bingo/join/${encodeURIComponent(trimmed)}`, {
+      const res = await fetch(`/api/game/join/${encodeURIComponent(trimmed)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -199,7 +199,7 @@ function GameCard({ game, isMine, onCancel }: { game: any; isMine?: boolean; onC
   const handleCancel = async () => {
     setCancelling(true)
     try {
-      await fetch(`/api/bingo/${game.id}/cancel`, { method: 'POST' })
+      await fetch(`/api/game/${game.id}/cancel`, { method: 'POST' })
       onCancel?.()
     } finally {
       setCancelling(false)

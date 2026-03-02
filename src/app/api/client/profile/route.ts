@@ -221,6 +221,10 @@ function formatGameForClient(
           position: c.cellPosition,
           completedAt: c.completedAt,
         })),
+        pendingInvites: (t.pendingInvites ?? []).map((inv) => {
+          const u = typeof inv.user === 'object' ? (inv.user as User) : null
+          return { ingameNick: u?.ingameNick ?? '?' }
+        }),
       })),
     }
   }
@@ -258,6 +262,10 @@ function formatGameForClient(
         completedAt: s.completedAt,
         finishTime: s.finishTime ?? null,
       })),
+      pendingInvites: (t.pendingInvites ?? []).map((inv) => {
+        const u = typeof inv.user === 'object' ? (inv.user as User) : null
+        return { ingameNick: u?.ingameNick ?? '?' }
+      }),
     })),
   }
 }

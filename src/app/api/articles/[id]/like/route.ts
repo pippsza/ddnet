@@ -20,14 +20,33 @@ export async function POST(
     depth: 0,
   })
 
-  const updated = await payload.update({
-    collection: 'articles',
-    id,
-    data: {
-      likes: (article.likes || 0) + 1,
-    },
-    overrideAccess: true,
-  })
+  const likedByIds = (article.likedBy || []).map((u: any) =>
+    typeof u === 'string' ? u : u.id,
+  )
+  const alreadyLiked = likedByIds.includes(user.id)
 
-  return NextResponse.json({ likes: updated.likes })
+  let updated
+  if (alreadyLiked) {
+    updated = await payload.update({
+      collection: 'articles',
+      id,
+      data: {
+        likes: Math.max(0, (article.likes || 0) - 1),
+        likedBy: likedByIds.filter((uid: string) => uid !== user.id),
+      },
+      overrideAccess: true,
+    })
+  } else {
+    updated = await payload.update({
+      collection: 'articles',
+      id,
+      data: {
+        likes: (article.likes || 0) + 1,
+        likedBy: [...likedByIds, user.id],
+      },
+      overrideAccess: true,
+    })
+  }
+
+  return NextResponse.json({ likes: updated.likes, liked: !alreadyLiked })
 }

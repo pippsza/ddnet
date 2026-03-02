@@ -202,6 +202,17 @@ export const Articles: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'likedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      defaultValue: [],
+      admin: {
+        readOnly: true,
+        description: 'Users who liked this article (for deduplication)',
+      },
+    },
   ],
   timestamps: true,
 }

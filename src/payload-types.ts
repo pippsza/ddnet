@@ -1152,6 +1152,10 @@ export interface Article {
   featured?: boolean | null;
   views?: number | null;
   likes?: number | null;
+  /**
+   * Users who liked this article (for deduplication)
+   */
+  likedBy?: (string | User)[] | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -2382,6 +2386,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   featured?: T;
   views?: T;
   likes?: T;
+  likedBy?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

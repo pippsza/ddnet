@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
           const game = await payload.findByID({
             collection,
             id: typeof ref.value === 'string' ? ref.value : (ref.value as any).id,
-            depth: 2,
+            depth: 1,
           })
 
           if (game) {
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Load recent completed games (last 20)
+    // Load recent completed games (last 20, in parallel)
     const recentGames: any[] = []
     if (user.completedGames?.length) {
       const recentRefs = (
@@ -69,19 +69,21 @@ export async function GET(req: NextRequest) {
         .slice(-20)
         .reverse()
 
-      for (const ref of recentRefs) {
-        try {
+      const results = await Promise.allSettled(
+        recentRefs.map(async (ref) => {
           const collection = ref.relationTo as 'bingo' | 'races'
           const game = await payload.findByID({
             collection,
             id: typeof ref.value === 'string' ? ref.value : (ref.value as any).id,
-            depth: 2,
+            depth: 1,
           })
-          if (game) {
-            recentGames.push(formatGameForClient(game, collection, user, nick))
-          }
-        } catch {
-          // Game may have been deleted
+          return game ? formatGameForClient(game, collection, user, nick) : null
+        }),
+      )
+
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          recentGames.push(result.value)
         }
       }
     }

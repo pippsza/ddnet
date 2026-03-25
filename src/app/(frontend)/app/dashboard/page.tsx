@@ -12,12 +12,14 @@ import { DashboardSkeleton } from '@/components/ui/page-skeleton'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { OnlineStatusIndicator } from '@/components/tee/OnlineStatusIndicator'
 import { useDDStats } from '@/hooks/use-ddstats'
+import { useKoG } from '@/hooks/use-kog'
 import { useGameStats } from '@/hooks/use-game-stats'
 import { formatHours, formatPlaytime, formatDateShort } from '@/lib/format-utils'
 import { PageTransition, StaggerContainer, StaggerItem, ScaleIn } from '@/components/ui/animations'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
 import { DDNetSection } from '@/components/stats/DDNetSection'
+import { KoGSection } from '@/components/stats/KoGSection'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -35,6 +37,7 @@ function DashboardContent() {
 
   const userData = user?.user
   const { ddstats, ddstatsLoading } = useDDStats(userData?.ingameNick)
+  const { kog, kogLoading } = useKoG(userData?.ingameNick)
   const gameStats = useGameStats(userData?.id)
 
   if (isLoading) return <DashboardSkeleton />
@@ -129,6 +132,9 @@ function DashboardContent() {
           <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
             {t('tabs.ddnet')}
           </TabsTrigger>
+          <TabsTrigger value="kog" className={TAB_TRIGGER_CLASSES}>
+            {t('tabs.kog')}
+          </TabsTrigger>
         </TabsList>
 
         {/* ═══ SERVICE TAB ═══ */}
@@ -197,6 +203,68 @@ function DashboardContent() {
                 </Card>
               </ScaleIn>
             </StaggerItem>
+            <StaggerItem>
+              <ScaleIn>
+                <Card className="group hover:shadow-md hover:border-emerald-500/30 transition-all">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-sm font-bold">
+                        K
+                      </span>
+                      {t('kogBingo.title')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">{t('kogBingo.description')}</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <Link
+                        href="/app/kog-bingo/create"
+                        className="inline-flex items-center justify-center rounded-md bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+                      >
+                        {t('kogBingo.createButton')}
+                      </Link>
+                      <Link
+                        href="/app/kog-bingo"
+                        className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                      >
+                        {t('kogBingo.browseButton')}
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </ScaleIn>
+            </StaggerItem>
+            <StaggerItem>
+              <ScaleIn>
+                <Card className="group hover:shadow-md hover:border-emerald-500/30 transition-all">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-sm font-bold">
+                        KR
+                      </span>
+                      {t('kogRace.title')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">{t('kogRace.description')}</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <Link
+                        href="/app/kog-race/create"
+                        className="inline-flex items-center justify-center rounded-md bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+                      >
+                        {t('kogRace.createButton')}
+                      </Link>
+                      <Link
+                        href="/app/kog-race"
+                        className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                      >
+                        {t('kogRace.browseButton')}
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </ScaleIn>
+            </StaggerItem>
           </StaggerContainer>
 
           {/* Shared service stats */}
@@ -219,6 +287,15 @@ function DashboardContent() {
             fourthStat={{ title: t('friends.title'), value: userData?.friend?.length || 0 }}
             recentFinishesLimit={10}
             showMostPlayedMaps={false}
+          />
+        </TabsContent>
+
+        {/* ═══ KOG TAB ═══ */}
+        <TabsContent value="kog" className="space-y-6 mt-4">
+          <KoGSection
+            kogLoading={kogLoading}
+            kog={kog}
+            finishedMapsLimit={20}
           />
         </TabsContent>
       </Tabs>

@@ -20,6 +20,7 @@
     "tabs": {
       "service": "Сервіс",
       "ddnet": "DDNet",
+      "kog": "KoG",
       "settings": "Налаштування"
     },
     "noServiceStats": "Статистика сервісу недоступна",
@@ -42,7 +43,8 @@
     },
     "externalLinks": {
       "ddnetProfile": "Профіль DDNet",
-      "ddstats": "DDStats"
+      "ddstats": "DDStats",
+      "kog": "Профіль KoG"
     },
     "passwordPrompt": {
       "title": "Сервер потребує пароль",

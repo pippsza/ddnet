@@ -6,7 +6,8 @@
   "playingSince": "Грає з {date}",
   "tabs": {
     "service": "Сервіс",
-    "ddnet": "DDNet"
+    "ddnet": "DDNet",
+    "kog": "KoG"
   },
   "bingo": {
     "title": "Бінго",
@@ -17,6 +18,18 @@
   "race": {
     "title": "Перегони",
     "description": "Змагайтеся з іншими гравцями на серверах DDNet",
+    "createButton": "Створити перегони",
+    "browseButton": "Переглянути лобі"
+  },
+  "kogBingo": {
+    "title": "KoG Бінго",
+    "description": "Створіть або приєднайтесь до гри в бінго на мапах KoG (King of Gores)",
+    "createButton": "Створити гру",
+    "browseButton": "Переглянути лобі"
+  },
+  "kogRace": {
+    "title": "KoG Перегони",
+    "description": "Змагайтеся з іншими гравцями на мапах KoG",
     "createButton": "Створити перегони",
     "browseButton": "Переглянути лобі"
   },

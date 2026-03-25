@@ -1,9 +1,9 @@
 import type { Payload } from 'payload'
-import type { User, Bingo, Race } from '@/payload-types'
+import type { User, Bingo, Race, KogBingo, KogRace } from '@/payload-types'
 
-export type GameCollection = 'bingo' | 'races'
+export type GameCollection = 'bingo' | 'races' | 'kog-bingo' | 'kog-races'
 
-export type GameDocument = Bingo | Race
+export type GameDocument = Bingo | Race | KogBingo | KogRace
 
 export interface ResolvedAuth {
   user: User

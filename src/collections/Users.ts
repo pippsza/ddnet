@@ -488,20 +488,20 @@ export const Users: CollectionConfig = {
     {
       name: 'activeGame',
       type: 'relationship',
-      relationTo: ['bingo', 'races'],
+      relationTo: ['bingo', 'races', 'kog-bingo', 'kog-races'],
       label: 'Active Game',
       admin: {
-        description: 'Current game (bingo or race) with status "waiting", "ready" or "in_progress"',
+        description: 'Current game (bingo, race, KoG bingo, or KoG race) with status "waiting", "ready" or "in_progress"',
       },
     },
     {
       name: 'completedGames',
       type: 'relationship',
-      relationTo: ['bingo', 'races'],
+      relationTo: ['bingo', 'races', 'kog-bingo', 'kog-races'],
       hasMany: true,
       label: 'Completed Games',
       admin: {
-        description: 'History of all played games (bingo and races)',
+        description: 'History of all played games (bingo, races, KoG bingo, KoG races)',
       },
     },
 

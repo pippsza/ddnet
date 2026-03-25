@@ -2,7 +2,13 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkWinner } from '@/services/bingo/winChecker'
 import { findPlayersOnline, type PlayerOnlineStatus } from '@/lib/ddnet-helpers'
-import type { Bingo, Race, User } from '@/payload-types'
+import {
+  takeFinishSnapshot,
+  detectNewFinishes,
+  updateSnapshot,
+  clearSnapshot,
+} from '@/services/kog/finishDetector'
+import type { Bingo, Race, KogBingo, KogRace, User } from '@/payload-types'
 
 const POLL_INTERVAL = parseInt(process.env.GAME_POLL_INTERVAL_MS || '5000')
 
@@ -675,6 +681,385 @@ function setCategoryStats(raceStats: any, category: string, stats: any): void {
 }
 
 // =============================================================================
+// KoG Bingo progress
+// =============================================================================
+
+// Track which KoG games have had snapshots taken: gameId → true
+const kogSnapshotsTaken = new Set<string>()
+
+export async function checkKoGBingoProgress(gameId: string) {
+  const payload = await getPayload({ config })
+
+  try {
+    const game = await payload.findByID({
+      collection: 'kog-bingo',
+      id: gameId,
+      depth: 2,
+    }) as KogBingo | null
+
+    if (!game || game.gameStatus !== 'in_progress') {
+      return { continue: false, reason: 'Game not in progress' }
+    }
+
+    // Build map position lookup
+    const mapPositions = new Map<string, number>()
+    ;(game.maps ?? []).forEach((m) => mapPositions.set(m.mapName.toLowerCase(), m.position))
+
+    const targetMaps = (game.maps ?? []).map((m) => m.mapName)
+
+    // Take snapshots on first check
+    if (!kogSnapshotsTaken.has(gameId)) {
+      for (const team of game.teams) {
+        for (const playerObj of team.players ?? []) {
+          const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
+          if (!playerUser) continue
+          const playerName = (playerUser as User).ingameNick || (playerUser as User).username
+          await takeFinishSnapshot(playerName)
+          await sleep(500) // Respect KoG rate limits
+        }
+      }
+      kogSnapshotsTaken.add(gameId)
+      console.log(`[KoG Bingo] Snapshots taken for game ${gameId}`)
+      return { continue: true }
+    }
+
+    let updated = false
+
+    for (let teamIndex = 0; teamIndex < game.teams.length; teamIndex++) {
+      const team = game.teams[teamIndex]
+      const completedPositions = new Set((team.completedCells || []).map((c) => c.cellPosition))
+
+      const teamPlayers = team.players ?? []
+      // Track which players finished each map position
+      const positionFinishes = new Map<number, Set<string>>()
+
+      for (const playerObj of teamPlayers) {
+        const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
+        if (!playerUser) continue
+
+        const playerName = (playerUser as User).ingameNick || (playerUser as User).username
+        const playerId = (playerUser as User).id
+
+        try {
+          const newFinishes = await detectNewFinishes(playerName, targetMaps)
+
+          for (const finish of newFinishes) {
+            const position = mapPositions.get(finish.mapName.toLowerCase())
+            if (position !== undefined && !completedPositions.has(position)) {
+              if (!positionFinishes.has(position)) {
+                positionFinishes.set(position, new Set())
+              }
+              positionFinishes.get(position)!.add(playerId)
+              console.log(
+                `[KoG Bingo] ${playerName} finished cell ${position} (${finish.mapName}) in game ${gameId}`,
+              )
+            }
+          }
+
+          if (newFinishes.length > 0) {
+            updateSnapshot(playerName, newFinishes.map((f) => f.mapName))
+          }
+
+          await sleep(500) // Respect KoG rate limits
+        } catch (error) {
+          console.error(`[KoG Bingo] Error checking player ${playerName}:`, error)
+        }
+      }
+
+      // Check which cells ALL team players have completed
+      const totalPlayers = teamPlayers.filter(
+        (p) => typeof p.user === 'object' && p.user !== null,
+      ).length
+
+      for (const [position, playerIds] of positionFinishes) {
+        if (playerIds.size >= totalPlayers) {
+          if (!team.completedCells) team.completedCells = []
+          team.completedCells.push({
+            cellPosition: position,
+            completedAt: new Date().toISOString(),
+          })
+          updated = true
+          console.log(
+            `[KoG Bingo] All ${totalPlayers} players completed cell ${position} in game ${gameId}`,
+          )
+        }
+      }
+    }
+
+    if (updated) {
+      const teamCells = game.teams.map((team, index) => ({
+        teamIndex: index,
+        completedCells: (team.completedCells || []).map((c) => c.cellPosition),
+      }))
+
+      const winResult = checkWinner(game.gridSize, game.winCondition, teamCells)
+
+      if (winResult.hasWinner) {
+        const winningTeam = game.teams[winResult.winningTeamIndex!]
+        winningTeam.teamStatus = 'winner'
+
+        if (game.mode === 'team') {
+          const losingTeamIndex = winResult.winningTeamIndex === 0 ? 1 : 0
+          game.teams[losingTeamIndex].teamStatus = 'loser'
+        }
+
+        await payload.update({
+          collection: 'kog-bingo',
+          id: gameId,
+          data: {
+            teams: game.teams,
+            gameStatus: 'completed',
+            completedAt: new Date().toISOString(),
+            winnerTeam: game.mode === 'team' ? winResult.winningTeamIndex : undefined,
+          },
+        })
+
+        console.log(`[KoG Bingo] Game ${gameId} completed! Winner: Team ${winResult.winningTeamIndex}`)
+        await updateKoGBingoPlayerStats(game)
+
+        // Cleanup snapshots
+        kogSnapshotsTaken.delete(gameId)
+        for (const team of game.teams) {
+          for (const p of team.players ?? []) {
+            const pu = typeof p.user === 'object' ? p.user : null
+            if (pu) clearSnapshot((pu as User).ingameNick || (pu as User).username)
+          }
+        }
+
+        return { continue: false, reason: 'Game completed' }
+      } else {
+        await payload.update({
+          collection: 'kog-bingo',
+          id: gameId,
+          data: { teams: game.teams },
+        })
+      }
+    }
+
+    return { continue: true, updated }
+  } catch (error) {
+    console.error(`[KoG Bingo] Error checking progress for game ${gameId}:`, error)
+    return { continue: true, error }
+  }
+}
+
+async function updateKoGBingoPlayerStats(game: KogBingo) {
+  const payload = await getPayload({ config })
+
+  for (let teamIndex = 0; teamIndex < game.teams.length; teamIndex++) {
+    const team = game.teams[teamIndex]
+    const won = team.teamStatus === 'winner'
+
+    for (const playerObj of team.players ?? []) {
+      try {
+        const userId = typeof playerObj.user === 'string' ? playerObj.user : playerObj.user.id
+        const user = await payload.findByID({ collection: 'users', id: userId })
+        if (!user) continue
+
+        const existingCompleted = (user.completedGames as any[]) || []
+        const completedGames = [
+          ...existingCompleted,
+          { relationTo: 'kog-bingo', value: game.id },
+        ]
+
+        await payload.update({
+          collection: 'users',
+          id: userId,
+          overrideAccess: true,
+          data: {
+            activeGame: null,
+            completedGames,
+          },
+        })
+      } catch (error) {
+        console.error(`[KoG Bingo] Error updating stats for player:`, error)
+      }
+    }
+  }
+}
+
+// =============================================================================
+// KoG Race progress
+// =============================================================================
+
+export async function checkKoGRaceProgress(gameId: string) {
+  const payload = await getPayload({ config })
+
+  try {
+    const game = await payload.findByID({
+      collection: 'kog-races',
+      id: gameId,
+      depth: 2,
+    }) as KogRace | null
+
+    if (!game || game.gameStatus !== 'in_progress') {
+      return { continue: false, reason: 'Race not in progress' }
+    }
+
+    const currentStep = game.currentStep ?? 0
+    const currentMapEntry = (game.maps || []).find((m) => m.position === currentStep)
+
+    if (!currentMapEntry) {
+      console.log(`[KoG Race] Game ${gameId}: no map for step ${currentStep}, skipping`)
+      return { continue: true }
+    }
+
+    // Take snapshots on first check
+    if (!kogSnapshotsTaken.has(gameId)) {
+      for (const team of game.teams) {
+        for (const playerObj of team.players ?? []) {
+          const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
+          if (!playerUser) continue
+          const playerName = (playerUser as User).ingameNick || (playerUser as User).username
+          await takeFinishSnapshot(playerName)
+          await sleep(500)
+        }
+      }
+      kogSnapshotsTaken.add(gameId)
+      console.log(`[KoG Race] Snapshots taken for game ${gameId}`)
+      return { continue: true }
+    }
+
+    const targetMaps = [currentMapEntry.mapName]
+
+    // Check each team for finishes on the current map
+    let earliest: { teamIndex: number; playerName: string } | null = null
+
+    for (let ti = 0; ti < game.teams.length; ti++) {
+      const team = game.teams[ti]
+
+      for (const playerObj of team.players ?? []) {
+        const playerUser = typeof playerObj.user === 'object' ? playerObj.user : null
+        if (!playerUser) continue
+
+        const playerName = (playerUser as User).ingameNick || (playerUser as User).username
+
+        try {
+          const newFinishes = await detectNewFinishes(playerName, targetMaps)
+
+          if (newFinishes.length > 0) {
+            if (!earliest) {
+              earliest = { teamIndex: ti, playerName }
+            }
+            updateSnapshot(playerName, newFinishes.map((f) => f.mapName))
+            console.log(
+              `[KoG Race] ${playerName} (team ${ti}) finished step ${currentStep} (${currentMapEntry.mapName}) in game ${gameId}`,
+            )
+          }
+
+          await sleep(500)
+        } catch (error) {
+          console.error(`[KoG Race] Error checking player ${playerName}:`, error)
+        }
+      }
+    }
+
+    if (!earliest) return { continue: true }
+
+    // Score the finish
+    const teams = JSON.parse(JSON.stringify(game.teams))
+    const scoringTeam = teams[earliest.teamIndex]
+
+    if (!scoringTeam.completedSteps) scoringTeam.completedSteps = []
+    scoringTeam.completedSteps.push({
+      position: currentStep,
+      completedAt: new Date().toISOString(),
+    })
+    scoringTeam.score = (scoringTeam.score || 0) + 1
+
+    const nextStep = currentStep + 1
+    const isComplete = nextStep >= game.pathLength
+
+    const updateData: Record<string, any> = {
+      teams,
+      currentStep: nextStep,
+    }
+
+    if (isComplete) {
+      let maxScore = -1
+      let winnerIdx: number | null = null
+
+      for (let i = 0; i < teams.length; i++) {
+        const score = teams[i].score || 0
+        if (score > maxScore) {
+          maxScore = score
+          winnerIdx = i
+        }
+      }
+
+      for (let i = 0; i < teams.length; i++) {
+        teams[i].teamStatus = i === winnerIdx ? 'winner' : 'loser'
+      }
+
+      const startTime = game.startedAt ? new Date(game.startedAt).getTime() : Date.now()
+      const duration = Math.floor((Date.now() - startTime) / 1000)
+
+      updateData.gameStatus = 'completed'
+      updateData.winnerTeam = winnerIdx
+      updateData.completedAt = new Date().toISOString()
+      updateData.duration = duration
+      updateData.teams = teams
+
+      console.log(`[KoG Race] Game ${gameId} completed! Winner: Team ${winnerIdx}`)
+    }
+
+    await payload.update({ collection: 'kog-races', id: gameId, data: updateData })
+
+    if (isComplete) {
+      kogSnapshotsTaken.delete(gameId)
+      // Clear player snapshots
+      for (const team of game.teams) {
+        for (const p of team.players ?? []) {
+          const pu = typeof p.user === 'object' ? p.user : null
+          if (pu) clearSnapshot((pu as User).ingameNick || (pu as User).username)
+        }
+      }
+      await updateKoGRacePlayerStats(game, teams)
+    }
+
+    return { continue: !isComplete, updated: true }
+  } catch (error) {
+    console.error(`[KoG Race] Error checking progress for game ${gameId}:`, error)
+    return { continue: true, error }
+  }
+}
+
+async function updateKoGRacePlayerStats(game: KogRace, finalTeams: any[]) {
+  const payload = await getPayload({ config })
+
+  for (let ti = 0; ti < finalTeams.length; ti++) {
+    const team = finalTeams[ti]
+    const won = team.teamStatus === 'winner'
+
+    for (const playerObj of team.players ?? []) {
+      try {
+        const userId = typeof playerObj.user === 'string' ? playerObj.user : playerObj.user.id
+        const user = await payload.findByID({ collection: 'users', id: userId })
+        if (!user) continue
+
+        const existingCompleted = (user.completedGames as any[]) || []
+        const completedGames = [
+          ...existingCompleted,
+          { relationTo: 'kog-races', value: game.id },
+        ]
+
+        await payload.update({
+          collection: 'users',
+          id: userId,
+          overrideAccess: true,
+          data: {
+            activeGame: null,
+            completedGames,
+          },
+        })
+      } catch (error) {
+        console.error(`[KoG Race] Error updating stats for player:`, error)
+      }
+    }
+  }
+}
+
+// =============================================================================
 // Shared job runner
 // =============================================================================
 
@@ -707,6 +1092,34 @@ export async function runGameProgressJob() {
       console.log(`[GameJob] Checking ${activeRaces.length} active race games`)
       for (const game of activeRaces) {
         await checkRaceProgress(game.id)
+      }
+    }
+
+    // Check KoG bingo games
+    const { docs: activeKogBingo } = await payload.find({
+      collection: 'kog-bingo',
+      where: { gameStatus: { equals: 'in_progress' } },
+      limit: 100,
+    })
+
+    if (activeKogBingo.length > 0) {
+      console.log(`[GameJob] Checking ${activeKogBingo.length} active KoG bingo games`)
+      for (const game of activeKogBingo) {
+        await checkKoGBingoProgress(game.id)
+      }
+    }
+
+    // Check KoG race games
+    const { docs: activeKogRaces } = await payload.find({
+      collection: 'kog-races',
+      where: { gameStatus: { equals: 'in_progress' } },
+      limit: 100,
+    })
+
+    if (activeKogRaces.length > 0) {
+      console.log(`[GameJob] Checking ${activeKogRaces.length} active KoG race games`)
+      for (const game of activeKogRaces) {
+        await checkKoGRaceProgress(game.id)
       }
     }
   } catch (error) {

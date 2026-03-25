@@ -85,7 +85,7 @@ export const Notifications: CollectionConfig = {
     {
       name: 'relatedGame',
       type: 'relationship',
-      relationTo: ['bingo', 'races'],
+      relationTo: ['bingo', 'races', 'kog-bingo', 'kog-races'],
       label: 'Related Game',
       admin: {
         description: 'The game this notification is about (if any)',

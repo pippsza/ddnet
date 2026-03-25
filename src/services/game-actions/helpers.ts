@@ -51,7 +51,7 @@ export async function checkAndClearStaleActiveGame(
   let isStale = false
   try {
     const activeDoc = await payload.findByID({
-      collection: ref.relationTo as 'bingo' | 'races',
+      collection: ref.relationTo as 'bingo' | 'races' | 'kog-bingo' | 'kog-races',
       id: refId,
       depth: 0,
     })
@@ -81,7 +81,7 @@ export async function finalizeGameForPlayers(
   collection: GameCollection,
   gameId: string,
 ): Promise<void> {
-  const relationTo = collection === 'bingo' ? 'bingo' : 'races'
+  const relationTo = collection
   for (const playerId of playerIds) {
     const playerUser = await payload.findByID({ collection: 'users', id: playerId })
     const existing = (playerUser.completedGames as any[]) || []

@@ -20,6 +20,7 @@
     "tabs": {
       "service": "Servis",
       "ddnet": "DDNet",
+      "kog": "KoG",
       "settings": "Ayarlar"
     },
     "noServiceStats": "Servis istatistiği yok",
@@ -42,7 +43,8 @@
     },
     "externalLinks": {
       "ddnetProfile": "DDNet Profili",
-      "ddstats": "DDStats"
+      "ddstats": "DDStats",
+      "kog": "KoG Profili"
     },
     "passwordPrompt": {
       "title": "Sunucu şifre gerektiriyor",

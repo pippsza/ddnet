@@ -65,6 +65,8 @@ const mainItems = [{ titleKey: 'dashboard', url: '/app/dashboard', icon: LayoutD
 const gameItems = [
   { titleKey: 'bingo', url: '/app/bingo', icon: Grid3X3, requiredPage: 'bingo' },
   { titleKey: 'race', url: '/app/race', icon: Trophy, requiredPage: 'race' },
+  { titleKey: 'kogBingo', url: '/app/kog-bingo', icon: Swords, requiredPage: 'kog-bingo' },
+  { titleKey: 'kogRace', url: '/app/kog-race', icon: Gamepad2, requiredPage: 'kog-race' },
   { titleKey: 'leaderboard', url: '/app/leaderboard', icon: Medal, requiredPage: 'leaderboard' },
 ]
 
@@ -133,12 +135,24 @@ const devItems = [{ titleKey: 'devTools', url: '/app/dev', icon: Wrench }]
 
 const isDev = process.env.NODE_ENV === 'development'
 
+const COLLECTION_TO_ROUTE: Record<string, string> = {
+  bingo: '/app/bingo',
+  races: '/app/race',
+  'kog-bingo': '/app/kog-bingo',
+  'kog-races': '/app/kog-race',
+}
+
+function getActiveGameUrl(activeGame: { relationTo: string; value: string }): string {
+  const base = COLLECTION_TO_ROUTE[activeGame.relationTo] || '/app/bingo'
+  return `${base}/${activeGame.value}`
+}
+
 interface AppSidebarProps {
   user: {
     ingameNick?: string
     permissions: ResolvedPermissions
     skin?: { name?: string; color_body?: number; color_feet?: number }
-    activeGame?: { relationTo: 'bingo' | 'races'; value: string } | null
+    activeGame?: { relationTo: 'bingo' | 'races' | 'kog-bingo' | 'kog-races'; value: string } | null
   }
 }
 
@@ -177,7 +191,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   })
   const activeGame = meData?.user?.activeGame
     ? {
-        relationTo: meData.user.activeGame.relationTo as 'bingo' | 'races',
+        relationTo: meData.user.activeGame.relationTo as 'bingo' | 'races' | 'kog-bingo' | 'kog-races',
         value:
           typeof meData.user.activeGame.value === 'object'
             ? meData.user.activeGame.value.id
@@ -260,17 +274,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname.startsWith(
-                      activeGame.relationTo === 'bingo'
-                        ? `/app/bingo/${activeGame.value}`
-                        : `/app/race/${activeGame.value}`,
+                      getActiveGameUrl(activeGame),
                     )}
                   >
                     <Link
-                      href={
-                        activeGame.relationTo === 'bingo'
-                          ? `/app/bingo/${activeGame.value}`
-                          : `/app/race/${activeGame.value}`
-                      }
+                      href={getActiveGameUrl(activeGame)}
                       onClick={handleNavClick}
                     >
                       <Swords className="h-4 w-4" />

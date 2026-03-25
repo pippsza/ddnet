@@ -6,7 +6,8 @@
   "playingSince": "游玩始于 {date}",
   "tabs": {
     "service": "平台",
-    "ddnet": "DDNet"
+    "ddnet": "DDNet",
+    "kog": "KoG"
   },
   "bingo": {
     "title": "Bingo",
@@ -17,6 +18,18 @@
   "race": {
     "title": "竞速",
     "description": "在 DDNet 服务器上与其他玩家竞速",
+    "createButton": "创建竞速",
+    "browseButton": "浏览大厅"
+  },
+  "kogBingo": {
+    "title": "KoG Bingo",
+    "description": "创建或加入 Bingo 对局，在 KoG (King of Gores) 地图上一决高下",
+    "createButton": "创建对局",
+    "browseButton": "浏览大厅"
+  },
+  "kogRace": {
+    "title": "KoG 竞速",
+    "description": "在 KoG 地图上与其他玩家竞速",
     "createButton": "创建竞速",
     "browseButton": "浏览大厅"
   },

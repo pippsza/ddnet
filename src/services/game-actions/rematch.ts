@@ -1,9 +1,11 @@
 import type { Payload } from 'payload'
-import type { User, Bingo, Race } from '@/payload-types'
-import type { GameContext, ActionResult, GameCollection } from './types'
+import type { User, Bingo, Race, KogBingo, KogRace } from '@/payload-types'
+import type { GameContext, ActionResult, GameCollection, GameDocument } from './types'
 import { resolveUserId } from './helpers'
 import { generateBingoGrid } from '@/services/bingo/gridGenerator'
 import { generateRacePath } from '@/services/race/pathGenerator'
+import { generateKoGBingoGrid } from '@/services/kog/gridGenerator'
+import { generateKoGRacePath } from '@/services/kog/pathGenerator'
 
 async function tryJoinExistingRematch(
   payload: Payload,
@@ -11,9 +13,9 @@ async function tryJoinExistingRematch(
   collection: GameCollection,
   existingRematchId: string,
 ): Promise<ActionResult | null> {
-  let rematchGame: Bingo | Race
+  let rematchGame: GameDocument
   try {
-    rematchGame = await payload.findByID({ collection, id: existingRematchId, depth: 1 })
+    rematchGame = await payload.findByID({ collection, id: existingRematchId, depth: 1 }) as GameDocument
   } catch {
     return null
   }
@@ -127,9 +129,15 @@ export async function handleRematch(ctx: GameContext): Promise<ActionResult> {
   }
 
   // Create new game with same settings — type-specific
-  let newGame: Bingo | Race
-  const gameType = collection === 'bingo' ? 'bingo' : 'race'
-  const pageRoute = collection === 'bingo' ? 'bingo' : 'race'
+  let newGame: GameDocument
+  const COLLECTION_ROUTES: Record<GameCollection, string> = {
+    bingo: 'bingo',
+    races: 'race',
+    'kog-bingo': 'kog-bingo',
+    'kog-races': 'kog-race',
+  }
+  const gameType = collection
+  const pageRoute = COLLECTION_ROUTES[collection]
 
   if (collection === 'bingo') {
     const bingoGame = game as Bingo
@@ -176,7 +184,7 @@ export async function handleRematch(ctx: GameContext): Promise<ActionResult> {
         gameStatus: 'waiting',
       },
     })
-  } else {
+  } else if (collection === 'races') {
     const raceGame = game as Race
     let maps: Race['maps'] = []
     if (raceGame.categoryMode !== 'free') {
@@ -227,6 +235,99 @@ export async function handleRematch(ctx: GameContext): Promise<ActionResult> {
         gameStatus: 'waiting',
         currentStep: 0,
       } as Race,
+    })
+  } else if (collection === 'kog-bingo') {
+    const kogGame = game as KogBingo
+    const maps = await generateKoGBingoGrid({
+      category: kogGame.category,
+      gridSize: kogGame.gridSize,
+      difficultyMin: kogGame.difficultyRange?.min ?? 0,
+      difficultyMax: kogGame.difficultyRange?.max ?? 5,
+    })
+
+    const teams: KogBingo['teams'] = [
+      {
+        teamName: kogGame.mode === 'solo' ? `${user.ingameNick || user.username}'s Team` : 'Team 1',
+        color: kogGame.teams[0]?.color || 'red',
+        players: [{ user: user.id, isReady: true }],
+        completedCells: [],
+        teamStatus: 'not_ready',
+      },
+    ]
+    if (kogGame.mode === 'team') {
+      teams.push({
+        teamName: 'Team 2',
+        color: kogGame.teams[1]?.color || 'blue',
+        players: [],
+        completedCells: [],
+        teamStatus: 'not_ready',
+      })
+    }
+
+    newGame = await payload.create({
+      collection: 'kog-bingo',
+      data: {
+        title: kogGame.title,
+        mode: kogGame.mode,
+        category: kogGame.category,
+        gridSize: kogGame.gridSize,
+        winCondition: kogGame.winCondition,
+        isPublic: false,
+        difficultyRange: kogGame.difficultyRange,
+        createdBy: user.id,
+        createdVia: kogGame.createdVia ?? 'web',
+        maps,
+        teams,
+        gameStatus: 'waiting',
+      },
+    })
+  } else {
+    // kog-races
+    const kogRace = game as KogRace
+    const maps = await generateKoGRacePath({
+      category: kogRace.category,
+      pathLength: kogRace.pathLength,
+      difficultyMin: kogRace.difficultyRange?.min ?? 0,
+      difficultyMax: kogRace.difficultyRange?.max ?? 5,
+    })
+
+    const teams: KogRace['teams'] = [
+      {
+        teamName: kogRace.mode === 'solo' ? `${user.ingameNick || user.username}'s Team` : 'Team 1',
+        color: kogRace.teams[0]?.color || 'red',
+        players: [{ user: user.id, isReady: true }],
+        score: 0,
+        completedSteps: [],
+        teamStatus: 'not_ready',
+      },
+    ]
+    if (kogRace.mode === 'team') {
+      teams.push({
+        teamName: 'Team 2',
+        color: kogRace.teams[1]?.color || 'blue',
+        players: [],
+        score: 0,
+        completedSteps: [],
+        teamStatus: 'not_ready',
+      })
+    }
+
+    newGame = await payload.create({
+      collection: 'kog-races',
+      data: {
+        title: kogRace.title,
+        mode: kogRace.mode,
+        category: kogRace.category,
+        pathLength: kogRace.pathLength,
+        isPublic: false,
+        difficultyRange: kogRace.difficultyRange,
+        createdBy: user.id,
+        createdVia: kogRace.createdVia ?? 'web',
+        maps,
+        teams,
+        gameStatus: 'waiting',
+        currentStep: 0,
+      },
     })
   }
 

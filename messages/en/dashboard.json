@@ -6,7 +6,8 @@
   "playingSince": "Playing since {date}",
   "tabs": {
     "service": "Service",
-    "ddnet": "DDNet"
+    "ddnet": "DDNet",
+    "kog": "KoG"
   },
   "bingo": {
     "title": "Bingo",
@@ -17,6 +18,18 @@
   "race": {
     "title": "Race",
     "description": "Race against other players on DDNet servers",
+    "createButton": "Create Race",
+    "browseButton": "Browse Lobby"
+  },
+  "kogBingo": {
+    "title": "KoG Bingo",
+    "description": "Create or join a bingo game on KoG (King of Gores) maps",
+    "createButton": "Create Game",
+    "browseButton": "Browse Lobby"
+  },
+  "kogRace": {
+    "title": "KoG Race",
+    "description": "Race against other players on KoG maps",
     "createButton": "Create Race",
     "browseButton": "Browse Lobby"
   },

@@ -22,7 +22,7 @@ export function ServiceStatsSection({ gameStats }: ServiceStatsSectionProps) {
         <StatCard
           title="Total Games"
           value={gameStats.stats.totalGames}
-          subtitle={`${gameStats.stats.activeBingo + gameStats.stats.activeRaces} active`}
+          subtitle={`${gameStats.stats.activeBingo + gameStats.stats.activeRaces + (gameStats.stats.activeKogBingo ?? 0) + (gameStats.stats.activeKogRaces ?? 0)} active`}
         />
         <StatCard
           title="Overall Win Rate"
@@ -41,13 +41,29 @@ export function ServiceStatsSection({ gameStats }: ServiceStatsSectionProps) {
         />
       </div>
 
+      {/* KoG Stats */}
+      {((gameStats.stats.kogBingoTotal ?? 0) > 0 || (gameStats.stats.kogRaceTotal ?? 0) > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="KoG Bingo"
+            value={`${gameStats.stats.kogBingoWins ?? 0}W / ${gameStats.stats.kogBingoLosses ?? 0}L`}
+            subtitle={`${gameStats.stats.kogBingoTotal ?? 0} games`}
+          />
+          <StatCard
+            title="KoG Race"
+            value={`${gameStats.stats.kogRaceWins ?? 0}W / ${gameStats.stats.kogRaceLosses ?? 0}L`}
+            subtitle={`${gameStats.stats.kogRaceTotal ?? 0} games`}
+          />
+        </div>
+      )}
+
       {/* Win Rate Charts + Games Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DualWinRateChart
-          bingoWins={gameStats.stats.bingoWins}
-          bingoLosses={gameStats.stats.bingoLosses}
-          raceWins={gameStats.stats.raceWins}
-          raceLosses={gameStats.stats.raceLosses}
+          bingoWins={gameStats.stats.bingoWins + (gameStats.stats.kogBingoWins ?? 0)}
+          bingoLosses={gameStats.stats.bingoLosses + (gameStats.stats.kogBingoLosses ?? 0)}
+          raceWins={gameStats.stats.raceWins + (gameStats.stats.kogRaceWins ?? 0)}
+          raceLosses={gameStats.stats.raceLosses + (gameStats.stats.kogRaceLosses ?? 0)}
         />
         <GamesTimelineChart data={gameStats.monthlyData} />
       </div>

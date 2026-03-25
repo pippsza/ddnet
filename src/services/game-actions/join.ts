@@ -57,11 +57,10 @@ export async function handleJoin(
 
   await payload.update({ collection, id: gameId, data: updateData })
 
-  const relationTo = collection === 'bingo' ? 'bingo' : 'races'
   await payload.update({
     collection: 'users',
     id: user.id,
-    data: { activeGame: { relationTo, value: gameId } },
+    data: { activeGame: { relationTo: collection, value: gameId } },
   })
 
   return {

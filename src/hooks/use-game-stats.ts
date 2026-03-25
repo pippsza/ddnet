@@ -48,7 +48,7 @@ export interface RaceGameEntry {
 }
 
 export interface GameHistoryItem {
-  type: 'bingo' | 'race'
+  type: 'bingo' | 'race' | 'kog-bingo' | 'kog-race'
   id: string
   title: string
   category: string
@@ -76,13 +76,27 @@ export function useGameStats(userId?: string) {
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   )
+  const { data: kogBingoData } = useSWR<{ games: BingoGameEntry[] }>(
+    userId ? `/api/game/my-games?type=kog-bingo&userId=${userId}` : null,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 },
+  )
+  const { data: kogRaceData } = useSWR<{ games: BingoGameEntry[] }>(
+    userId ? `/api/game/my-games?type=kog-race&userId=${userId}` : null,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 },
+  )
 
   const bingoGames = bingoData?.games || []
   const raceGames = raceData?.docs || []
+  const kogBingoGames = kogBingoData?.games || []
+  const kogRaceGames = kogRaceData?.games || []
 
   // Completed games
   const completedBingo = bingoGames.filter((g) => g.gameStatus === 'completed')
   const completedRaces = raceGames.filter((g) => g.status === 'completed')
+  const completedKogBingo = kogBingoGames.filter((g) => g.gameStatus === 'completed')
+  const completedKogRaces = kogRaceGames.filter((g) => g.gameStatus === 'completed')
 
   // Win/loss for races
   const raceResults = completedRaces.map((race) => {
@@ -96,9 +110,13 @@ export function useGameStats(userId?: string) {
   const bingoLosses = completedBingo.filter((g) => g.isWinner === false).length
   const raceWins = raceResults.filter((r) => r.isWinner).length
   const raceLosses = raceResults.filter((r) => !r.isWinner).length
+  const kogBingoWins = completedKogBingo.filter((g) => g.isWinner === true).length
+  const kogBingoLosses = completedKogBingo.filter((g) => g.isWinner === false).length
+  const kogRaceWins = completedKogRaces.filter((g) => g.isWinner === true).length
+  const kogRaceLosses = completedKogRaces.filter((g) => g.isWinner === false).length
 
-  const totalWins = bingoWins + raceWins
-  const totalLosses = bingoLosses + raceLosses
+  const totalWins = bingoWins + raceWins + kogBingoWins + kogRaceWins
+  const totalLosses = bingoLosses + raceLosses + kogBingoLosses + kogRaceLosses
   const totalGames = totalWins + totalLosses
   const winRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0
 
@@ -127,6 +145,26 @@ export function useGameStats(userId?: string) {
         createdAt: r.createdAt,
       }
     }),
+    ...kogBingoGames.map((g) => ({
+      type: 'kog-bingo' as const,
+      id: g.id,
+      title: g.title,
+      category: g.category,
+      status: g.gameStatus,
+      isWinner: g.isWinner,
+      completedAt: g.completedAt,
+      createdAt: g.createdAt,
+    })),
+    ...kogRaceGames.map((g) => ({
+      type: 'kog-race' as const,
+      id: g.id,
+      title: g.title,
+      category: g.category,
+      status: g.gameStatus,
+      isWinner: g.isWinner,
+      completedAt: g.completedAt,
+      createdAt: g.createdAt,
+    })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   // Monthly game data for charts (last 12 months)
@@ -140,6 +178,14 @@ export function useGameStats(userId?: string) {
       ...raceResults.map((r) => ({
         date: r.completedAt || r.createdAt,
         isWinner: r.isWinner,
+      })),
+      ...completedKogBingo.map((g) => ({
+        date: g.completedAt || g.createdAt,
+        isWinner: g.isWinner,
+      })),
+      ...completedKogRaces.map((g) => ({
+        date: g.completedAt || g.createdAt,
+        isWinner: g.isWinner,
       })),
     ]
 
@@ -179,9 +225,9 @@ export function useGameStats(userId?: string) {
     0,
   )
 
-  // Per-category bingo performance
+  // Per-category bingo performance (DDNet + KoG combined)
   const categoryStats: Record<string, { wins: number; losses: number; total: number }> = {}
-  for (const g of completedBingo) {
+  for (const g of [...completedBingo, ...completedKogBingo]) {
     if (!categoryStats[g.category]) categoryStats[g.category] = { wins: 0, losses: 0, total: 0 }
     categoryStats[g.category].total++
     if (g.isWinner) categoryStats[g.category].wins++
@@ -191,8 +237,12 @@ export function useGameStats(userId?: string) {
   return {
     bingoGames,
     raceGames,
+    kogBingoGames,
+    kogRaceGames,
     completedBingo,
     completedRaces: raceResults,
+    completedKogBingo,
+    completedKogRaces,
     history,
     monthlyData,
     categoryStats,
@@ -207,10 +257,18 @@ export function useGameStats(userId?: string) {
       raceWins,
       raceLosses,
       raceTotal: completedRaces.length,
+      kogBingoWins,
+      kogBingoLosses,
+      kogBingoTotal: completedKogBingo.length,
+      kogRaceWins,
+      kogRaceLosses,
+      kogRaceTotal: completedKogRaces.length,
       totalRoundsWon,
       totalRoundsPlayed,
       activeBingo: bingoGames.filter((g) => ['waiting', 'ready', 'in_progress'].includes(g.gameStatus)).length,
       activeRaces: raceGames.filter((g) => ['waiting', 'ready', 'in_progress'].includes(g.status)).length,
+      activeKogBingo: kogBingoGames.filter((g) => ['waiting', 'ready', 'in_progress'].includes(g.gameStatus)).length,
+      activeKogRaces: kogRaceGames.filter((g) => ['waiting', 'ready', 'in_progress'].includes(g.gameStatus)).length,
     },
     isLoading: !bingoData || !raceData,
   }

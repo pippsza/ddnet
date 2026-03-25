@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
+import { KOG_CATEGORIES } from '@/lib/kog-constants'
 import { resolveOptionalAuth } from '@/services/game-actions/auth'
+
+const TYPE_TO_COLLECTION = {
+  bingo: 'bingo',
+  race: 'races',
+  'kog-bingo': 'kog-bingo',
+  'kog-race': 'kog-races',
+} as const
+
+type GameType = keyof typeof TYPE_TO_COLLECTION
 
 export async function GET(req: NextRequest) {
   try {
     const { user, payload } = await resolveOptionalAuth(req)
 
-    const type = req.nextUrl.searchParams.get('type')
-    if (type !== 'bingo' && type !== 'race') {
-      return NextResponse.json({ error: 'type query param must be "bingo" or "race"' }, { status: 400 })
+    const type = req.nextUrl.searchParams.get('type') as GameType
+    if (!TYPE_TO_COLLECTION[type]) {
+      return NextResponse.json(
+        { error: `type query param must be one of: ${Object.keys(TYPE_TO_COLLECTION).join(', ')}` },
+        { status: 400 },
+      )
     }
 
-    const collection = type === 'bingo' ? 'bingo' : ('races' as const)
+    const collection = TYPE_TO_COLLECTION[type]
 
     // Allow querying another user's games via ?userId=
     const targetUserId = req.nextUrl.searchParams.get('userId')
@@ -79,6 +92,7 @@ export async function GET(req: NextRequest) {
 
       // Resolve category icon
       const stdCat = DDNET_CATEGORIES.find((c) => c.value === game.category)
+        ?? KOG_CATEGORIES.find((c) => c.value === game.category)
       const categoryIcon =
         stdCat?.icon ?? customCats.find((c: any) => c.slug === game.category)?.icon
 
@@ -102,7 +116,7 @@ export async function GET(req: NextRequest) {
       }
 
       // Type-specific fields
-      if (type === 'bingo') {
+      if (type === 'bingo' || type === 'kog-bingo') {
         return {
           ...base,
           gridSize: (game as any).gridSize,

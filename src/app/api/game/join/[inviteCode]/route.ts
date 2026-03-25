@@ -14,8 +14,8 @@ export async function POST(
     const { inviteCode } = await params
     const body = await req.json().catch(() => ({}))
 
-    // Search both collections for the invite code
-    const [bingoResult, raceResult] = await Promise.all([
+    // Search all game collections for the invite code
+    const [bingoResult, raceResult, kogBingoResult, kogRaceResult] = await Promise.all([
       auth.payload.find({
         collection: 'bingo',
         where: { inviteCode: { equals: inviteCode } },
@@ -28,6 +28,18 @@ export async function POST(
         depth: 1,
         limit: 1,
       }),
+      auth.payload.find({
+        collection: 'kog-bingo',
+        where: { inviteCode: { equals: inviteCode } },
+        depth: 1,
+        limit: 1,
+      }),
+      auth.payload.find({
+        collection: 'kog-races',
+        where: { inviteCode: { equals: inviteCode } },
+        depth: 1,
+        limit: 1,
+      }),
     ])
 
     let game: GameDocument | undefined = bingoResult.docs[0]
@@ -36,6 +48,14 @@ export async function POST(
     if (!game && raceResult.docs[0]) {
       game = raceResult.docs[0]
       collection = 'races'
+    }
+    if (!game && kogBingoResult.docs[0]) {
+      game = kogBingoResult.docs[0]
+      collection = 'kog-bingo'
+    }
+    if (!game && kogRaceResult.docs[0]) {
+      game = kogRaceResult.docs[0]
+      collection = 'kog-races'
     }
 
     if (!game) {

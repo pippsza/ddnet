@@ -18,9 +18,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ga
     const isClient = req.headers.get('authorization')?.startsWith('Bearer ')
     const options = { callerSource: (isClient ? 'client' : 'web') as 'client' | 'web' }
 
-    const result = resolved.collection === 'bingo'
-      ? await handleBingoSettings(ctx, body, options)
-      : await handleRaceSettings(ctx, body, options)
+    let result
+    switch (resolved.collection) {
+      case 'bingo':
+      case 'kog-bingo':
+        result = await handleBingoSettings(ctx, body, options)
+        break
+      case 'races':
+      case 'kog-races':
+        result = await handleRaceSettings(ctx, body, options)
+        break
+    }
 
     if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status })
     return NextResponse.json(result.data)

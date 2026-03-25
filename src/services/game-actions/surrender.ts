@@ -50,7 +50,7 @@ export async function handleSurrender(ctx: GameContext): Promise<ActionResult> {
     duration,
   }
 
-  if (collection === 'races') {
+  if (collection === 'races' || collection === 'kog-races') {
     updateData.surrenderedByTeam = userTeamIndex
   }
 

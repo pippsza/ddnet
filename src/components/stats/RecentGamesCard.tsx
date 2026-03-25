@@ -24,9 +24,21 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
         ) : (
         <div className="space-y-1">
           {completed.map((game) => {
-            const href = game.type === 'bingo'
-              ? `/app/bingo/${game.id}`
-              : `/app/race/${game.id}`
+            const TYPE_ROUTES: Record<string, string> = {
+              bingo: '/app/bingo',
+              race: '/app/race',
+              'kog-bingo': '/app/kog-bingo',
+              'kog-race': '/app/kog-race',
+            }
+            const href = `${TYPE_ROUTES[game.type] || '/app/bingo'}/${game.id}`
+            const isKoG = game.type.startsWith('kog-')
+            const isBingo = game.type === 'bingo' || game.type === 'kog-bingo'
+            const label = isKoG
+              ? (isBingo ? 'KB' : 'KR')
+              : (isBingo ? 'B' : 'R')
+            const colorClass = isKoG
+              ? 'bg-emerald-500/10 text-emerald-500'
+              : (isBingo ? 'bg-primary/10 text-primary' : 'bg-amber-500/10 text-amber-500')
 
             return (
               <Link
@@ -37,9 +49,9 @@ export function RecentGamesCard({ games, limit = 10 }: RecentGamesCardProps) {
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`
                     inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold shrink-0
-                    ${game.type === 'bingo' ? 'bg-primary/10 text-primary' : 'bg-amber-500/10 text-amber-500'}
+                    ${colorClass}
                   `}>
-                    {game.type === 'bingo' ? 'B' : 'R'}
+                    {label}
                   </span>
                   <div className="min-w-0">
                     <span className="text-sm font-medium truncate block">{game.title}</span>

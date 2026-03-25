@@ -85,6 +85,8 @@ export interface Config {
     'in-game-messages': InGameMessage;
     roles: Role;
     'watched-players': WatchedPlayer;
+    'kog-bingo': KogBingo;
+    'kog-races': KogRace;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -110,6 +112,8 @@ export interface Config {
     'in-game-messages': InGameMessagesSelect<false> | InGameMessagesSelect<true>;
     roles: RolesSelect<false> | RolesSelect<true>;
     'watched-players': WatchedPlayersSelect<false> | WatchedPlayersSelect<true>;
+    'kog-bingo': KogBingoSelect<false> | KogBingoSelect<true>;
+    'kog-races': KogRacesSelect<false> | KogRacesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -212,7 +216,7 @@ export interface User {
     lastSyncedAt?: string | null;
   };
   /**
-   * Current game (bingo or race) with status "waiting", "ready" or "in_progress"
+   * Current game (bingo, race, KoG bingo, or KoG race) with status "waiting", "ready" or "in_progress"
    */
   activeGame?:
     | ({
@@ -222,9 +226,17 @@ export interface User {
     | ({
         relationTo: 'races';
         value: string | Race;
+      } | null)
+    | ({
+        relationTo: 'kog-bingo';
+        value: string | KogBingo;
+      } | null)
+    | ({
+        relationTo: 'kog-races';
+        value: string | KogRace;
       } | null);
   /**
-   * History of all played games (bingo and races)
+   * History of all played games (bingo, races, KoG bingo, KoG races)
    */
   completedGames?:
     | (
@@ -235,6 +247,14 @@ export interface User {
         | {
             relationTo: 'races';
             value: string | Race;
+          }
+        | {
+            relationTo: 'kog-bingo';
+            value: string | KogBingo;
+          }
+        | {
+            relationTo: 'kog-races';
+            value: string | KogRace;
           }
       )[]
     | null;
@@ -683,6 +703,8 @@ export interface Role {
           | 'app_access'
           | 'bingo'
           | 'race'
+          | 'kog-bingo'
+          | 'kog-race'
           | 'leaderboard'
           | 'players'
           | 'friends'
@@ -938,6 +960,161 @@ export interface Race {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kog-bingo".
+ */
+export interface KogBingo {
+  id: string;
+  title: string;
+  mode: 'solo' | 'team';
+  category: string;
+  gridSize: '3x3' | '5x5' | '7x7';
+  winCondition: 'line' | 'cross' | 'full_house';
+  /**
+   * Public games are visible in lobby, private games require invite code
+   */
+  isPublic?: boolean | null;
+  difficultyRange?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  createdBy: string | User;
+  createdVia?: ('web' | 'client') | null;
+  /**
+   * Auto-generated code for private games
+   */
+  inviteCode?: string | null;
+  maps?:
+    | {
+        mapName: string;
+        position: number;
+        points?: number | null;
+        difficulty?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  teams: {
+    teamName: string;
+    color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
+    players?:
+      | {
+          user: string | User;
+          isReady?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    pendingInvites?:
+      | {
+          user: string | User;
+          invitedAt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    completedCells?:
+      | {
+          cellPosition: number;
+          completedAt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    teamStatus: 'not_ready' | 'ready' | 'playing' | 'winner' | 'loser';
+    id?: string | null;
+  }[];
+  gameStatus: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  winnerTeam?: number | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  duration?: number | null;
+  rematchGame?: (string | null) | KogBingo;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * KoG Race game sessions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kog-races".
+ */
+export interface KogRace {
+  id: string;
+  title: string;
+  mode: 'solo' | 'team';
+  category: string;
+  /**
+   * Number of maps in the race path (3-20)
+   */
+  pathLength: number;
+  /**
+   * Public games are visible in lobby, private games require invite code
+   */
+  isPublic?: boolean | null;
+  difficultyRange?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  createdBy: string | User;
+  createdVia?: ('web' | 'client') | null;
+  /**
+   * Auto-generated code for private games
+   */
+  inviteCode?: string | null;
+  maps?:
+    | {
+        mapName: string;
+        position: number;
+        points?: number | null;
+        difficulty?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  teams: {
+    teamName: string;
+    color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
+    players?:
+      | {
+          user: string | User;
+          isReady?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    pendingInvites?:
+      | {
+          user: string | User;
+          invitedAt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Number of steps claimed by this team
+     */
+    score?: number | null;
+    completedSteps?:
+      | {
+          position: number;
+          completedAt?: string | null;
+          finishTime?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    teamStatus: 'not_ready' | 'ready' | 'playing' | 'winner' | 'loser';
+    id?: string | null;
+  }[];
+  /**
+   * Which step is currently being played (0-indexed)
+   */
+  currentStep?: number | null;
+  currentMap?: string | null;
+  gameStatus: 'waiting' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  winnerTeam?: number | null;
+  surrenderedByTeam?: number | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  duration?: number | null;
+  rematchGame?: (string | null) | KogRace;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage running bot instances
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1060,6 +1237,14 @@ export interface Notification {
     | ({
         relationTo: 'races';
         value: string | Race;
+      } | null)
+    | ({
+        relationTo: 'kog-bingo';
+        value: string | KogBingo;
+      } | null)
+    | ({
+        relationTo: 'kog-races';
+        value: string | KogRace;
       } | null);
   /**
    * The user who triggered this notification (if any)
@@ -1625,6 +1810,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'watched-players';
         value: string | WatchedPlayer;
+      } | null)
+    | ({
+        relationTo: 'kog-bingo';
+        value: string | KogBingo;
+      } | null)
+    | ({
+        relationTo: 'kog-races';
+        value: string | KogRace;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2615,6 +2808,144 @@ export interface WatchedPlayersSelect<T extends boolean = true> {
   notifyOnline?: T;
   lastKnownOnline?: T;
   addedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kog-bingo_select".
+ */
+export interface KogBingoSelect<T extends boolean = true> {
+  title?: T;
+  mode?: T;
+  category?: T;
+  gridSize?: T;
+  winCondition?: T;
+  isPublic?: T;
+  difficultyRange?:
+    | T
+    | {
+        min?: T;
+        max?: T;
+      };
+  createdBy?: T;
+  createdVia?: T;
+  inviteCode?: T;
+  maps?:
+    | T
+    | {
+        mapName?: T;
+        position?: T;
+        points?: T;
+        difficulty?: T;
+        id?: T;
+      };
+  teams?:
+    | T
+    | {
+        teamName?: T;
+        color?: T;
+        players?:
+          | T
+          | {
+              user?: T;
+              isReady?: T;
+              id?: T;
+            };
+        pendingInvites?:
+          | T
+          | {
+              user?: T;
+              invitedAt?: T;
+              id?: T;
+            };
+        completedCells?:
+          | T
+          | {
+              cellPosition?: T;
+              completedAt?: T;
+              id?: T;
+            };
+        teamStatus?: T;
+        id?: T;
+      };
+  gameStatus?: T;
+  winnerTeam?: T;
+  startedAt?: T;
+  completedAt?: T;
+  duration?: T;
+  rematchGame?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kog-races_select".
+ */
+export interface KogRacesSelect<T extends boolean = true> {
+  title?: T;
+  mode?: T;
+  category?: T;
+  pathLength?: T;
+  isPublic?: T;
+  difficultyRange?:
+    | T
+    | {
+        min?: T;
+        max?: T;
+      };
+  createdBy?: T;
+  createdVia?: T;
+  inviteCode?: T;
+  maps?:
+    | T
+    | {
+        mapName?: T;
+        position?: T;
+        points?: T;
+        difficulty?: T;
+        id?: T;
+      };
+  teams?:
+    | T
+    | {
+        teamName?: T;
+        color?: T;
+        players?:
+          | T
+          | {
+              user?: T;
+              isReady?: T;
+              id?: T;
+            };
+        pendingInvites?:
+          | T
+          | {
+              user?: T;
+              invitedAt?: T;
+              id?: T;
+            };
+        score?: T;
+        completedSteps?:
+          | T
+          | {
+              position?: T;
+              completedAt?: T;
+              finishTime?: T;
+              id?: T;
+            };
+        teamStatus?: T;
+        id?: T;
+      };
+  currentStep?: T;
+  currentMap?: T;
+  gameStatus?: T;
+  winnerTeam?: T;
+  surrenderedByTeam?: T;
+  startedAt?: T;
+  completedAt?: T;
+  duration?: T;
+  rematchGame?: T;
   updatedAt?: T;
   createdAt?: T;
 }

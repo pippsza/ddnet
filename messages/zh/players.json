@@ -20,6 +20,7 @@
     "tabs": {
       "service": "平台",
       "ddnet": "DDNet",
+      "kog": "KoG",
       "settings": "设置"
     },
     "noServiceStats": "暂无平台统计数据",
@@ -42,7 +43,8 @@
     },
     "externalLinks": {
       "ddnetProfile": "DDNet 主页",
-      "ddstats": "DDStats"
+      "ddstats": "DDStats",
+      "kog": "KoG 主页"
     },
     "passwordPrompt": {
       "title": "服务器需要密码",

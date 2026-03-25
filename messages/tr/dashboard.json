@@ -6,7 +6,8 @@
   "playingSince": "{date} tarihinden beri oynuyor",
   "tabs": {
     "service": "Servis",
-    "ddnet": "DDNet"
+    "ddnet": "DDNet",
+    "kog": "KoG"
   },
   "bingo": {
     "title": "Bingo",
@@ -17,6 +18,18 @@
   "race": {
     "title": "Yarış",
     "description": "DDNet sunucularında diğer oyunculara karşı yarış",
+    "createButton": "Yarış Oluştur",
+    "browseButton": "Lobiyi Gözat"
+  },
+  "kogBingo": {
+    "title": "KoG Bingo",
+    "description": "KoG (King of Gores) haritalarında bir bingo oyunu oluştur veya katıl",
+    "createButton": "Oyun Oluştur",
+    "browseButton": "Lobiyi Gözat"
+  },
+  "kogRace": {
+    "title": "KoG Yarış",
+    "description": "KoG haritalarında diğer oyunculara karşı yarış",
     "createButton": "Yarış Oluştur",
     "browseButton": "Lobiyi Gözat"
   },

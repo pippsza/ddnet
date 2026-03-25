@@ -14,6 +14,7 @@ import { PlayerDetailSkeleton } from '@/components/ui/page-skeleton'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useDDStats } from '@/hooks/use-ddstats'
+import { useKoG } from '@/hooks/use-kog'
 import { useGameStats } from '@/hooks/use-game-stats'
 import { formatPlaytime, formatDateShort, formatHours } from '@/lib/format-utils'
 import { Input } from '@/components/ui/input'
@@ -37,6 +38,7 @@ import { PageTransition } from '@/components/ui/animations'
 
 import { ServiceStatsSection } from '@/components/stats/ServiceStatsSection'
 import { DDNetSection } from '@/components/stats/DDNetSection'
+import { KoGSection } from '@/components/stats/KoGSection'
 import { PlayerSettingsTab } from '@/components/admin/PlayerSettingsTab'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -68,6 +70,7 @@ function PlayerDetailContent({ name }: { name: string }) {
   const playerName = reg?.ingameNick || ddnet?.player || decodedName
 
   const { ddstats, ddstatsLoading } = useDDStats(playerName)
+  const { kog, kogLoading } = useKoG(playerName)
   const gameStats = useGameStats(reg?.id)
   const { isAdmin, permissions } = usePermissions()
 
@@ -514,6 +517,15 @@ function PlayerDetailContent({ name }: { name: string }) {
                   {t('detail.externalLinks.ddstats')}
                 </a>
               </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={`https://kog.tw/#p=players&player=${encodeURIComponent(playerName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('detail.externalLinks.kog')}
+                </a>
+              </Button>
             </div>
 
             {/* Password prompt for passworded servers */}
@@ -578,6 +590,9 @@ function PlayerDetailContent({ name }: { name: string }) {
             <TabsTrigger value="ddnet" className={TAB_TRIGGER_CLASSES}>
               {t('detail.tabs.ddnet')}
             </TabsTrigger>
+            <TabsTrigger value="kog" className={TAB_TRIGGER_CLASSES}>
+              {t('detail.tabs.kog')}
+            </TabsTrigger>
             {(isAdmin || permissions?.adminPages?.includes('manage_users')) && (
               <TabsTrigger value="settings" className={TAB_TRIGGER_CLASSES}>
                 <Settings className="h-4 w-4 mr-1.5" />
@@ -617,6 +632,11 @@ function PlayerDetailContent({ name }: { name: string }) {
             />
           </TabsContent>
 
+          {/* ═══ KOG TAB ═══ */}
+          <TabsContent value="kog" className="space-y-6 mt-4">
+            <KoGSection kogLoading={kogLoading} kog={kog} />
+          </TabsContent>
+
           {/* ═══ SETTINGS TAB (admin / manage_users) ═══ */}
           {(isAdmin || permissions?.adminPages?.includes('manage_users')) && (
             <TabsContent value="settings" className="mt-4">
@@ -625,7 +645,7 @@ function PlayerDetailContent({ name }: { name: string }) {
           )}
         </Tabs>
       ) : (
-        /* Unregistered: show DDNet content directly */
+        /* Unregistered: show DDNet + KoG content directly */
         <div className="space-y-6">
           <DDNetSection
             ddstatsLoading={ddstatsLoading}
@@ -638,6 +658,7 @@ function PlayerDetailContent({ name }: { name: string }) {
             currentMonthHours={currentMonthHours}
             playingSince={playingSince}
           />
+          <KoGSection kogLoading={kogLoading} kog={kog} />
         </div>
       )}
     </PageTransition>

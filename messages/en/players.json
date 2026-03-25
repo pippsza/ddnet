@@ -20,6 +20,7 @@
     "tabs": {
       "service": "Service",
       "ddnet": "DDNet",
+      "kog": "KoG",
       "settings": "Settings"
     },
     "noServiceStats": "No service stats available",
@@ -42,7 +43,8 @@
     },
     "externalLinks": {
       "ddnetProfile": "DDNet Profile",
-      "ddstats": "DDStats"
+      "ddstats": "DDStats",
+      "kog": "KoG Profile"
     },
     "passwordPrompt": {
       "title": "Server requires a password",

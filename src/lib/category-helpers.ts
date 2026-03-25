@@ -1,4 +1,5 @@
 import { DDNET_CATEGORIES } from './ddnet-constants'
+import { KOG_CATEGORY_VALUES } from './kog-constants'
 
 const STANDARD_CATEGORY_VALUES = DDNET_CATEGORIES.map((c) => c.value)
 
@@ -7,6 +8,13 @@ const STANDARD_CATEGORY_VALUES = DDNET_CATEGORIES.map((c) => c.value)
  */
 export function isStandardCategory(value: string): boolean {
   return STANDARD_CATEGORY_VALUES.includes(value)
+}
+
+/**
+ * Check if a category value is a KoG category
+ */
+export function isKoGCategoryValue(value: string): boolean {
+  return KOG_CATEGORY_VALUES.includes(value)
 }
 
 /**
@@ -27,9 +35,10 @@ export const validateCategory = async (
   if (!value) return 'Category is required'
 
   if (isStandardCategory(value)) return true
+  if (isKoGCategoryValue(value)) return true
 
   if (!isCustomCategory(value)) {
-    return `Invalid category: "${value}". Must be a standard DDNet category or a custom category (custom_ prefix).`
+    return `Invalid category: "${value}". Must be a standard DDNet category, KoG category, or a custom category (custom_ prefix).`
   }
 
   try {

@@ -31,6 +31,8 @@ import { Messages } from './collections/Messages'
 import { InGameMessages } from './collections/InGameMessages'
 import { Roles } from './collections/Roles'
 import { WatchedPlayers } from './collections/WatchedPlayers'
+import { KogBingo } from './collections/KogBingo'
+import { KogRaces } from './collections/KogRaces'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -73,6 +75,8 @@ export default buildConfig({
     InGameMessages,
     Roles,
     WatchedPlayers,
+    KogBingo,
+    KogRaces,
   ],
   globals: [VerificationSettings, CustomCategories, SiteAnnouncement, BotSettings, AboutPage, TermsPage, PrivacyPage, RulesPage],
   editor: lexicalEditor(),

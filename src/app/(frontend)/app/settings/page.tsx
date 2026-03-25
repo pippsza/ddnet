@@ -30,7 +30,7 @@ import {
 } from 'lucide-react'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useTheme } from 'next-themes'
-import { themes } from '@/lib/themes'
+import { themes, savePreferredTheme } from '@/lib/themes'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setUserLocale } from '@/services/locale'
@@ -412,7 +412,10 @@ export default function SettingsPage() {
               return (
                 <button
                   key={themeItem.id}
-                  onClick={() => setTheme(themeItem.id)}
+                  onClick={() => {
+                    setTheme(themeItem.id)
+                    savePreferredTheme(themeItem.id)
+                  }}
                   className={`group relative rounded-lg border-2 p-2 text-left transition-all hover:scale-[1.02] ${
                     isSelected
                       ? 'border-primary ring-2 ring-primary/20'

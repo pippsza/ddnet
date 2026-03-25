@@ -1,274 +1,320 @@
-# Landing Page — Scroll Through Teeworlds Map
+# Landing Page — Scroll Through Teeworlds Map "Quantum"
 
 ## Концепция
 
-Лендинг-страница проекта, где фоном является реальная карта Teeworlds/DDNet/KoG. При скролле камера плавно двигается по карте (слева направо или по заданному маршруту). UI-элементы (заголовки, описания фич, кнопки) размещены в координатах карты и появляются по мере продвижения.
+Главная страница проекта DDashBoard. Фон — карта DDNet **Quantum** (Brutal, mapper: Pulsar). При скролле камера плавно движется по маршруту карты. UI-секции (hero, features, download, about) размещены в координатах карты и появляются по мере продвижения. Заменяет текущий лендинг (`/[locale]/page.tsx`).
 
-**Референс:** bestclient.fun — WebGL рендерер .map файлов в iframe + Framer Motion для UI.
+Все публичные страницы (about, rules, terms, privacy) переделываются в том же стиле — с фрагментами карты или единым маршрутом.
 
-## Как это работает у bestclient.fun
+## Карта
 
-```
-┌─────────────────────────────────────────────────┐
-│ Next.js page (z-10, pointer-events-none)        │
-│  ┌────────────────────────────────────────┐      │
-│  │ Framer Motion UI layer                 │      │
-│  │  - Navbar (scrollTarget: 0/25/50/75%)  │      │
-│  │  - Feature cards at mapX/mapY coords   │      │
-│  │  - Download buttons                    │      │
-│  │  - Debug panel (hidden, "debug" easter)│      │
-│  └────────────────────────────────────────┘      │
-│                                                   │
-│ <iframe src="/mappreview/index.html"> (z-0)       │
-│  ┌────────────────────────────────────────┐      │
-│  │ WebGL canvas (twwebgl.js)              │      │
-│  │  - Парсит .map файл (twdatafile.js)    │      │
-│  │  - Рендерит тайлы + квады через WebGL  │      │
-│  │  - Текстуры из .map файла              │      │
-│  │  - Камера управляется из parent frame  │      │
-│  └────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────┘
+- **Название:** Quantum
+- **Источник:** DDNet (Brutal, mapper Pulsar)
+- **Файл:** `Quantum.map` (1.3MB, Teeworlds DataFile v4)
+- **Превью:** `https://ddnet.org/ranks/maps/Quantum.png` (360×225)
+- **Интерактив:** `https://ddnet.org/mappreview/?map=Quantum`
 
-Scroll (0% → 100%) → cameraX/cameraY → translateX/Y UI + iframe camera
-Mouse hover → parallax offset (mouseX/40, mouseY/40)
+## Реализация: Pre-rendered Tilemap
+
+### Шаг 1: Рендер карты в PNG
+
+Рендерим через DDNet клиент или `map_renderer`:
+
+```bash
+# Вариант 1: Скриншот из клиента на максимальном зуме
+# Вариант 2: DDNet map_renderer (если есть)
+# Вариант 3: Использовать WebGL рендерер (ddnet.org/mappreview)
+#   → открыть в браузере, зумнуть, сделать screenshot через DevTools
+
+# Результат: quantum-full.png (ожидаемый размер ~8000×2000 px)
 ```
 
-### Проблемы bestclient.fun
-1. **Весь .map файл грузится разом** — несколько МБ, все текстуры декодируются в GPU
-2. **Нет loading state** — чёрный экран с "Loading..." пока грузится
-3. **Нет мобильной вёрстки** — камера и UI не адаптируются
-4. **Нет viewport culling** — WebGL рендерит все слои, даже невидимые
-5. **iframe коммуникация** — ограниченный контроль над рендерером
+### Шаг 2: Нарезка тайлов
 
----
+```bash
+# Нарезка на тайлы 512×512, формат WebP
+python3 scripts/slice-map-tiles.py \
+  --input quantum-full.png \
+  --tile-size 512 \
+  --output public/map-tiles/quantum/ \
+  --format webp \
+  --quality 85
 
-## Варианты реализации
-
-### Вариант A: Pre-rendered Tilemap (рекомендуется)
-
-**Суть:** Карту заранее рендерим в набор тайлов (как Google Maps) и отображаем через CSS transform.
-
-**Подготовка:**
-1. Выбираем .map файл
-2. Рендерим его оффлайн в большое PNG (через DDNet map renderer или скрипт)
-3. Нарезаем на тайлы 256×256 или 512×512
-4. Оптимизируем: WebP, lazy loading по viewport
-
-**Runtime:**
-```
-scrollYProgress (0→1)
-  → useTransform → cameraX, cameraY
-  → CSS transform: translate3d(-cameraX, -cameraY, 0) на контейнере с тайлами
-  → Только видимые тайлы рендерятся (IntersectionObserver или вычисление viewport)
-  → UI-элементы абсолютно позиционированы в координатах карты
+# Blur placeholder для мгновенного показа
+convert quantum-full.png -resize 128x -gaussian-blur 0x3 -quality 30 \
+  public/map-tiles/quantum/placeholder.webp
 ```
 
-**Плюсы:**
-- Быстрая загрузка (тайлы грузятся по мере скролла)
-- Работает везде (нет WebGL зависимости)
-- Progressive loading с blur-up
-- Отличная мобильная производительность
-- SSR-friendly (скелетон/placeholder без JS)
-
-**Минусы:**
-- Нельзя выключить текстуры в runtime (статичная картинка)
-- Нужен build step для нарезки тайлов
-- Масштабирование (zoom) требует нескольких уровней тайлов
-
-**Стек:** Next.js + Framer Motion + CSS transforms + Image lazy loading
-
----
-
-### Вариант B: WebGL renderer (как bestclient.fun, но лучше)
-
-**Суть:** Берём готовый WebGL рендерер (twwebgl.js), но улучшаем.
-
-**Улучшения над bestclient.fun:**
-1. **Viewport culling** — рендерим только видимые тайлы
-2. **Streaming load** — грузим .map чанками, показываем прогресс
-3. **Loading skeleton** — анимированный placeholder пока грузится
-4. **postMessage API** — управление камерой из parent frame
-5. **Mobile touch** — touch events для скролла
-
-**Плюсы:**
-- Реальный рендер карты (можно переключать текстуры, слои)
-- Интерактивность (zoom, pan)
-- Формат .map — стандартный, любая карта
-
-**Минусы:**
-- WebGL может не работать на старых мобилках
-- Сложнее в реализации
-- .map файл всё равно несколько МБ
-- Нужен fallback для no-WebGL
-
----
-
-### Вариант C: Гибрид (рекомендуется для продакшена)
-
-**Суть:** Pre-rendered тайлы как дефолт + опциональный WebGL для "живого" режима.
-
-```
-Загрузка страницы:
-  1. SSR: скелетон + первый видимый тайл (inline, <1KB blur)
-  2. Lazy load: тайлы по мере скролла (WebP, 256×256)
-  3. Опционально: после полной загрузки предложить "Live mode"
-     → Загружает .map файл → WebGL рендер (с toggle текстур)
-```
-
-**Плюсы:** быстрая загрузка + возможность live-рендера для энтузиастов
-
----
-
-## Рекомендация: Вариант A (Pre-rendered Tilemap)
-
-Для лендинга проекта самый надёжный вариант. Причины:
-
-1. **Мобилка** — работает идеально, CSS transforms аппаратно ускорены
-2. **Скорость** — первый экран за <1 сек (один тайл + blur placeholder)
-3. **SEO** — SSR-friendly, контент индексируется
-4. **Простота** — нет WebGL, нет iframe, нет бинарного парсинга
-5. **Надёжность** — работает в любом браузере
-
----
-
-## Архитектура (Вариант A)
-
-### Файловая структура
+### Шаг 3: Файловая структура
 
 ```
 public/
   map-tiles/
-    tile-0-0.webp    # 512×512 тайлы
-    tile-0-1.webp
-    tile-1-0.webp
-    ...
-    placeholder.webp  # 64×64 blur версия всей карты
+    quantum/
+      placeholder.webp          # ~5KB blur для SSR
+      tile-0-0.webp             # 512×512 тайлы
+      tile-0-1.webp
+      tile-1-0.webp
+      ...
+      manifest.json             # { width, height, tileSize, tilesX, tilesY }
 
 src/
-  app/(frontend)/
-    page.tsx          # Лендинг (или отдельный route)
-
   components/landing/
-    MapScroller.tsx    # Основной компонент карты + скролл
-    MapSection.tsx     # UI-секция привязанная к координатам карты
-    MapNavbar.tsx      # Навбар с навигацией по секциям
-    MapTile.tsx        # Компонент одного тайла с lazy loading
+    MapScroller.tsx              # Scroll → camera → transform
+    MapTileLayer.tsx             # Lazy-loaded тайлы с viewport culling
+    MapSection.tsx               # UI-секция привязанная к координатам
+    MapNavbar.tsx                # Навбар с навигацией по секциям
+    LandingHero.tsx              # Hero секция
+    LandingFeatures.tsx          # Features секция
+    LandingGameModes.tsx         # Bingo + Race + KoG описание
+    LandingDownload.tsx          # Скачивание клиента
+    LandingAbout.tsx             # О проекте
+    LandingFooter.tsx            # Футер
+    MobileLayout.tsx             # Мобильная версия (без карты)
+
+  app/(frontend)/[locale]/
+    page.tsx                     # Лендинг (заменяет текущий)
+    (info)/about/page.tsx        # О нас (в стиле карты или с фрагментом)
 ```
 
-### Ключевые компоненты
+## Секции лендинга
 
-#### MapScroller — контейнер карты
-
-```tsx
-interface MapScrollerProps {
-  mapWidth: number        // Полная ширина карты в px
-  mapHeight: number       // Полная высота карты в px
-  tileSize: number        // 512
-  tilesX: number          // Кол-во тайлов по X
-  tilesY: number          // Кол-во тайлов по Y
-  path: {x: number, y: number}[]  // Маршрут камеры (scroll 0→1 → path)
-  children: ReactNode     // UI-секции
-}
-
-// Логика:
-// 1. Scroll (0→100%) → progress
-// 2. progress → интерполяция по path → cameraX, cameraY
-// 3. CSS transform: translate3d(-cameraX, -cameraY, 0) + scale
-// 4. Видимые тайлы = вычисляем по cameraX/Y + viewport size
-// 5. Рендерим только видимые тайлы
-```
-
-#### MapSection — UI-элемент на карте
-
-```tsx
-interface MapSectionProps {
-  x: number              // Позиция на карте (в px карты)
-  y: number
-  children: ReactNode
-  animateIn?: boolean    // Анимация появления при скролле
-}
-
-// Рендерится как absolute div внутри карты
-// Появляется когда камера приближается
-```
-
-#### Маршрут камеры
+### Маршрут камеры (scroll progress → координаты)
 
 ```typescript
-// Маршрут задаётся массивом точек
-// Scroll progress интерполируется между ними
 const CAMERA_PATH = [
-  { x: 100, y: 150 },   // 0% — начало (Hero)
-  { x: 400, y: 150 },   // 25% — Features
-  { x: 700, y: 120 },   // 50% — Performance
-  { x: 900, y: 180 },   // 75% — Download
-  { x: 1100, y: 150 },  // 100% — Footer
+  // progress: 0.00 — Hero (левый край карты)
+  { progress: 0.00, x: 50,  y: 80 },
+
+  // progress: 0.15 — Features overview
+  { progress: 0.15, x: 180, y: 90 },
+
+  // progress: 0.35 — Game Modes (Bingo + Race)
+  { progress: 0.35, x: 350, y: 75 },
+
+  // progress: 0.55 — KoG modes
+  { progress: 0.55, x: 520, y: 85 },
+
+  // progress: 0.70 — Download Client
+  { progress: 0.70, x: 680, y: 70 },
+
+  // progress: 0.85 — About / Team
+  { progress: 0.85, x: 830, y: 90 },
+
+  // progress: 1.00 — Footer
+  { progress: 1.00, x: 950, y: 80 },
 ]
 ```
 
-### Адаптивность
+*Координаты будут подобраны после рендера карты под реальный ландшафт.*
 
-**Desktop (>1024px):**
-- Полный скролл по маршруту
-- Параллакс при движении мыши
-- UI-секции сбоку от маршрута
-
-**Tablet (768-1024px):**
-- Уменьшенный масштаб карты
-- Убрать параллакс мыши
-- UI-секции по центру
-
-**Mobile (<768px):**
-- Вертикальный скролл (стандартный)
-- Карта как фоновая полоска (горизонтальная, фиксированная)
-- Или: отказаться от карты, показать статичный скриншот
-- UI-секции стандартным потоком (flex column)
-
-### Подготовка тайлов (build script)
-
-```bash
-# 1. Рендерим карту в PNG через DDNet инструменты
-# (map_renderer или screenshot из клиента)
-
-# 2. Нарезаем на тайлы
-python3 scripts/slice-map.py \
-  --input map-render.png \
-  --tile-size 512 \
-  --output public/map-tiles/ \
-  --format webp \
-  --quality 85
-
-# 3. Генерируем blur placeholder
-convert map-render.png -resize 64x -quality 20 public/map-tiles/placeholder.webp
-```
-
-### Loading flow
+### 1. Hero (0%)
 
 ```
-T=0ms    SSR: HTML с placeholder (blur) + скелетон UI
-T=100ms  Hydration: React mount, scroll listener
-T=200ms  Первый видимый тайл загружен (один HTTP запрос, ~50KB WebP)
+┌─────────────────────────────────┐
+│          DDashBoard             │
+│    DDNet community platform     │
+│                                 │
+│  [Start Playing]  [Learn More]  │
+│                                 │
+│     ↓ Scroll to explore ↓      │
+└─────────────────────────────────┘
+```
+
+- Большой заголовок с градиентом
+- Анимированный тии (PeekingTee) на карте
+- Две CTA кнопки: Login/Register + Scroll down
+- Subtle particles или glow на кнопках
+
+### 2. Features (15%)
+
+```
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│  🎯 Bingo  │  │  🏁 Race   │  │  👥 Social │
+│ Complete   │  │ Race maps  │  │ Friends,   │
+│ maps on    │  │ against    │  │ chat,      │
+│ grid       │  │ players    │  │ leaderboard│
+└────────────┘  └────────────┘  └────────────┘
+```
+
+- 3 карточки с иконками и описаниями
+- Анимация: карточки появляются по очереди (stagger)
+- Glassmorphism стиль (blur background)
+
+### 3. Game Modes — DDNet (35%)
+
+```
+┌──────────────────────────────────────┐
+│  DDNet Bingo           DDNet Race    │
+│  ┌──────────┐         ┌──────────┐  │
+│  │ 3×3 Grid │         │ Path 1→5 │  │
+│  │ ■ ■ □    │         │ ●→●→●→●  │  │
+│  │ □ ■ ■    │         │          │  │
+│  │ ■ □ ■    │         │ 13 cats  │  │
+│  └──────────┘         └──────────┘  │
+│  Solo & Team modes                   │
+└──────────────────────────────────────┘
+```
+
+- Мини-демо бинго сетки (анимированное)
+- Мини-демо race path
+- Список DDNet категорий
+
+### 4. Game Modes — KoG (55%)
+
+```
+┌──────────────────────────────────────┐
+│  KoG Bingo             KoG Race     │
+│                                      │
+│  King of Gores maps                  │
+│  7 categories: Easy → Extreme        │
+│  Same gameplay, different maps       │
+│                                      │
+│  [Play KoG Bingo]  [Play KoG Race]  │
+└──────────────────────────────────────┘
+```
+
+- Акцент на KoG как отдельный режим
+- Зелёная цветовая схема (emerald) vs синяя DDNet
+- Ссылки на kog.tw
+
+### 5. Download Client (70%)
+
+```
+┌──────────────────────────────────────┐
+│  📥 Download BingoClient             │
+│                                      │
+│  Modified DDNet client with          │
+│  built-in Bingo & Race UI           │
+│                                      │
+│  ✓ Create games from client          │
+│  ✓ Real-time game overlay            │
+│  ✓ Auto-join servers                 │
+│  ✓ Finish detection                  │
+│                                      │
+│  [Download for Windows]              │
+│  [Download for Linux]                │
+│  [Download for macOS]                │
+│                                      │
+│  Version: 1.0.0 | 45MB              │
+└──────────────────────────────────────┘
+```
+
+- Карточка с описанием клиента
+- Кнопки скачивания по платформам (placeholder URLs)
+- Список фич клиента
+- Версия и размер файла
+
+### 6. About / Team (85%)
+
+- Компактная версия About page
+- Аватарки команды (tee skins)
+- Ссылки: Discord, GitHub
+- "Powered by DDNet community"
+
+### 7. Footer (100%)
+
+- Ссылки: About, Rules, Terms, Privacy, Support
+- Social links
+- Copyright
+
+## Навбар
+
+Фиксированный сверху, полупрозрачный. При клике на пункт — плавный скролл к секции.
+
+```
+[DDashBoard]  Home  Features  Modes  Download  About  |  [Login] [Register]
+```
+
+На мобилке — бургер-меню.
+
+## Адаптивность
+
+### Desktop (>1024px)
+- Полный маршрут по карте
+- Параллакс при движении мыши (смещение /30)
+- UI-секции позиционированы в координатах карты
+- Navbar прозрачный с backdrop-blur
+
+### Tablet (768-1024px)
+- Карта масштабирована (`transform: scale`)
+- Секции по центру viewport
+- Без параллакса мыши
+- Navbar solid background
+
+### Mobile (<768px)
+- **НЕТ карты** — обычный вертикальный скролл
+- Карта заменяется на статичный blur-фон или gradient
+- Все секции в обычном потоке (flex column)
+- Компактные карточки
+- Полноценная мобильная вёрстка
+
+```tsx
+// MobileLayout.tsx — fallback для мобилки
+function MobileLayout({ sections }) {
+  return (
+    <div className="flex flex-col gap-12 px-4 py-8">
+      <LandingHero mobile />
+      <LandingFeatures mobile />
+      <LandingGameModes mobile />
+      <LandingDownload mobile />
+      <LandingAbout mobile />
+      <LandingFooter />
+    </div>
+  )
+}
+
+// В page.tsx:
+function LandingPage() {
+  const isMobile = useMediaQuery('(max-width: 768px)')
+
+  if (isMobile) return <MobileLayout />
+  return <MapScroller map="quantum" path={CAMERA_PATH}>...</MapScroller>
+}
+```
+
+## Стилизация публичных страниц
+
+Все публичные страницы (`/about`, `/rules`, `/terms`, `/privacy`) получат:
+
+1. **Фон** — blur-фрагмент карты Quantum (статичный) или тёмный gradient
+2. **Стиль текста** — тот же glassmorphism, те же цвета
+3. **Navbar** — тот же компонент что на лендинге
+4. **Footer** — тот же компонент
+
+Это создаёт единую визуальную идентичность для всех публичных страниц.
+
+## Loading Flow
+
+```
+T=0ms    SSR: HTML с placeholder.webp (blur, 5KB inline base64)
+         + скелетон UI (заголовки, кнопки)
+         + navbar с навигацией
+T=50ms   CSS загружен, layout отрисован
+T=100ms  React hydration, scroll listener подключен
+T=200ms  Первый видимый тайл загружен (~50KB WebP)
+         Blur placeholder плавно исчезает (CSS transition)
 T=500ms  Соседние тайлы подгружаются в фоне
-T=1s     Все видимые тайлы готовы, UI анимации запускаются
-Scroll   Новые тайлы грузятся по мере продвижения
+T=1s     Hero секция полностью готова, анимации запущены
+Scroll   Новые тайлы грузятся по мере продвижения (IntersectionObserver)
 ```
 
----
+## Зависимости
+
+- **Framer Motion** — уже установлен (`sR.div`, `useScroll`, `useTransform`)
+- **next/image** — для оптимизации тайлов
+- **tailwindcss** — уже используется
+- Нет новых зависимостей
 
 ## Шаги реализации
 
-1. **Выбрать карту** — любая .map из DDNet/KoG, которая визуально красивая и достаточно длинная горизонтально
-2. **Отрендерить карту** — через DDNet map renderer или скриншотом из клиента (максимальный зум)
-3. **Нарезать тайлы** — скрипт для нарезки PNG → WebP тайлы
-4. **Создать MapScroller компонент** — Framer Motion useScroll + CSS transforms
-5. **Разместить UI-секции** — Hero, Features, Download и т.д. в координатах карты
-6. **Мобильная вёрстка** — fallback layout без карты или с упрощённой версией
-7. **Loading state** — blur placeholder + progressive tile loading
-8. **Оптимизация** — viewport culling, preload соседних тайлов, WebP
-
-## Нужно от тебя
-
-1. Какую карту хочешь использовать? (название .map файла)
-2. Какой контент на лендинге? (секции: hero, features, download, stats?)
-3. Лендинг для DDNet Bingo проекта или для чего-то другого?
-4. Хочешь ли "живой режим" (WebGL) или достаточно статичных тайлов?
+1. Рендер карты Quantum в высоком разрешении
+2. Нарезка тайлов + blur placeholder
+3. MapScroller компонент (scroll → camera → transforms)
+4. MapTileLayer (lazy loading + viewport culling)
+5. Секции лендинга (Hero, Features, GameModes, Download, About, Footer)
+6. Navbar с навигацией по секциям
+7. Мобильная версия (MobileLayout)
+8. Замена текущего `[locale]/page.tsx`
+9. Адаптация About/Rules/Terms/Privacy страниц
+10. Тестирование на desktop + mobile

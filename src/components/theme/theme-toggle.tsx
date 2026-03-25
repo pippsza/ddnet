@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
-import { getNextTheme, getThemeById } from '@/lib/themes'
+import { getThemeById, getToggleTarget } from '@/lib/themes'
 
 type AnimationVariant = 'circle' | 'circle-blur' | 'gif' | 'polygon'
 type StartPosition = 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
@@ -36,7 +36,8 @@ export const ThemeToggleButton = ({
   const isDark = currentThemeDef ? currentThemeDef.mode === 'dark' : resolvedTheme === 'dark'
 
   const handleClick = useCallback(() => {
-    const next = getNextTheme(theme || 'default-dark')
+    const nextId = getToggleTarget(theme || 'default-dark')
+    const next = getThemeById(nextId) || { id: nextId, name: nextId, mode: 'dark' as const }
 
     // Inject animation styles for this specific transition
     const styleId = `theme-transition-${Date.now()}`

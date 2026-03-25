@@ -186,3 +186,33 @@ export function getNextTheme(currentId: string): ThemeDefinition {
   const idx = themes.findIndex((t) => t.id === currentId)
   return themes[(idx + 1) % themes.length]
 }
+
+// ── Preferred theme helpers (localStorage) ──
+
+const PREFERRED_LIGHT_KEY = 'preferred-light-theme'
+const PREFERRED_DARK_KEY = 'preferred-dark-theme'
+
+const DEFAULT_LIGHT = 'default-light'
+const DEFAULT_DARK = 'default-dark'
+
+/** Save the user's preferred theme for its mode (light or dark) */
+export function savePreferredTheme(themeId: string) {
+  const theme = getThemeById(themeId)
+  if (!theme) return
+  const key = theme.mode === 'light' ? PREFERRED_LIGHT_KEY : PREFERRED_DARK_KEY
+  localStorage.setItem(key, themeId)
+}
+
+/** Get the stored preferred theme for a given mode */
+export function getPreferredTheme(mode: 'light' | 'dark'): string {
+  if (typeof window === 'undefined') return mode === 'light' ? DEFAULT_LIGHT : DEFAULT_DARK
+  const key = mode === 'light' ? PREFERRED_LIGHT_KEY : PREFERRED_DARK_KEY
+  return localStorage.getItem(key) || (mode === 'light' ? DEFAULT_LIGHT : DEFAULT_DARK)
+}
+
+/** Get the opposite-mode theme for toggling */
+export function getToggleTarget(currentId: string): string {
+  const current = getThemeById(currentId)
+  const targetMode = current?.mode === 'light' ? 'dark' : 'light'
+  return getPreferredTheme(targetMode)
+}

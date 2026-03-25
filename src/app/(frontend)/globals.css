@@ -787,3 +787,25 @@ svg {
   right: -1em;
   opacity: 0;
 }
+
+/* ─── Landing page animations ─── */
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glow-emerald {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  }
+}

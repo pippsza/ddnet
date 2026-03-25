@@ -28,16 +28,22 @@ interface DualWinRateChartProps {
   bingoLosses: number
   raceWins: number
   raceLosses: number
+  kogBingoWins?: number
+  kogBingoLosses?: number
+  kogRaceWins?: number
+  kogRaceLosses?: number
 }
 
 function MiniDonut({
   wins,
   losses,
   label,
+  accentColor,
 }: {
   wins: number
   losses: number
   label: string
+  accentColor: string
 }) {
   const total = wins + losses
   const winRate = total > 0 ? Math.round((wins / total) * 100) : 0
@@ -45,14 +51,14 @@ function MiniDonut({
   const data =
     total > 0
       ? [
-          { name: 'Wins', value: wins, fill: '#22c55e' },
+          { name: 'Wins', value: wins, fill: accentColor },
           { name: 'Losses', value: losses, fill: '#ef4444' },
         ]
       : [{ name: 'No games', value: 1, fill: 'hsl(var(--muted))' }]
 
   return (
     <div className="flex flex-col items-center gap-2 flex-1">
-      <div className="h-28 w-28 relative">
+      <div className="h-24 w-24 relative">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -61,8 +67,8 @@ function MiniDonut({
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={32}
-              outerRadius={48}
+              innerRadius={28}
+              outerRadius={42}
               strokeWidth={0}
             >
               {data.map((entry, i) => (
@@ -73,11 +79,14 @@ function MiniDonut({
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold">{total > 0 ? `${winRate}%` : '—'}</span>
+          <span className="text-base font-bold">{total > 0 ? `${winRate}%` : '—'}</span>
         </div>
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium">{label}</p>
+        <p className="text-xs font-medium flex items-center justify-center gap-1">
+          <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }} />
+          {label}
+        </p>
         <p className="text-xs text-muted-foreground">
           {total > 0 ? `${wins}W / ${losses}L` : 'No games'}
         </p>
@@ -91,6 +100,10 @@ export function DualWinRateChart({
   bingoLosses,
   raceWins,
   raceLosses,
+  kogBingoWins = 0,
+  kogBingoLosses = 0,
+  kogRaceWins = 0,
+  kogRaceLosses = 0,
 }: DualWinRateChartProps) {
   return (
     <Card>
@@ -98,9 +111,11 @@ export function DualWinRateChart({
         <CardTitle className="text-base">Win Rate</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-start justify-center gap-4">
-          <MiniDonut wins={bingoWins} losses={bingoLosses} label="Bingo" />
-          <MiniDonut wins={raceWins} losses={raceLosses} label="Race" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <MiniDonut wins={bingoWins} losses={bingoLosses} label="DDNet Bingo" accentColor="#3b82f6" />
+          <MiniDonut wins={raceWins} losses={raceLosses} label="DDNet Race" accentColor="#10b981" />
+          <MiniDonut wins={kogBingoWins} losses={kogBingoLosses} label="KoG Bingo" accentColor="#a855f7" />
+          <MiniDonut wins={kogRaceWins} losses={kogRaceLosses} label="KoG Race" accentColor="#f97316" />
         </div>
       </CardContent>
     </Card>

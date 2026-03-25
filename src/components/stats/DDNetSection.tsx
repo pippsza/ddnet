@@ -84,19 +84,23 @@ export function DDNetSection({
             value={totalPoints.toLocaleString()}
             subtitle={rank ? `Rank #${rank}` : undefined}
             trend={weeklyTrend}
+            accentColor="#3b82f6"
           />
           <StatCard
             title="Total Playtime"
             value={totalPlaytime ? formatPlaytime(totalPlaytime) : '—'}
             subtitle={currentMonthHours ? `${currentMonthHours} this month` : undefined}
+            accentColor="#3b82f6"
           />
           <StatCard
             title="Playing Since"
             value={playingSince ? formatDateShort(playingSince) : '—'}
+            accentColor="#3b82f6"
           />
           <StatCard
             title={fourthStat?.title || 'Partners'}
             value={fourthStat?.value ?? (ddstats.favourite_teammates?.length || 0)}
+            accentColor="#3b82f6"
           />
         </div>
 
@@ -153,14 +157,15 @@ export function DDNetSection({
       <>
         {/* Fallback stats from ddnet.org */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} />
-          <StatCard title="Playtime" value={ddnet.hoursPlayed ? `${ddnet.hoursPlayed}h (last year)` : '—'} />
+          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} accentColor="#3b82f6" />
+          <StatCard title="Playtime" value={ddnet.hoursPlayed ? `${ddnet.hoursPlayed}h (last year)` : '—'} accentColor="#3b82f6" />
           <StatCard
             title="First Finish"
             value={ddnet.firstFinish ? new Date(ddnet.firstFinish.timestamp * 1000).toLocaleDateString() : '—'}
             subtitle={ddnet.firstFinish?.map}
+            accentColor="#3b82f6"
           />
-          <StatCard title="Partners" value={partners.length || '—'} />
+          <StatCard title="Partners" value={partners.length || '—'} accentColor="#3b82f6" />
         </div>
 
         {/* Category breakdown */}
@@ -241,10 +246,10 @@ export function DDNetSection({
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} />
-          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} />
-          <StatCard title="Playtime" value="—" />
-          <StatCard title="Partners" value="—" />
+          <StatCard title="DDNet Points" value={totalPoints.toLocaleString()} subtitle={rank ? `Rank #${rank}` : undefined} accentColor="#3b82f6" />
+          <StatCard title="Rank" value={rank ? `#${rank}` : '—'} accentColor="#3b82f6" />
+          <StatCard title="Playtime" value="—" accentColor="#3b82f6" />
+          <StatCard title="Partners" value="—" accentColor="#3b82f6" />
         </div>
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground text-sm">

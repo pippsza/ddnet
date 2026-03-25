@@ -64,18 +64,22 @@ export function KoGSection({ kogLoading, kog, finishedMapsLimit = 20 }: KoGSecti
           title="KoG Points"
           value={kog.totalPoints.toLocaleString()}
           subtitle={`Fixed: ${kog.fixedPoints} / Season: ${kog.seasonPoints}`}
+          accentColor="#a855f7"
         />
         <StatCard
           title="Rank"
           value={kog.rank ? `#${kog.rank.toLocaleString()}` : '—'}
+          accentColor="#a855f7"
         />
         <StatCard
           title="Time on Finishes"
           value={kog.wastedTimeSeconds ? formatPlaytime(kog.wastedTimeSeconds) : '—'}
+          accentColor="#a855f7"
         />
         <StatCard
           title="Maps Completed"
           value={`${totalFinished} / ${totalMaps}`}
+          accentColor="#a855f7"
         />
       </div>
 

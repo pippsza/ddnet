@@ -1,0 +1,9 @@
+{
+  "mapName": "Lavender Forest",
+  "fullWidth": 59392,
+  "fullHeight": 10240,
+  "tileSize": 512,
+  "tilesX": 116,
+  "tilesY": 20,
+  "renderScale": 1
+}

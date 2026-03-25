@@ -11,6 +11,8 @@ interface MapCanvasProps {
   scrollMultiplier?: number
   children?: ReactNode
   onLoaded?: () => void
+  /** Blur placeholder image shown while WebGL loads */
+  placeholderUrl?: string
   /** Pass stops to enable the debug panel (dev mode only) */
   debugStops?: MapStop[]
 }
@@ -65,6 +67,7 @@ export function MapCanvas({
   scrollMultiplier = 6,
   children,
   onLoaded,
+  placeholderUrl,
   debugStops,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -367,20 +370,25 @@ export function MapCanvas({
       <div style={{ height: `${scrollMultiplier * 100}vh` }} />
 
       <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        {!mapLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0a0f14] z-20">
-            <div className="text-center">
-              <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-white/60 text-sm">{loadingMsg}</p>
-            </div>
-          </div>
-        )}
+        {/* Placeholder background — visible immediately, fades out when WebGL ready */}
+        <div
+          className="absolute inset-0 z-1 transition-opacity duration-1000"
+          style={{ opacity: mapLoaded ? 0 : 1, pointerEvents: 'none' }}
+        >
+          <div className="absolute inset-0 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]" />
+          {placeholderUrl && (
+            <div
+              className="absolute inset-0 bg-cover bg-center blur-lg scale-110 opacity-40"
+              style={{ backgroundImage: `url(${placeholderUrl})` }}
+            />
+          )}
+        </div>
 
         <canvas
           ref={canvasRef}
           id="cnvs"
-          className="block w-screen h-screen"
-          style={{ touchAction: 'none', cursor: freePanRef.current ? 'grab' : undefined }}
+          className="block w-screen h-screen transition-opacity duration-1000"
+          style={{ touchAction: 'none', cursor: freePanRef.current ? 'grab' : undefined, opacity: mapLoaded ? 1 : 0 }}
         />
 
         <div
@@ -391,6 +399,15 @@ export function MapCanvas({
             height: 20000,
             transformOrigin: '0 0',
             zIndex: 10,
+            // Initial transform so sections are visible before map loads / first scroll
+            transform: (() => {
+              const sx = path[0]?.x || 0
+              const sy = path[0]?.y || 0
+              const vw = typeof window !== 'undefined' ? window.innerWidth : 1920
+              const vh = typeof window !== 'undefined' ? window.innerHeight : 1080
+              const scale = vw / VIEW_WIDTH
+              return `translate3d(${-sx * scale + vw / 2}px, ${-sy * scale + vh / 2}px, 0) scale(${scale})`
+            })(),
           }}
         >
           {children}

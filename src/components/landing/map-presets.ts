@@ -1,11 +1,25 @@
 import type { CameraPoint, MapStop } from './types'
 
+export interface TileConfig {
+  /** Directory under /map-tiles/ */
+  tileDir: string
+  /** Full rendered image width in px */
+  mapWidth: number
+  /** Full rendered image height in px */
+  mapHeight: number
+  tileSize: number
+  tilesX: number
+  tilesY: number
+}
+
 export interface MapPreset {
   id: string
   label: string
   /** Map file name for WebGL renderer (without .map extension) */
   mapFile: string
   scrollMultiplier: number
+  /** Tile-based renderer config (for performance mode) */
+  tiles?: TileConfig
   /**
    * Unified stop list — each stop defines camera position, optional section, and optional nav label.
    * Stops without `section` are scenic waypoints for smoother camera interpolation.
@@ -47,6 +61,17 @@ const lavenderForest: MapPreset = {
   label: 'Lavender Forest',
   mapFile: 'Lavender Forest',
   scrollMultiplier: 12,
+  // Tile config populated after running: node scripts/render-map.mjs
+  // Values from manifest.json — update if re-rendered
+  // Rendered via: node scripts/render-map.mjs — then tiled from chunks
+  tiles: {
+    tileDir: 'lavender-forest',
+    mapWidth: 59392,  // 29 chunks × 2048
+    mapHeight: 10240, // 5 chunks × 2048
+    tileSize: 512,
+    tilesX: 116,      // 29 × 4
+    tilesY: 20,       // 5 × 4
+  },
   stops: [
     // ── Sections ──
     {

@@ -19,6 +19,8 @@ interface MapSectionProps {
   animateFrom?: 'left' | 'right' | 'bottom' | 'top'
   /** Animation delay */
   delay?: number
+  /** Show immediately on mount (skip inView check) — use for hero/first section */
+  immediate?: boolean
 }
 
 export function MapSection({
@@ -29,6 +31,7 @@ export function MapSection({
   className = '',
   animateFrom = 'bottom',
   delay = 0,
+  immediate = false,
 }: MapSectionProps) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: false, amount: 0.3 })
@@ -41,6 +44,7 @@ export function MapSection({
   }
 
   const offset = directionOffset[animateFrom]
+  const show = immediate || isInView
 
   return (
     <motion.div
@@ -51,8 +55,8 @@ export function MapSection({
         top: y - 300,
         width,
       }}
-      initial={{ opacity: 0, x: offset.x, y: offset.y }}
-      animate={isInView ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: offset.x, y: offset.y }}
+      initial={immediate ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: offset.x, y: offset.y }}
+      animate={show ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: offset.x, y: offset.y }}
       transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}

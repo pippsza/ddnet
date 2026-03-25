@@ -20,12 +20,10 @@ export function LandingPage({ isLoggedIn, locale }: LandingPageProps) {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // Avoid hydration mismatch: show nothing until we know
+  // Avoid hydration mismatch: show gradient matching map palette while detecting
   if (isMobile === null) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <div className="fixed inset-0 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]" />
     )
   }
 

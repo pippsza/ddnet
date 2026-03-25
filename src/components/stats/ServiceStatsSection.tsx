@@ -17,8 +17,8 @@ interface ServiceStatsSectionProps {
 export function ServiceStatsSection({ gameStats }: ServiceStatsSectionProps) {
   return (
     <>
-      {/* Platform Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Overall Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           title="Total Games"
           value={gameStats.stats.totalGames}
@@ -29,33 +29,31 @@ export function ServiceStatsSection({ gameStats }: ServiceStatsSectionProps) {
           value={`${gameStats.stats.winRate}%`}
           subtitle={`${gameStats.stats.totalWins}W / ${gameStats.stats.totalLosses}L`}
         />
+      </div>
+
+      {/* All 4 game modes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Bingo"
+          title="DDNet Bingo"
           value={`${gameStats.stats.bingoWins}W / ${gameStats.stats.bingoLosses}L`}
           subtitle={`${gameStats.stats.bingoTotal} games`}
         />
         <StatCard
-          title="Race"
+          title="DDNet Race"
           value={`${gameStats.stats.raceWins}W / ${gameStats.stats.raceLosses}L`}
           subtitle={`${gameStats.stats.totalRoundsWon} rounds won`}
         />
+        <StatCard
+          title="KoG Bingo"
+          value={`${gameStats.stats.kogBingoWins ?? 0}W / ${gameStats.stats.kogBingoLosses ?? 0}L`}
+          subtitle={`${gameStats.stats.kogBingoTotal ?? 0} games`}
+        />
+        <StatCard
+          title="KoG Race"
+          value={`${gameStats.stats.kogRaceWins ?? 0}W / ${gameStats.stats.kogRaceLosses ?? 0}L`}
+          subtitle={`${gameStats.stats.kogRaceTotal ?? 0} games`}
+        />
       </div>
-
-      {/* KoG Stats */}
-      {((gameStats.stats.kogBingoTotal ?? 0) > 0 || (gameStats.stats.kogRaceTotal ?? 0) > 0) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="KoG Bingo"
-            value={`${gameStats.stats.kogBingoWins ?? 0}W / ${gameStats.stats.kogBingoLosses ?? 0}L`}
-            subtitle={`${gameStats.stats.kogBingoTotal ?? 0} games`}
-          />
-          <StatCard
-            title="KoG Race"
-            value={`${gameStats.stats.kogRaceWins ?? 0}W / ${gameStats.stats.kogRaceLosses ?? 0}L`}
-            subtitle={`${gameStats.stats.kogRaceTotal ?? 0} games`}
-          />
-        </div>
-      )}
 
       {/* Win Rate Charts + Games Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

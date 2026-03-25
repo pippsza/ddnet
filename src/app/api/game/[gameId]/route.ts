@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { User, Bingo, Race } from '@/payload-types'
+import type { User, Bingo, Race, KogBingo, KogRace } from '@/payload-types'
 import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
+import { KOG_CATEGORIES } from '@/lib/kog-constants'
 import { checkWinner } from '@/services/bingo/winChecker'
 import { resolveGameById } from '@/services/game-actions/resolve-game'
 import { resolveOptionalAuth } from '@/services/game-actions/auth'
@@ -47,6 +48,7 @@ function formatPendingInvites(invites: any[]) {
 async function resolveCategoryIcon(payload: any, category: string | undefined | null) {
   if (!category) return undefined
   const stdCat = DDNET_CATEGORIES.find((c) => c.value === category)
+    ?? KOG_CATEGORIES.find((c) => c.value === category)
   if (stdCat) return stdCat.icon
   if (category.startsWith('custom_')) {
     const customGlobal = await payload.findGlobal({ slug: 'custom-categories' })
@@ -107,7 +109,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
         pendingInvites: formatPendingInvites(team.pendingInvites ?? []),
       }
 
-      if (collection === 'bingo') {
+      if (collection === 'bingo' || collection === 'kog-bingo') {
         const bingoTeam = team as Bingo['teams'][number]
         return {
           ...base,
@@ -183,8 +185,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
     }
 
     // Type-specific fields
-    if (collection === 'bingo') {
-      const bingoGame = game as Bingo
+    if (collection === 'bingo' || collection === 'kog-bingo') {
+      const bingoGame = game as Bingo | KogBingo
 
       // Compute winning cells for completed games
       let winningCells: number[] | undefined
@@ -203,18 +205,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
 
       return NextResponse.json({
         ...shared,
+        collection,
         gridSize: bingoGame.gridSize,
         winCondition: bingoGame.winCondition,
         winningCells,
       })
     } else {
-      const raceGame = game as Race
+      const raceGame = game as Race | KogRace
 
       return NextResponse.json({
         ...shared,
-        categoryMode: raceGame.categoryMode,
+        collection,
+        categoryMode: (raceGame as Race).categoryMode ?? 'selected',
         pathLength: raceGame.pathLength,
-        server: raceGame.server,
+        server: (raceGame as Race).server,
         currentStep: raceGame.currentStep,
         currentMap: raceGame.currentMap,
         surrenderedByTeam: (raceGame as any).surrenderedByTeam ?? null,

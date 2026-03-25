@@ -22,7 +22,7 @@ export async function handleRaceSettings(
   body: RaceSettingsBody,
   options: SettingsOptions,
 ): Promise<ActionResult> {
-  const { user, payload, gameId, game } = ctx
+  const { user, payload, gameId, collection, game } = ctx
   const raceGame = game as Race
 
   const creatorId = resolveUserId(raceGame.createdBy)
@@ -149,7 +149,7 @@ export async function handleRaceSettings(
     updateData.teams = teamsData
   }
 
-  await payload.update({ collection: 'races', id: gameId, data: updateData })
+  await payload.update({ collection, id: gameId, data: updateData })
 
   return { success: true, data: { success: true } }
 }

@@ -1,9 +1,17 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import { motion, LayoutGroup } from 'framer-motion'
 import { Plus, Minus, Route } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+function getLocalMapThumbnailUrl(mapName: string): string {
+  return `/maps/${mapName.replace(/ /g, '_')}.png`
+}
+
+function getRemoteMapThumbnailUrl(mapName: string): string {
+  return `https://ddnet.org/ranks/maps/${mapName.replace(/ /g, '_')}.png`
+}
 
 interface RacePathPreviewProps {
   pathLength: number
@@ -17,10 +25,10 @@ interface RacePathPreviewProps {
 }
 
 const PLACEHOLDER_MAPS = [
-  'Kobra 4', 'Multeasymap', 'Sunny Side', 'NUT', 'Absurd 3',
-  'Epix 2', 'Baby Aim', 'Stardust', 'Mirage', 'Blizzard',
-  'Crimson', 'Aurora', 'Nebula', 'Vortex', 'Thunder',
-  'Crystal', 'Ember', 'Zenith', 'Drift', 'Pulse',
+  'Kobra 4', 'Sunny Side Up', 'Multeasymap', 'Back in Time 2', 'Absurd 3',
+  'Stronghold', 'Crimson', 'Frozen', 'Grandma', 'Jungle Run',
+  'Just2Easy', 'Binary', 'LearnToPlay', 'Linear', 'Moonlight',
+  'Naufrage 3', 'Orange 1', 'Springlobe 3', 'StepByStep', 'Tsunami',
 ]
 
 const NODE_COLOR = '#22c55e'
@@ -37,6 +45,15 @@ export function RacePathPreview({
   disabled,
 }: RacePathPreviewProps) {
   const interactive = !!onPathLengthChange && !disabled
+
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((index: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(index)
+      return next
+    })
+  }, [])
 
   const mapLookup = useMemo(() => {
     const m = new Map<number, string>()
@@ -98,6 +115,12 @@ export function RacePathPreview({
             className="w-full max-w-2xl mx-auto"
             style={{ minWidth: 300 }}
           >
+            <defs>
+              <clipPath id="race-preview-node-clip">
+                <circle cx="0" cy="0" r={nodeR} />
+              </clipPath>
+            </defs>
+
             {/* Connection lines */}
             {positions.map((pos, i) => {
               if (i === 0) return null
@@ -169,6 +192,10 @@ export function RacePathPreview({
               const isFirst = pos.index === 0
               const isLast = pos.index === pathLength - 1
               const isRemovable = interactive && canRemove && isLast
+              const showImage = label !== '?' && !failedImages.has(pos.index)
+              const imageUrl = mapName
+                ? getRemoteMapThumbnailUrl(mapName)
+                : getLocalMapThumbnailUrl(label)
 
               return (
                 <g
@@ -177,6 +204,7 @@ export function RacePathPreview({
                   className={isRemovable ? 'cursor-pointer group' : undefined}
                   role={isRemovable ? 'button' : undefined}
                 >
+                  {/* Base circle */}
                   <motion.circle
                     layoutId={`node-${pos.index}`}
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -189,6 +217,40 @@ export function RacePathPreview({
                     cy={cy}
                     r={nodeR}
                     fill={isFirst || isLast ? NODE_COLOR : NODE_PENDING}
+                    stroke={isFirst || isLast ? NODE_COLOR : '#a7f3d0'}
+                    strokeWidth={isFirst || isLast ? 3 : 2}
+                    opacity={isFirst || isLast ? 1 : 0.7}
+                  />
+
+                  {/* Map thumbnail inside circle */}
+                  {showImage && (
+                    <g transform={`translate(${cx}, ${cy})`} clipPath="url(#race-preview-node-clip)">
+                      <image
+                        href={imageUrl}
+                        x={-nodeR}
+                        y={-nodeR}
+                        width={nodeR * 2}
+                        height={nodeR * 2}
+                        preserveAspectRatio="xMidYMid slice"
+                        onError={() => handleImageError(pos.index)}
+                      />
+                      <rect
+                        x={-nodeR}
+                        y={-nodeR}
+                        width={nodeR * 2}
+                        height={nodeR * 2}
+                        fill={isFirst || isLast ? NODE_COLOR : 'black'}
+                        opacity={isFirst || isLast ? 0.45 : 0.5}
+                      />
+                    </g>
+                  )}
+
+                  {/* Stroke ring on top */}
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={nodeR}
+                    fill="none"
                     stroke={isFirst || isLast ? NODE_COLOR : '#a7f3d0'}
                     strokeWidth={isFirst || isLast ? 3 : 2}
                     opacity={isFirst || isLast ? 1 : 0.7}
@@ -230,6 +292,7 @@ export function RacePathPreview({
                     fill="white"
                     fontSize={11}
                     fontWeight="bold"
+                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
                     className={isRemovable ? 'group-hover:opacity-0 transition-opacity duration-200' : undefined}
                   >
                     {pos.index + 1}

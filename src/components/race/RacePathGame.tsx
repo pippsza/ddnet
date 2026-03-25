@@ -1,8 +1,12 @@
 'use client'
 
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
+
+function getMapThumbnailUrl(mapName: string): string {
+  return `https://ddnet.org/ranks/maps/${mapName.replace(/ /g, '_')}.png`
+}
 
 const TEAM_HEX: Record<string, string> = {
   red: '#ef4444',
@@ -71,6 +75,15 @@ export function RacePathGame({
     prevRef.current = { t1: new Set(team1Steps), t2: new Set(team2Steps) }
   }, [team1Steps, team2Steps])
 
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((index: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(index)
+      return next
+    })
+  }, [])
+
   const isCompleted = gameStatus === 'completed' || gameStatus === 'cancelled'
   const team1Hex = TEAM_HEX[teams[0]?.color] || '#ef4444'
   const team2Hex = TEAM_HEX[teams[1]?.color] || '#3b82f6'
@@ -109,6 +122,12 @@ export function RacePathGame({
         className="w-full max-w-3xl mx-auto"
         style={{ minWidth: 360 }}
       >
+        <defs>
+          <clipPath id="race-game-node-clip">
+            <circle cx="0" cy="0" r={nodeR} />
+          </clipPath>
+        </defs>
+
         {/* Connection lines */}
         {positions.map((pos, i) => {
           if (i === 0) return null
@@ -149,6 +168,7 @@ export function RacePathGame({
           const isCurrent = pos.index === currentStep && !isCompleted
           const isNew = newlyCompleted.has(pos.index)
           const isPending = !anyTeam && !isCurrent
+          const showImage = mapName !== '?' && !mapName.startsWith('Step ') && !failedImages.has(pos.index)
 
           const fillColor = isCompleted && anyTeam
             ? 'hsl(var(--primary))'
@@ -180,7 +200,7 @@ export function RacePathGame({
                 </circle>
               )}
 
-              {/* Scale animation for new completions */}
+              {/* Base circle */}
               {isNew ? (
                 <motion.circle
                   cx={cx}
@@ -204,6 +224,40 @@ export function RacePathGame({
                 />
               )}
 
+              {/* Map thumbnail inside circle */}
+              {showImage && (
+                <g transform={`translate(${cx}, ${cy})`} clipPath="url(#race-game-node-clip)">
+                  <image
+                    href={getMapThumbnailUrl(mapName)}
+                    x={-nodeR}
+                    y={-nodeR}
+                    width={nodeR * 2}
+                    height={nodeR * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    onError={() => handleImageError(pos.index)}
+                  />
+                  <rect
+                    x={-nodeR}
+                    y={-nodeR}
+                    width={nodeR * 2}
+                    height={nodeR * 2}
+                    fill={anyTeam ? fillColor : isCurrent ? '#22c55e' : 'black'}
+                    opacity={anyTeam ? 0.5 : isCurrent ? 0.45 : 0.5}
+                  />
+                </g>
+              )}
+
+              {/* Stroke ring on top */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={nodeR}
+                fill="none"
+                stroke={strokeColor}
+                strokeWidth={isCurrent ? 3 : 2}
+                opacity={isPending ? 0.5 : 1}
+              />
+
               {/* Node number or trophy */}
               {isCompleted && anyTeam && winnerTeamIndex != null ? (
                 <foreignObject x={cx - 8} y={cy - 8} width={16} height={16}>
@@ -218,6 +272,7 @@ export function RacePathGame({
                   fill="white"
                   fontSize={13}
                   fontWeight="bold"
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
                 >
                   {pos.index + 1}
                 </text>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateClientToken } from '@/lib/client-auth'
-import { checkBingoProgress, checkRaceProgress } from '@/jobs/gameProgressJob'
+import { checkBingoProgress, checkRaceProgress, checkKoGBingoProgress, checkKoGRaceProgress } from '@/jobs/gameProgressJob'
 
 /**
  * POST /api/client/finish-hint — Client sends a hint that a player finished a map.
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     const gameId = typeof ref.value === 'string' ? ref.value : ref.value.id
-    const collection = ref.relationTo as 'bingo' | 'races'
+    const collection = ref.relationTo as 'bingo' | 'races' | 'kog-bingo' | 'kog-races'
 
     console.log(
       `[FinishHint] ${playerName} finished ${mapName} on ${serverAddress || 'unknown'} — triggering immediate check for ${collection}/${gameId}`,
@@ -61,10 +61,19 @@ export async function POST(req: NextRequest) {
 
     // Trigger immediate verification using the existing game progress logic
     try {
-      if (collection === 'bingo') {
-        await checkBingoProgress(gameId)
-      } else {
-        await checkRaceProgress(gameId)
+      switch (collection) {
+        case 'bingo':
+          await checkBingoProgress(gameId)
+          break
+        case 'races':
+          await checkRaceProgress(gameId)
+          break
+        case 'kog-bingo':
+          await checkKoGBingoProgress(gameId)
+          break
+        case 'kog-races':
+          await checkKoGRaceProgress(gameId)
+          break
       }
     } catch (checkError) {
       console.error(`[FinishHint] Error during immediate check:`, checkError)

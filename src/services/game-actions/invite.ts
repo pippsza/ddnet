@@ -80,9 +80,21 @@ export async function handleInvite(
   }
 
   // Derive game type info for notifications
-  const gameType = collection === 'bingo' ? 'bingo' : 'race'
-  const pageRoute = collection === 'bingo' ? 'bingo' : 'race'
-  const notifTitle = collection === 'bingo' ? 'Game Invite' : 'Race Invite'
+  const COLLECTION_ROUTES: Record<string, string> = {
+    bingo: 'bingo',
+    races: 'race',
+    'kog-bingo': 'kog-bingo',
+    'kog-races': 'kog-race',
+  }
+  const COLLECTION_TITLES: Record<string, string> = {
+    bingo: 'Game Invite',
+    races: 'Race Invite',
+    'kog-bingo': 'KoG Bingo Invite',
+    'kog-races': 'KoG Race Invite',
+  }
+  const gameType = collection
+  const pageRoute = COLLECTION_ROUTES[collection] || 'bingo'
+  const notifTitle = COLLECTION_TITLES[collection] || 'Game Invite'
 
   // Send invite notification
   await payload.create({

@@ -1,9 +1,13 @@
 'use client'
 
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+function getMapThumbnailUrl(mapName: string): string {
+  return `https://ddnet.org/ranks/maps/${mapName.replace(/ /g, '_')}.png`
+}
 
 const TEAM_HEX: Record<string, string> = {
   red: '#ef4444',
@@ -71,6 +75,15 @@ export function BingoGrid({
     prevCellsRef.current = { t1: new Set(team1Cells), t2: new Set(team2Cells) }
   }, [team1Cells, team2Cells])
 
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((position: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(position)
+      return next
+    })
+  }, [])
+
   const isCompleted = gameStatus === 'completed' || gameStatus === 'cancelled'
   const team1Hex = TEAM_HEX[teams[0]?.color] || '#ef4444'
   const team2Hex = TEAM_HEX[teams[1]?.color] || '#3b82f6'
@@ -110,6 +123,8 @@ export function BingoGrid({
           cellStyle.borderColor = team2Hex + '80'
         }
 
+        const showImage = mapName !== '?' && !failedImages.has(i)
+
         return (
           <motion.div
             key={i}
@@ -131,10 +146,40 @@ export function BingoGrid({
             )}
             style={cellStyle}
           >
+            {/* Map thumbnail background */}
+            {showImage && (
+              <>
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${getMapThumbnailUrl(mapName)})` }}
+                />
+                {/* Dark overlay for text readability */}
+                <div
+                  className={cn(
+                    'absolute inset-0',
+                    isWinCell
+                      ? 'bg-primary/70'
+                      : anyTeam && !isCompleted
+                        ? 'bg-black/50'
+                        : isCompleted && anyTeam
+                          ? 'bg-primary/50'
+                          : 'bg-black/60',
+                  )}
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getMapThumbnailUrl(mapName)}
+                  alt=""
+                  onError={() => handleImageError(i)}
+                  className="hidden"
+                />
+              </>
+            )}
+
             {/* Completed checkmark dot */}
             {anyTeam && !isCompleted && (
               <div
-                className="absolute top-0.5 right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center"
+                className="absolute top-0.5 right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center z-10"
                 style={{
                   backgroundColor: bothTeams ? team1Hex : t1 ? team1Hex : team2Hex,
                 }}
@@ -154,7 +199,7 @@ export function BingoGrid({
             {/* Second team dot for both-completed cells */}
             {bothTeams && !isCompleted && (
               <div
-                className="absolute top-0.5 left-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center"
+                className="absolute top-0.5 left-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center z-10"
                 style={{ backgroundColor: team2Hex }}
               >
                 <svg
@@ -170,12 +215,16 @@ export function BingoGrid({
             )}
 
             {isWinCell ? (
-              <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary-foreground" />
+              <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary-foreground relative z-10" />
             ) : (
               <span
                 className={cn(
-                  'text-[7px] sm:text-[9px] font-medium leading-tight line-clamp-2',
-                  anyTeam ? 'text-foreground' : 'text-muted-foreground',
+                  'text-[7px] sm:text-[9px] font-semibold leading-tight line-clamp-2 relative z-10',
+                  showImage
+                    ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+                    : anyTeam
+                      ? 'text-foreground'
+                      : 'text-muted-foreground',
                 )}
               >
                 {mapName}

@@ -268,7 +268,7 @@ function DashboardContent() {
           </StaggerContainer>
 
           {/* Shared service stats */}
-          <ScaleIn>
+          <ScaleIn className="space-y-6">
             <ServiceStatsSection gameStats={gameStats} />
           </ScaleIn>
         </TabsContent>

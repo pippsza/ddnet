@@ -6,6 +6,10 @@ import { Plus, Trash2, Grid3x3, Rows3, Hash, LayoutGrid } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getWinningPatterns, getPlusCrossCells, getXCells } from '@/services/bingo/winChecker'
 
+function getLocalMapThumbnailUrl(mapName: string): string {
+  return `/maps/${mapName.replace(/ /g, '_')}.png`
+}
+
 type GridSize = '3x3' | '5x5' | '7x7'
 type WinCondition = 'line' | 'cross' | 'full_house'
 
@@ -22,56 +26,11 @@ const GRID_SIZES: GridSize[] = ['3x3', '5x5', '7x7']
 const CELLS_FOR_SIZE: Record<GridSize, number> = { '3x3': 9, '5x5': 25, '7x7': 49 }
 
 const PLACEHOLDER_MAPS = [
-  'Kobra 4',
-  'Multeasymap',
-  'Sunny Side',
-  'NUT',
-  'Absurd 3',
-  'Epix 2',
-  'Baby Aim',
-  'Stardust',
-  'Mirage',
-  'Blizzard',
-  'Crimson',
-  'Aurora',
-  'Nebula',
-  'Vortex',
-  'Thunder',
-  'Crystal',
-  'Ember',
-  'Zenith',
-  'Drift',
-  'Pulse',
-  'Comet',
-  'Flare',
-  'Mystic',
-  'Orbit',
-  'Titan',
-  'Quake',
-  'Storm',
-  'Blaze',
-  'Frost',
-  'Lunar',
-  'Prism',
-  'Vapor',
-  'Echo',
-  'Surge',
-  'Nova',
-  'Onyx',
-  'Shade',
-  'Glitch',
-  'Apex',
-  'Rush',
-  'Bolt',
-  'Zinc',
-  'Warp',
-  'Flux',
-  'Dusk',
-  'Pixel',
-  'Rune',
-  'Abyss',
-  'Crest',
-  'Opal',
+  'Kobra 4', 'Sunny Side Up', 'Multeasymap', 'Back in Time 2', 'Absurd 3',
+  'Stronghold', 'Crimson', 'Frozen', 'Grandma', 'Jungle Run',
+  'Just2Easy', 'Binary', 'LearnToPlay', 'Linear', 'Moonlight',
+  'Naufrage 3', 'Orange 1', 'Springlobe 3', 'StepByStep', 'Tsunami',
+  'Tutorial', 'Wasteland', 'Autumn', 'Castle', 'Zenith',
 ]
 
 const WIN_CONDITION_OPTIONS: { value: WinCondition; label: string; icon: typeof Rows3 }[] = [
@@ -120,13 +79,19 @@ const GridCell = React.memo(function GridCell({
   isHighlighted,
   isOuterRing,
   onShrink,
+  imageFailed,
+  onImageError,
 }: {
   position: number
   mapName: string
   isHighlighted: boolean
   isOuterRing: boolean
   onShrink: (() => void) | null
+  imageFailed: boolean
+  onImageError: () => void
 }) {
+  const showImage = !imageFailed
+
   return (
     <motion.div
       layoutId={`cell-${position}`}
@@ -146,14 +111,40 @@ const GridCell = React.memo(function GridCell({
             : 'border-border bg-muted/30',
       )}
     >
+      {showImage && (
+        <>
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${getLocalMapThumbnailUrl(mapName)})` }}
+          />
+          <div
+            className={cn(
+              'absolute inset-0',
+              isHighlighted ? 'bg-sky-900/60' : isOuterRing ? 'bg-black/70' : 'bg-black/55',
+            )}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getLocalMapThumbnailUrl(mapName)}
+            alt=""
+            onError={onImageError}
+            className="hidden"
+          />
+        </>
+      )}
+
       <span
         className={cn(
-          'text-[9px] sm:text-[10px] font-medium leading-tight line-clamp-2 transition-colors duration-300',
-          isHighlighted
-            ? 'text-sky-300'
-            : isOuterRing
-              ? 'text-muted-foreground/40'
-              : 'text-muted-foreground/60',
+          'text-[7px] sm:text-[9px] font-semibold leading-tight line-clamp-2 transition-colors duration-300 relative z-10 text-center',
+          showImage
+            ? isHighlighted
+              ? 'text-sky-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+              : 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+            : isHighlighted
+              ? 'text-sky-300'
+              : isOuterRing
+                ? 'text-muted-foreground/40'
+                : 'text-muted-foreground/60',
         )}
       >
         {mapName}
@@ -163,7 +154,7 @@ const GridCell = React.memo(function GridCell({
         <button
           type="button"
           onClick={onShrink}
-          className="absolute inset-0 flex items-center justify-center hover:bg-destructive/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+          className="absolute inset-0 z-20 flex items-center justify-center hover:bg-destructive/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
         >
           <Trash2 className="h-3.5 w-3.5 text-destructive" />
         </button>
@@ -184,6 +175,15 @@ export function BingoGridPreview({
 }: BingoGridPreviewProps) {
   const size = parseInt(gridSize.split('x')[0])
   const totalCells = size * size
+
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((position: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(position)
+      return next
+    })
+  }, [])
 
   const currentSizeIndex = GRID_SIZES.indexOf(gridSize)
   const nextSize = GRID_SIZES[currentSizeIndex + 1] as GridSize | undefined
@@ -387,6 +387,8 @@ export function BingoGridPreview({
                 isHighlighted={highlightedCells.has(item.position)}
                 isOuterRing={item.isOuterRing}
                 onShrink={item.isOuterRing ? handleShrink : null}
+                imageFailed={failedImages.has(item.position)}
+                onImageError={() => handleImageError(item.position)}
               />
             )
           })}

@@ -2,6 +2,8 @@ import type { Bingo } from '@/payload-types'
 import type { GameContext, ActionResult, SettingsOptions } from '../types'
 import { resolveUserId } from '../helpers'
 import { generateBingoGrid, validateGridOptions } from '@/services/bingo/gridGenerator'
+import { generateKoGBingoGrid, validateKoGGridOptions } from '@/services/kog/gridGenerator'
+import { isKoGCategory } from '@/lib/kog-constants'
 
 interface BingoSettingsBody {
   title?: string
@@ -19,7 +21,7 @@ export async function handleBingoSettings(
   body: BingoSettingsBody,
   options: SettingsOptions,
 ): Promise<ActionResult> {
-  const { user, payload, gameId, game } = ctx
+  const { user, payload, gameId, collection, game } = ctx
   const bingoGame = game as Bingo
 
   const creatorId = resolveUserId(bingoGame.createdBy)
@@ -64,23 +66,18 @@ export async function handleBingoSettings(
     body.difficultyMax !== undefined
 
   if (gridChanged) {
-    const validation = validateGridOptions({
-      category: newCategory,
-      gridSize: newGridSize,
-      difficultyMin: newDiffMin,
-      difficultyMax: newDiffMax,
-    })
+    const useKoG = isKoGCategory(newCategory)
+    const validation = useKoG
+      ? validateKoGGridOptions({ category: newCategory, gridSize: newGridSize, difficultyMin: newDiffMin, difficultyMax: newDiffMax })
+      : validateGridOptions({ category: newCategory, gridSize: newGridSize, difficultyMin: newDiffMin, difficultyMax: newDiffMax })
 
     if (!validation.valid) {
       return { error: validation.error!, status: 400 }
     }
 
-    const maps = await generateBingoGrid({
-      category: newCategory,
-      gridSize: newGridSize,
-      difficultyMin: newDiffMin,
-      difficultyMax: newDiffMax,
-    })
+    const maps = useKoG
+      ? await generateKoGBingoGrid({ category: newCategory, gridSize: newGridSize, difficultyMin: newDiffMin, difficultyMax: newDiffMax })
+      : await generateBingoGrid({ category: newCategory, gridSize: newGridSize, difficultyMin: newDiffMin, difficultyMax: newDiffMax })
 
     updateData.maps = maps
     updateData.category = newCategory
@@ -143,7 +140,7 @@ export async function handleBingoSettings(
   }
 
   await payload.update({
-    collection: 'bingo',
+    collection,
     id: gameId,
     data: updateData,
   })

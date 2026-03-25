@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { User, Bingo, Race } from '@/payload-types'
+import type { User, Bingo, Race, KogBingo, KogRace } from '@/payload-types'
 import { DDNET_CATEGORIES } from '@/lib/ddnet-constants'
+import { KOG_CATEGORIES } from '@/lib/kog-constants'
 
 /**
  * GET /api/client/profile?nick=PlayerName
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
       const ref = user.activeGame as { relationTo: string; value: string }
       if (ref.relationTo && ref.value) {
         try {
-          const collection = ref.relationTo as 'bingo' | 'races'
+          const collection = ref.relationTo as 'bingo' | 'races' | 'kog-bingo' | 'kog-races'
           const game = await payload.findByID({
             collection,
             id: typeof ref.value === 'string' ? ref.value : (ref.value as any).id,
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
 
       const results = await Promise.allSettled(
         recentRefs.map(async (ref) => {
-          const collection = ref.relationTo as 'bingo' | 'races'
+          const collection = ref.relationTo as 'bingo' | 'races' | 'kog-bingo' | 'kog-races'
           const game = await payload.findByID({
             collection,
             id: typeof ref.value === 'string' ? ref.value : (ref.value as any).id,
@@ -145,12 +146,19 @@ function formatRaceStats(user: User) {
 }
 
 function formatGameForClient(
-  game: Bingo | Race,
-  collection: 'bingo' | 'races',
+  game: Bingo | Race | KogBingo | KogRace,
+  collection: 'bingo' | 'races' | 'kog-bingo' | 'kog-races',
   _user: User,
   nick: string,
 ): any {
-  const type = collection === 'bingo' ? 'bingo' : 'race'
+  const COLLECTION_TO_TYPE: Record<string, string> = {
+    bingo: 'bingo',
+    races: 'race',
+    'kog-bingo': 'kog-bingo',
+    'kog-races': 'kog-race',
+  }
+  const type = COLLECTION_TO_TYPE[collection] || 'bingo'
+  const isBingoLike = collection === 'bingo' || collection === 'kog-bingo'
 
   // Find which team the player is on
   let playerTeamIndex = -1
@@ -167,6 +175,7 @@ function formatGameForClient(
   }
 
   const categoryEntry = DDNET_CATEGORIES.find((c) => c.value === game.category)
+    ?? KOG_CATEGORIES.find((c) => c.value === game.category)
 
   // Determine creator
   const creatorObj = typeof game.createdBy === 'object' ? (game.createdBy as User) : null
@@ -195,8 +204,8 @@ function formatGameForClient(
     createdVia: game.createdVia ?? 'web',
   }
 
-  if (type === 'bingo') {
-    const bingo = game as Bingo
+  if (isBingoLike) {
+    const bingo = game as Bingo | KogBingo
     return {
       ...base,
       gridSize: bingo.gridSize,
@@ -231,15 +240,15 @@ function formatGameForClient(
     }
   }
 
-  // Race
-  const race = game as Race
+  // Race / KoG Race
+  const race = game as Race | KogRace
   return {
     ...base,
-    serverTarget: race.server?.ip ? `${race.server.ip}:${race.server.port || 8303}` : null,
-    categoryMode: race.categoryMode,
+    serverTarget: (race as Race).server?.ip ? `${(race as Race).server!.ip}:${(race as Race).server?.port || 8303}` : null,
+    categoryMode: (race as Race).categoryMode ?? 'selected',
     pathLength: race.pathLength,
     currentStep: race.currentStep ?? 0,
-    surrenderedByTeam: race.surrenderedByTeam ?? null,
+    surrenderedByTeam: (race as any).surrenderedByTeam ?? null,
     maps: (race.maps ?? []).map((m) => ({
       name: m.mapName,
       position: m.position,

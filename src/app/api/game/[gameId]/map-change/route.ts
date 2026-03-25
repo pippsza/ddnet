@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { resolveGameById } from '@/services/game-actions/resolve-game'
 
 export async function POST(
   req: NextRequest,
@@ -22,8 +23,14 @@ export async function POST(
 
     const payload = await getPayload({ config })
 
+    // Resolve which collection this game belongs to
+    const resolved = await resolveGameById(payload, gameId, 0)
+    if (!resolved) {
+      return NextResponse.json({ error: 'Game not found' }, { status: 404 })
+    }
+
     await payload.update({
-      collection: 'races',
+      collection: resolved.collection,
       id: gameId,
       data: { currentMap: mapName },
     })

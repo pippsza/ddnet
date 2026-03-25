@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Bingo, Race, User } from '@/payload-types'
+import type { Bingo, Race, KogBingo, KogRace, User } from '@/payload-types'
+
+const TYPE_TO_COLLECTION: Record<string, string> = {
+  bingo: 'bingo',
+  race: 'races',
+  'kog-bingo': 'kog-bingo',
+  'kog-race': 'kog-races',
+}
 
 /**
- * GET /api/client/games/browse?type=bingo|race&page=1&limit=20
+ * GET /api/client/games/browse?type=bingo|race|kog-bingo|kog-race&page=1&limit=20
  * No auth required — public games are readable by anyone.
  * Returns a flattened list for easy C++ JSON parsing.
  */
@@ -14,7 +21,7 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(req.nextUrl.searchParams.get('page') || '1'))
     const limit = Math.min(Math.max(1, parseInt(req.nextUrl.searchParams.get('limit') || '20')), 50)
 
-    const collection = type === 'race' ? 'races' : 'bingo'
+    const collection = (TYPE_TO_COLLECTION[type] || 'bingo') as 'bingo' | 'races' | 'kog-bingo' | 'kog-races'
 
     const payload = await getPayload({ config })
 
@@ -42,8 +49,15 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function formatGameForBrowse(doc: Bingo | Race, collection: 'bingo' | 'races') {
-  const type = collection === 'bingo' ? 'bingo' : 'race'
+function formatGameForBrowse(doc: Bingo | Race | KogBingo | KogRace, collection: string) {
+  const isBingoLike = collection === 'bingo' || collection === 'kog-bingo'
+  const COLLECTION_TO_TYPE: Record<string, string> = {
+    bingo: 'bingo',
+    races: 'race',
+    'kog-bingo': 'kog-bingo',
+    'kog-races': 'kog-race',
+  }
+  const type = COLLECTION_TO_TYPE[collection] || 'bingo'
 
   // Count players across all teams
   let playerCount = 0
@@ -71,14 +85,14 @@ function formatGameForBrowse(doc: Bingo | Race, collection: 'bingo' | 'races') {
     createdAt: doc.createdAt,
   }
 
-  if (type === 'bingo') {
-    const bingo = doc as Bingo
+  if (isBingoLike) {
+    const bingo = doc as Bingo | KogBingo
     base.gridSize = bingo.gridSize
     base.winCondition = bingo.winCondition
   } else {
-    const race = doc as Race
+    const race = doc as Race | KogRace
     base.pathLength = race.pathLength
-    base.categoryMode = race.categoryMode
+    base.categoryMode = (race as Race).categoryMode ?? 'selected'
   }
 
   return base

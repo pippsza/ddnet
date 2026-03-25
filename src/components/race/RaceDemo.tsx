@@ -4,6 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 
+function getLocalMapThumbnailUrl(mapName: string): string {
+  return `/maps/${mapName.replace(/ /g, '_')}.png`
+}
+
 const NODE_COUNT = 8
 const COLS = 4
 const NODE_DELAY = 800
@@ -17,8 +21,8 @@ const PAD_Y = 40
 const NODE_R = 20
 
 const MAP_NAMES = [
-  'Kobra 4', 'Binary', 'Sunny Side', 'FlipFlop',
-  'Narcis', 'Crystal', 'Stardust', 'Zenith',
+  'Kobra 4', 'Binary', 'Crimson', 'Just2Easy',
+  'Stronghold', 'Multeasymap', 'Back in Time 2', 'Zenith',
 ]
 
 type Phase = 'playing' | 'celebrating' | 'resetting'
@@ -72,6 +76,15 @@ export function RaceDemo({ className }: { className?: string }) {
   const [latestNode, setLatestNode] = useState(-1)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const confettiFiredRef = useRef(false)
+
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((index: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(index)
+      return next
+    })
+  }, [])
 
   const clearTimers = useCallback(() => {
     timersRef.current.forEach(clearTimeout)
@@ -150,8 +163,8 @@ export function RaceDemo({ className }: { className?: string }) {
         className="w-full max-w-2xl mx-auto"
         style={{ minWidth: 300 }}
       >
-        {/* Glow filter */}
         <defs>
+          {/* Glow filter */}
           <filter id="race-glow">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
@@ -159,6 +172,10 @@ export function RaceDemo({ className }: { className?: string }) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {/* Shared clip path for node circles */}
+          <clipPath id="race-demo-node-clip">
+            <circle cx="0" cy="0" r={NODE_R} />
+          </clipPath>
         </defs>
 
         {/* Connection lines */}
@@ -192,6 +209,8 @@ export function RaceDemo({ className }: { className?: string }) {
           const isCurrent = pos.index === completedCount && phase === 'playing'
           const isNew = pos.index === latestNode && isDone
           const isFinish = pos.index === NODE_COUNT - 1 && allDone
+          const mapName = MAP_NAMES[pos.index] || `Step ${pos.index + 1}`
+          const showImage = !failedImages.has(pos.index)
 
           const fillColor = isDone
             ? 'var(--primary)'
@@ -209,14 +228,14 @@ export function RaceDemo({ className }: { className?: string }) {
                 </circle>
               )}
 
-              {/* Node circle */}
+              {/* Node circle (base) */}
               {isNew ? (
                 <motion.circle
                   cx={cx}
                   cy={cy}
                   r={NODE_R}
                   fill={fillColor}
-                  stroke="var(--primary)"
+                  stroke={isDone ? 'var(--primary)' : 'var(--border)'}
                   strokeWidth={2}
                   animate={{ r: [NODE_R * 0.8, NODE_R * 1.15, NODE_R] }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -233,6 +252,41 @@ export function RaceDemo({ className }: { className?: string }) {
                 />
               )}
 
+              {/* Map thumbnail inside circle */}
+              {showImage && (
+                <g transform={`translate(${cx}, ${cy})`} clipPath="url(#race-demo-node-clip)">
+                  <image
+                    href={getLocalMapThumbnailUrl(mapName)}
+                    x={-NODE_R}
+                    y={-NODE_R}
+                    width={NODE_R * 2}
+                    height={NODE_R * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    onError={() => handleImageError(pos.index)}
+                  />
+                  {/* Dark overlay */}
+                  <rect
+                    x={-NODE_R}
+                    y={-NODE_R}
+                    width={NODE_R * 2}
+                    height={NODE_R * 2}
+                    fill={isDone ? 'var(--primary)' : isCurrent ? 'var(--chart-2)' : 'black'}
+                    opacity={isDone ? 0.55 : isCurrent ? 0.5 : 0.55}
+                  />
+                </g>
+              )}
+
+              {/* Node stroke ring (on top of image) */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={NODE_R}
+                fill="none"
+                stroke={isDone ? 'var(--primary)' : isCurrent ? 'var(--chart-2)' : 'var(--border)'}
+                strokeWidth={2}
+                opacity={isDone || isCurrent ? 1 : 0.5}
+              />
+
               {/* Node content */}
               {isFinish ? (
                 <foreignObject x={cx - 8} y={cy - 8} width={16} height={16}>
@@ -244,9 +298,10 @@ export function RaceDemo({ className }: { className?: string }) {
                   y={cy + 1}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill={isDone || isCurrent ? 'white' : 'var(--muted-foreground)'}
+                  fill="white"
                   fontSize={12}
                   fontWeight="bold"
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
                 >
                   {pos.index + 1}
                 </text>
@@ -269,7 +324,7 @@ export function RaceDemo({ className }: { className?: string }) {
                     lineHeight: '1',
                   }}
                 >
-                  {truncate(MAP_NAMES[pos.index] || `Step ${pos.index + 1}`, 12)}
+                  {truncate(mapName, 12)}
                 </span>
               </foreignObject>
             </g>

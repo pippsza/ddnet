@@ -5,15 +5,19 @@ import { motion, useInView } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+function getMapThumbnailUrl(mapName: string): string {
+  return `/maps/${mapName.replace(/ /g, '_')}.png`
+}
+
 const GRID_SIZE = 5
 const TOTAL_CELLS = GRID_SIZE * GRID_SIZE
 
 const PLACEHOLDER_MAPS = [
-  'Kobra 4', 'Sunny Side', 'Multeasymap', 'Back in Time 2', 'Sunset',
-  'Stronghold', 'Crimson', 'Fly 4', 'Narcis', 'Chill 1',
-  'Lost Way', 'Binary', 'FlipFlop', 'Ember 3', 'Just2Easy',
-  'Cavern', 'Stardust', 'Bosporus 2', 'Aqua 3', 'Thunder',
-  'Crystal', 'Duskwood', 'NUT', 'Delta 3', 'Zenith',
+  'Kobra 4', 'Sunny Side Up', 'Multeasymap', 'Back in Time 2', 'Absurd 3',
+  'Stronghold', 'Crimson', 'Frozen', 'Grandma', 'Jungle Run',
+  'Just2Easy', 'Binary', 'LearnToPlay', 'Linear', 'Moonlight',
+  'Naufrage 3', 'Orange 1', 'Springlobe 3', 'StepByStep', 'Tsunami',
+  'Tutorial', 'Wasteland', 'Autumn', 'Castle', 'Zenith',
 ]
 
 // Animation script: scatter cells first, then complete the diagonal
@@ -113,6 +117,15 @@ export function BingoDemo({ className }: { className?: string }) {
   // Cleanup on unmount
   useEffect(() => () => clearTimers(), [clearTimers])
 
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const handleImageError = useCallback((position: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.add(position)
+      return next
+    })
+  }, [])
+
   const winSet = new Set(WINNING_DIAGONAL)
   const allWinningDone = phase === 'celebrating' || phase === 'resetting'
 
@@ -120,19 +133,25 @@ export function BingoDemo({ className }: { className?: string }) {
     <div ref={containerRef} className={cn('select-none w-full max-w-sm mx-auto', className)}>
       <div
         className="grid gap-1 sm:gap-1.5 md:gap-2 mx-auto"
-        style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
+        style={{
+          gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+          aspectRatio: '1',
+        }}
       >
         {Array.from({ length: TOTAL_CELLS }).map((_, i) => {
           const isDone = completed.has(i)
           const isWinCell = winSet.has(i)
           const isNew = latestCell === i && isDone
           const isWinning = allWinningDone && isWinCell && isDone
+          const mapName = PLACEHOLDER_MAPS[i] || '?'
+          const showImage = mapName !== '?' && !failedImages.has(i)
 
           return (
             <motion.div
               key={i}
               className={cn(
-                'aspect-square rounded-md sm:rounded-lg md:rounded-xl border sm:border-2 flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs font-mono transition-colors overflow-hidden',
+                'aspect-square rounded-md sm:rounded-lg md:rounded-xl border sm:border-2 flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs font-mono transition-colors overflow-hidden relative',
                 isDone
                   ? 'bg-primary/20 border-primary'
                   : 'bg-card/80 border-border',
@@ -152,13 +171,37 @@ export function BingoDemo({ className }: { className?: string }) {
                     : {}
               }
             >
-              {isDone ? (
-                <Trophy className="size-3 sm:size-4 text-primary" />
-              ) : (
-                <span className="text-muted-foreground truncate px-0.5">
-                  {PLACEHOLDER_MAPS[i]?.split(' ')[0]}
-                </span>
+              {showImage && (
+                <>
+                  <div
+                    className="absolute inset-0 z-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${getMapThumbnailUrl(mapName)})` }}
+                  />
+                  <div
+                    className={cn(
+                      'absolute inset-0 z-1',
+                      isDone ? 'bg-primary/60' : 'bg-black/55',
+                    )}
+                  />
+                  {/* Hidden img for error detection */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getMapThumbnailUrl(mapName)}
+                    alt=""
+                    onError={() => handleImageError(i)}
+                    className="hidden"
+                  />
+                </>
               )}
+              <div className="absolute inset-0 z-10 flex items-center justify-center p-0.5">
+                {isDone ? (
+                  <Trophy className="size-3 sm:size-4 text-primary-foreground" />
+                ) : (
+                  <span className="text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-[6px] sm:text-[8px] md:text-[10px] leading-tight line-clamp-2 text-center">
+                    {mapName}
+                  </span>
+                )}
+              </div>
             </motion.div>
           )
         })}

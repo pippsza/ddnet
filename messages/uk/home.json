@@ -1,107 +1,101 @@
 {
-  "navigation": {
-    "title": "DDashBoard",
-    "login": "Увійти",
-    "goToApp": "Перейти до додатку"
+  "nav": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "dashboard": "Dashboard"
   },
   "hero": {
-    "badge": "Новий ігровий режим",
+    "badge": "DDNet Community Platform",
     "title": "DDashBoard",
-    "subtitle": "Змагайтесь у проходженні мап DDraceNetwork",
-    "description": "Завершуйте лінії, діагоналі або повне поле швидше за суперників. Кожна клітинка — це виклик!",
-    "learnMore": "Дізнатися про Бінго",
-    "startPlaying": "Почати гру"
-  },
-  "preview": {
-    "caption": "Приклад ігрового поля 5×5"
-  },
-  "howItWorks": {
-    "title": "Як працює Бінго?",
-    "subtitle": "Прості правила, безмежні можливості",
-    "steps": {
-      "chooseMode": {
-        "title": "Оберіть режим",
-        "description": "Одиночна гра або змагання з іншими гравцями в реальному часі"
-      },
-      "completeMaps": {
-        "title": "Проходьте мапи",
-        "description": "Кожна клітинка на полі — це мапа DDNet. Пройдіть її, щоб відмітити клітинку"
-      },
-      "getCombination": {
-        "title": "Зберіть комбінацію",
-        "description": "Завершіть лінію, діагональ або повне поле швидше за суперників!"
-      }
-    }
-  },
-  "modes": {
-    "solo": {
-      "title": "Одиночний режим",
-      "description": "Встановлюйте особисті рекорди",
-      "features": {
-        "ownPace": "Проходьте мапи у власному темпі",
-        "trackStats": "Відстежуйте свою статистику",
-        "improveAchievements": "Покращуйте особисті досягнення"
-      }
-    },
-    "competitive": {
-      "title": "Змагальний режим",
-      "description": "Перемагайте в реальному часі",
-      "features": {
-        "competeWithPlayers": "Змагайтесь з іншими гравцями",
-        "onlineProgress": "Онлайн-синхронізація прогресу",
-        "ratingSystem": "Рейтингова система"
-      }
-    }
-  },
-  "additionalFeatures": {
-    "title": "Додаткові можливості",
-    "subtitle": "Більше, ніж просто гра",
-    "onlineFriends": {
-      "title": "Друзі онлайн",
-      "description": "Додавайте друзів та відстежуйте їхню активність у реальному часі. Приєднуйтесь до їхніх ігор та організовуйте спільні проходження"
-    },
-    "accountSystem": {
-      "title": "Система акаунтів",
-      "description": "Створіть профіль, відстежуйте статистику та налаштовуйте свій ігровий досвід. Усі досягнення завжди з вами"
-    },
-    "eventServers": {
-      "title": "Сервери подій (Скоро)",
-      "description": "У майбутньому з'явиться можливість розгортати сервери для спеціальних подій та турнірів"
-    }
-  },
-  "raceMode": {
-    "title": "Режим перегонів",
-    "subtitle": "Перегони у стилі настільної гри по мапах DDNet",
-    "description": "Просувайтесь шляхом із мап, проходячи кожну для просування вперед. Перший, хто досягне фінішу — перемагає! Кожен вузол — нове випробування на шляху до перемоги."
+    "description": "Compete in Bingo & Race modes on DDNet and KoG maps. Track progress, challenge friends, climb leaderboards.",
+    "getStarted": "Get Started",
+    "login": "Log in"
   },
   "features": {
-    "title": "Можливості платформи",
-    "subtitle": "Все що потрібно в одному місці",
-    "bingo": {
-      "title": "Бінго",
-      "description": "Виконуйте завдання на полі. Зберіть лінію, хрест або повне поле, щоб перемогти!"
+    "title": "What's Inside",
+    "forum": {
+      "title": "Forum & Chat",
+      "desc": "Discuss, share replays, chat in real-time."
     },
-    "race": {
-      "title": "Перегони",
-      "description": "Перегони у стилі настільної гри по мапах DDNet. Перший на фініші — переможець!"
+    "leaderboards": {
+      "title": "Leaderboards",
+      "desc": "Global & per-category rankings."
+    },
+    "profiles": {
+      "title": "Player Profiles",
+      "desc": "DDNet & KoG stats, history, achievements."
+    },
+    "stats": {
+      "title": "DDNet & KoG Stats",
+      "desc": "Points, ranks, maps — all in one place."
     },
     "friends": {
-      "title": "Моніторинг друзів",
-      "description": "Відстежуйте онлайн-статус друзів та дивіться, на якому сервері вони грають у реальному часі."
+      "title": "Friends System",
+      "desc": "Add friends, see online, challenge to games."
     }
   },
-  "cta": {
-    "badge": "Приєднуйтесь зараз",
-    "title": "Готові прийняти виклик?",
-    "description": "Станьте частиною спільноти DDashBoard та доведіть свою майстерність",
-    "createAccount": "Створити акаунт"
+  "ddnet": {
+    "badge": "DDNet Maps",
+    "title": "DDNet Bingo & Race",
+    "description": "13 categories — Novice to Insane. Difficulty filtering, solo & team modes, real-time progress tracking via DDNet API. Users with special roles can create custom categories.",
+    "categories": "Categories",
+    "gameModes": "Game Modes",
+    "gridSizes": "Grid Sizes",
+    "raceSteps": "Race Steps"
+  },
+  "kog": {
+    "badge": "King of Gores",
+    "title": "KoG Bingo & Race",
+    "description": "Same gameplay on KoG maps. 7 categories — Easy to Extreme. 1000+ gores maps with difficulty stars.",
+    "detection": "Finish detection via kog.tw profile parsing. Snapshot-based — no API needed."
+  },
+  "bingo": {
+    "title": "Bingo Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "cells": "cells"
+  },
+  "race": {
+    "title": "Race Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "maps": "maps",
+    "wins": "{name} wins!"
+  },
+  "download": {
+    "title": "Download Client",
+    "description": "Modified DDNet client with built-in Bingo & Race UI. Create and play games without leaving the client.",
+    "features": {
+      "createGames": "Create games from client",
+      "overlay": "Real-time game overlay",
+      "autoJoin": "Auto-join game servers",
+      "detection": "Instant finish detection"
+    },
+    "comingSoon": "Coming soon"
+  },
+  "community": {
+    "title": "Community",
+    "description": "Join the DDashBoard community. Chat, share replays, find teammates, and stay up to date.",
+    "discordTitle": "Discord Server",
+    "discordDesc": "Chat, voice channels, game announcements, find teammates",
+    "joinDiscord": "Join Discord",
+    "powered": "Powered by the DDNet & KoG community"
+  },
+  "team": {
+    "title": "The Team",
+    "meetFull": "Meet the full team",
+    "more": "+{count} more"
   },
   "footer": {
-    "about": "Про нас",
-    "rules": "Правила",
-    "terms": "Умови використання",
-    "privacy": "Політика конфіденційності",
-    "support": "Підтримка",
-    "copyright": "© 2026 DDashBoard"
+    "freeTitle": "Free & Open Source",
+    "freeDesc": "DDashBoard is a free community platform for DDNet and KoG players. No ads, no paywalls, no tracking — just play.",
+    "learnMore": "Learn more",
+    "about": "About",
+    "rules": "Rules",
+    "support": "Support",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "copyright": "© 2024-2026 DDashBoard",
+    "powered": "Powered by DDNet community"
   }
 }

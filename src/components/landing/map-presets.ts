@@ -66,11 +66,11 @@ const lavenderForest: MapPreset = {
   // Rendered via: node scripts/render-map.mjs — then tiled from chunks
   tiles: {
     tileDir: 'lavender-forest',
-    mapWidth: 59392,  // 29 chunks × 2048
+    mapWidth: 59392, // 29 chunks × 2048
     mapHeight: 10240, // 5 chunks × 2048
     tileSize: 512,
-    tilesX: 116,      // 29 × 4
-    tilesY: 20,       // 5 × 4
+    tilesX: 116, // 29 × 4
+    tilesY: 20, // 5 × 4
   },
   stops: [
     // ── Sections ──
@@ -97,7 +97,7 @@ const lavenderForest: MapPreset = {
       section: { x: 11287, y: 4362 },
       navLabel: 'KoG',
     },
-    { id: 'race', progress: 0.5, camera: { x: 13069, y: 3420 }, section: { x: 13069, y: 3420 } },
+    { id: 'race', progress: 0.5, camera: { x: 13069, y: 3420 }, section: { x: 13069, y: 3520 } },
     {
       id: 'download',
       progress: 0.6,
@@ -109,9 +109,9 @@ const lavenderForest: MapPreset = {
       id: 'community',
       progress: 0.7,
       camera: { x: 17530, y: 5516 },
-      section: { x: 17530, y: 5516 },
+      section: { x: 17530, y: 5616 },
     },
-    { id: 'team', progress: 0.8, camera: { x: 20556, y: 5318 }, section: { x: 20556, y: 5318 } },
+    { id: 'team', progress: 0.8, camera: { x: 20556, y: 5318 }, section: { x: 20556, y: 5200 } },
     // Scenic waypoint (about section merged into footer)
     { id: 'scenic-about', progress: 0.9, camera: { x: 24670, y: 4473 } },
     { id: 'footer', progress: 1.0, camera: { x: 27298, y: 4404 }, section: { x: 27298, y: 4404 } },

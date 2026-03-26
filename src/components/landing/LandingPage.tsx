@@ -10,6 +10,8 @@ interface LandingPageProps {
   locale: string
 }
 
+const MASCOT_SKIN_URL = '/ddnet-skins/skin/ahl_chinesetwinbop.png'
+
 export function LandingPage({ isLoggedIn, locale }: LandingPageProps) {
   const [isMobile, setIsMobile] = useState<boolean | null>(null)
 
@@ -18,6 +20,16 @@ export function LandingPage({ isLoggedIn, locale }: LandingPageProps) {
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Preload mascot skin so hero tee appears instantly
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'preload'
+    link.as = 'image'
+    link.href = MASCOT_SKIN_URL
+    document.head.appendChild(link)
+    return () => link.remove()
   }, [])
 
   // Avoid hydration mismatch: show gradient matching map palette while detecting

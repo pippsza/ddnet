@@ -19,7 +19,7 @@ export function GlassCard({ children, className, accent, hover }: GlassCardProps
     return (
       <motion.div
         className={cn(
-          'rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl p-6 shadow-2xl',
+          'rounded-2xl p-6 shadow-2xl landing-shell',
           className,
         )}
         style={style}
@@ -34,7 +34,7 @@ export function GlassCard({ children, className, accent, hover }: GlassCardProps
   return (
     <div
       className={cn(
-        'rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl p-6 shadow-2xl',
+        'rounded-2xl p-6 shadow-2xl landing-shell',
         className,
       )}
       style={style}

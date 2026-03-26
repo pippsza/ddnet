@@ -13,6 +13,8 @@ interface MapCanvasProps {
   onLoaded?: () => void
   /** Blur placeholder image shown while WebGL loads */
   placeholderUrl?: string
+  /** Skip scroll spacer div — use when rendering as background behind other content */
+  noSpacer?: boolean
   /** Pass stops to enable the debug panel (dev mode only) */
   debugStops?: MapStop[]
 }
@@ -68,6 +70,7 @@ export function MapCanvas({
   children,
   onLoaded,
   placeholderUrl,
+  noSpacer,
   debugStops,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -124,7 +127,7 @@ export function MapCanvas({
     const tw = (window as any).tw
     if (!tw) return
 
-    // Prevent re-init
+    // Prevent re-init within same mount
     if (twRef.current) return
     twRef.current = tw
 
@@ -140,24 +143,20 @@ export function MapCanvas({
 
     // Override mainLoop: lock zoom every frame and prevent default camera movement
     tw.mainLoop = function () {
-      // Reset any mouse-driven camera movement
       tw.mouseDownInc[0] = 0
       tw.mouseDownInc[1] = 0
       tw.zoomed = false
 
-      // Zoom: use override if set (debug), otherwise lock to VIEW_WIDTH
       const baseZoom = (tw.worldView[0] * tw.aspect) / VIEW_WIDTH
       tw.cameraZoom = zoomOverrideRef.current !== null
         ? baseZoom * zoomOverrideRef.current
         : baseZoom
 
-      // In free-pan mode, apply position directly
       if (freePanRef.current) {
         tw.cameraPos[0] = freePanPosRef.current.x
         tw.cameraPos[1] = freePanPosRef.current.y
       }
 
-      // Render (with guard)
       if (tw.map) {
         tw.render()
       }
@@ -165,15 +164,15 @@ export function MapCanvas({
       requestAnimationFrame(tw.mainLoop)
     }
 
+    // Always re-init: navigation creates a new <canvas>, old GL context is dead.
+    // tw.init() reuses HTTP-cached .map file, so download is instant on repeat visits.
     setLoadingMsg('Loading map...')
-
     tw.init({ mapUrl: `/mappreview/${encodeURIComponent(mapName)}` })
 
     const check = setInterval(() => {
       if (tw.map && tw.map.groups && tw.map.groups.length > 0) {
         clearInterval(check)
 
-        // Jump camera to initial position immediately (no spring animation on load)
         const startX = path[0]?.x || 0
         const startY = path[0]?.y || 0
         cameraX.jump(startX)
@@ -367,7 +366,7 @@ export function MapCanvas({
 
   return (
     <>
-      <div style={{ height: `${scrollMultiplier * 100}vh` }} />
+      {!noSpacer && <div style={{ height: `${scrollMultiplier * 100}vh` }} />}
 
       <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
         {/* Placeholder background — visible immediately, fades out when WebGL ready */}

@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Zap } from 'lucide-react'
+import { Sparkles, Zap, Image } from 'lucide-react'
 import { MapCanvas } from './MapCanvas'
 import { MapScroller } from './MapScroller'
 import { MapSection } from './MapSection'
 import { MapNavbar } from './MapNavbar'
+import { useScrollSnap } from './useScrollSnap'
 import {
   HeroSection,
   FeaturesSection,
@@ -19,9 +20,17 @@ import {
   TeamSection,
   FooterSection,
 } from './LandingSections'
-import { getPreset, getCameraPath, getSections, getNavItems, getAllPresetIds, DEFAULT_PRESET } from './map-presets'
+import type { CameraPoint } from './types'
+import {
+  getPreset,
+  getCameraPath,
+  getSections,
+  getNavItems,
+  getAllPresetIds,
+  DEFAULT_PRESET,
+} from './map-presets'
 
-type RenderMode = 'quality' | 'performance'
+type RenderMode = 'quality' | 'medium' | 'performance'
 
 interface DesktopLandingProps {
   isLoggedIn: boolean
@@ -45,16 +54,49 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
   const [isTransitioning, setIsTransitioning] = useState(false)
   // Track if Quality was ever used — lazy-mount WebGL, keep alive once loaded
   const [qualityEverUsed, setQualityEverUsed] = useState(renderMode === 'quality')
-  const handleRenderModeChange = useCallback((mode: RenderMode) => {
-    if (mode === renderMode) return
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setRenderMode(mode)
-      localStorage.setItem('landing-render-mode', mode)
-      if (mode === 'quality') setQualityEverUsed(true)
-      setTimeout(() => setIsTransitioning(false), 100)
-    }, 400)
-  }, [renderMode])
+  const handleRenderModeChange = useCallback(
+    (mode: RenderMode, e?: React.MouseEvent) => {
+      if (mode === renderMode) return
+
+      const applyMode = () => {
+        setRenderMode(mode)
+        localStorage.setItem('landing-render-mode', mode)
+        if (mode === 'quality') setQualityEverUsed(true)
+        window.dispatchEvent(new Event('render-mode-change'))
+      }
+
+      // Use View Transitions API if available (circle-blur from click point)
+      if ('startViewTransition' in document) {
+        const cx = e ? ((e.clientX / window.innerWidth) * 100).toFixed(0) : '90'
+        const cy = e ? ((e.clientY / window.innerHeight) * 100).toFixed(0) : '90'
+        const styleId = `mode-transition-${Date.now()}`
+        const style = document.createElement('style')
+        style.id = styleId
+        style.textContent = `
+        ::view-transition-old(root) { animation: none; }
+        ::view-transition-new(root) {
+          animation: mode-circle-expand 0.5s ease-out;
+        }
+        @keyframes mode-circle-expand {
+                    from { clip-path: circle(0% at ${cx}% ${cy}%); filter: blur(4px); }
+          to { clip-path: circle(150% at ${cx}% ${cy}%); filter: blur(0); }
+        }
+      `
+
+        document.head.appendChild(style)
+        setTimeout(() => document.getElementById(styleId)?.remove(), 2000)
+        ;(document as any).startViewTransition(applyMode)
+      } else {
+        // Fallback: gradient overlay
+        setIsTransitioning(true)
+        setTimeout(() => {
+          applyMode()
+          setTimeout(() => setIsTransitioning(false), 100)
+        }, 400)
+      }
+    },
+    [renderMode],
+  )
 
   // Inject preload hints only in quality mode
   useEffect(() => {
@@ -75,13 +117,19 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
     mapLink.crossOrigin = 'anonymous'
     document.head.appendChild(mapLink)
     links.push(mapLink)
-    return () => { links.forEach((l) => l.remove()) }
+    return () => {
+      links.forEach((l) => l.remove())
+    }
   }, [renderMode])
 
   const preset = getPreset(presetId)
   const s = getSections(preset)
   const cameraPath = getCameraPath(preset)
   const navItems = getNavItems(preset)
+
+  // Snap scroll to nearest section when user stops near one
+  const snapPoints = preset.stops.filter((s) => s.section).map((s) => ({ progress: s.progress }))
+  useScrollSnap(snapPoints)
 
   const sections: ReactNode = (
     <>
@@ -158,31 +206,32 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
       </AnimatePresence>
 
       {/*
-        Quality: lazy-mount on first use, then keep alive (hidden when inactive).
-        Performance: always mounted (tiles are lightweight).
-        This way WebGL only loads if user actually picks Quality, but once loaded — cached.
+        Quality (WebGL): lazy-mount, keep alive once loaded.
+        Medium (tiles): PNG tiles with viewport culling.
+        Performance: static gradient, no map at all.
+        Sections only in active renderer to avoid duplicate timers/fetches.
       */}
-      {/*
-        Quality: lazy-mount, keep alive once loaded (WebGL cached in DOM).
-        Performance: always available.
-        Sections rendered only inside the ACTIVE renderer to avoid duplicate timers/fetches.
-        Inactive renderer stays mounted but empty (just the map background).
-      */}
+
+      {/* Quality — WebGL */}
       {qualityEverUsed && (
         <div style={{ display: renderMode === 'quality' ? 'contents' : 'none' }}>
           <MapCanvas
             mapName={preset.mapFile}
             path={cameraPath}
             scrollMultiplier={preset.scrollMultiplier}
-            placeholderUrl={preset.tiles ? `/map-tiles/${preset.tiles.tileDir}/placeholder.webp` : undefined}
+            placeholderUrl={
+              preset.tiles ? `/map-tiles/${preset.tiles.tileDir}/placeholder.webp` : undefined
+            }
             debugStops={preset.stops}
           >
             {renderMode === 'quality' ? sections : null}
           </MapCanvas>
         </div>
       )}
-      <div style={{ display: renderMode === 'performance' ? 'contents' : 'none' }}>
-        {preset.tiles ? (
+
+      {/* Medium — PNG tiles */}
+      {preset.tiles && (
+        <div style={{ display: renderMode === 'medium' ? 'contents' : 'none' }}>
           <MapScroller
             mapWidth={preset.tiles.mapWidth}
             mapHeight={preset.tiles.mapHeight}
@@ -194,13 +243,16 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
             path={cameraPath}
             scrollMultiplier={preset.scrollMultiplier}
           >
-            {renderMode === 'performance' ? sections : null}
+            {renderMode === 'medium' ? sections : null}
           </MapScroller>
-        ) : (
-          <PerformanceFallback scrollMultiplier={preset.scrollMultiplier}>
-            {renderMode === 'performance' ? sections : null}
-          </PerformanceFallback>
-        )}
+        </div>
+      )}
+
+      {/* Performance — static gradient, no map */}
+      <div style={{ display: renderMode === 'performance' ? 'contents' : 'none' }}>
+        <PerformanceFallback scrollMultiplier={preset.scrollMultiplier} path={cameraPath}>
+          {renderMode === 'performance' ? sections : null}
+        </PerformanceFallback>
       </div>
     </>
   )
@@ -208,29 +260,31 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
 
 // ─── Performance Fallback (static background, same scroll + sections) ───────
 
+// Performance mode: no map background at all — just scroll-driven sections
+// Reuses MapScroller with transparent background and no tiles
 function PerformanceFallback({
   scrollMultiplier,
+  path,
   children,
 }: {
   scrollMultiplier: number
+  path: CameraPoint[]
   children: ReactNode
 }) {
-  // Same scroll height as MapCanvas, but static dark bg instead of WebGL
   return (
-    <>
-      <div style={{ height: `${scrollMultiplier * 100}vh` }} />
-      <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <div className="absolute inset-0 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]" />
-
-        {/* Sections still render as scroll-positioned overlays */}
-        <div
-          className="absolute top-0 left-0 will-change-transform pointer-events-none"
-          style={{ width: 60000, height: 20000, transformOrigin: '0 0', zIndex: 10 }}
-        >
-          {children}
-        </div>
-      </div>
-    </>
+    <MapScroller
+      mapWidth={60000}
+      mapHeight={20000}
+      tileSize={512}
+      tilesX={0}
+      tilesY={0}
+      tileUrl={() => ''}
+      path={path}
+      scrollMultiplier={scrollMultiplier}
+      noBackground
+    >
+      {children}
+    </MapScroller>
   )
 }
 
@@ -245,7 +299,7 @@ function BottomPanel({
   presetId: string
   onPresetChange: (id: string) => void
   renderMode: RenderMode
-  onRenderModeChange: (mode: RenderMode) => void
+  onRenderModeChange: (mode: RenderMode, e?: React.MouseEvent) => void
 }) {
   const ids = getAllPresetIds()
   const showPresets = ids.length > 1
@@ -254,28 +308,24 @@ function BottomPanel({
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
       {/* Render mode toggle */}
       <div className="flex gap-1 bg-black/60 backdrop-blur-md rounded-full p-1 border border-white/10">
-        <button
-          onClick={() => onRenderModeChange('quality')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            renderMode === 'quality'
-              ? 'bg-primary text-black'
-              : 'text-white/60 hover:text-white hover:bg-white/10'
-          }`}
-        >
-          <Sparkles className="size-3" />
-          Quality
-        </button>
-        <button
-          onClick={() => onRenderModeChange('performance')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            renderMode === 'performance'
-              ? 'bg-primary text-black'
-              : 'text-white/60 hover:text-white hover:bg-white/10'
-          }`}
-        >
-          <Zap className="size-3" />
-          Performance
-        </button>
+        {[
+          { mode: 'quality' as const, icon: Sparkles, label: 'Quality' },
+          { mode: 'medium' as const, icon: Image, label: 'Medium' },
+          { mode: 'performance' as const, icon: Zap, label: 'Performance' },
+        ].map(({ mode, icon: Icon, label }) => (
+          <button
+            key={mode}
+            onClick={(e) => onRenderModeChange(mode, e)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              renderMode === mode
+                ? 'bg-[#1a6b3c]! text-[#d4f4e0]!'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Icon className="size-3" />
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Preset switcher */}
@@ -290,7 +340,7 @@ function BottomPanel({
                 onClick={() => onPresetChange(id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   active
-                    ? 'bg-primary text-black'
+                    ? 'bg-[#1a6b3c]! text-[#d4f4e0]!'
                     : 'text-white/60 hover:text-white hover:bg-white/10'
                 }`}
               >

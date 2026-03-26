@@ -51,7 +51,7 @@ function getLinkHref(platform: string, value: string): string {
 function HeroMember({ member }: { member: any }) {
   return (
     <FadeIn className="w-full">
-      <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5">
+      <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 backdrop-blur-md">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
         <CardContent className="relative flex flex-col items-center text-center p-4 sm:p-8 gap-4">
           <div className="relative">
@@ -108,7 +108,7 @@ function HeroMember({ member }: { member: any }) {
 
 function SpotlightMember({ member }: { member: any }) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-all">
+    <Card className="overflow-hidden hover:shadow-md transition-all bg-black/30 backdrop-blur-md border-white/10">
       <CardContent className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 p-4 sm:p-5">
         <div className="shrink-0">
           <TeeAvatarWithFallback
@@ -163,7 +163,7 @@ function SpotlightMember({ member }: { member: any }) {
 
 function CardMember({ member }: { member: any }) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-all h-full">
+    <Card className="overflow-hidden hover:shadow-md transition-all h-full bg-black/30 backdrop-blur-md border-white/10">
       <CardContent className="flex flex-col items-center text-center p-5 gap-3">
         <TeeAvatarWithFallback
           skinUrl={member.skinName ? getDDNetSkinUrl(member.skinName) : undefined}
@@ -276,7 +276,7 @@ export default function AboutContent() {
   const { data, isLoading } = useSWR(`/api/globals/about-page?depth=0&locale=${locale}`, fetcher)
 
   return (
-    <PageTransition className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12">
+    <PageTransition className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12 backdrop-blur-xs bg-black/15 rounded-2xl my-4">
       {/* Back link */}
       <Link
         href={`/${locale}`}
@@ -295,7 +295,7 @@ export default function AboutContent() {
 
       {/* Free & Open */}
       <FadeIn delay={0.1}>
-        <Card className="border-green-500/20 bg-green-500/5">
+        <Card className="border-green-500/20 bg-green-500/5 backdrop-blur-md">
           <CardContent className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6">
             <div className="p-2 sm:p-2.5 rounded-lg bg-green-500/10 text-green-500 shrink-0">
               <Heart className="h-5 w-5" />
@@ -308,7 +308,7 @@ export default function AboutContent() {
         </Card>
       </FadeIn>
 
-      {/* Team Sections (from Payload) */}
+      {/* Team Sections (from Payload CMS) */}
       {!isLoading && data?.teamSections?.map((section: any, i: number) => (
         <TeamSection key={i} section={section} />
       ))}
@@ -356,7 +356,7 @@ export default function AboutContent() {
       {/* Support Section */}
       {data?.supportSection?.enabled && (
         <FadeIn>
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="border-primary/20 bg-primary/5 backdrop-blur-md">
             <CardContent className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6">
               <div className="p-2 sm:p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
                 <Code2 className="h-5 w-5" />
@@ -387,7 +387,7 @@ export default function AboutContent() {
       {/* Contact */}
       {data?.contact?.enabled && (
         <FadeIn>
-          <Card>
+          <Card className="bg-black/30 backdrop-blur-md border-white/10">
             <CardContent className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6">
               <div className="p-2 sm:p-2.5 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
                 <MessageCircle className="h-5 w-5" />

@@ -1,107 +1,101 @@
 {
-  "navigation": {
-    "title": "DDashBoard",
-    "login": "登录",
-    "goToApp": "进入应用"
+  "nav": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "dashboard": "Dashboard"
   },
   "hero": {
-    "badge": "全新游戏模式",
+    "badge": "DDNet Community Platform",
     "title": "DDashBoard",
-    "subtitle": "在 DDraceNetwork 中竞速完成地图",
-    "description": "比对手更快地完成行、对角线或全板。每个格子都是一个挑战！",
-    "learnMore": "了解 Bingo 玩法",
-    "startPlaying": "开始游戏"
-  },
-  "preview": {
-    "caption": "5×5 游戏棋盘示例"
-  },
-  "howItWorks": {
-    "title": "Bingo 怎么玩？",
-    "subtitle": "简单规则，无限可能",
-    "steps": {
-      "chooseMode": {
-        "title": "选择模式",
-        "description": "单人游玩或与其他玩家实时竞技"
-      },
-      "completeMaps": {
-        "title": "完成地图",
-        "description": "棋盘上的每个格子对应一张 DDNet 地图，完成即可标记"
-      },
-      "getCombination": {
-        "title": "达成组合",
-        "description": "比对手更快地完成一行、一列、对角线或全板！"
-      }
-    }
-  },
-  "modes": {
-    "solo": {
-      "title": "单人模式",
-      "description": "刷新个人纪录",
-      "features": {
-        "ownPace": "按自己的节奏完成地图",
-        "trackStats": "追踪你的统计数据",
-        "improveAchievements": "提升个人成就"
-      }
-    },
-    "competitive": {
-      "title": "竞技模式",
-      "description": "实时对决",
-      "features": {
-        "competeWithPlayers": "与其他玩家一较高下",
-        "onlineProgress": "在线进度同步",
-        "ratingSystem": "积分排名系统"
-      }
-    }
-  },
-  "additionalFeatures": {
-    "title": "更多功能",
-    "subtitle": "不只是一款游戏",
-    "onlineFriends": {
-      "title": "在线好友",
-      "description": "添加好友，实时关注他们的动态。加入他们的对局，一起组队闯关"
-    },
-    "accountSystem": {
-      "title": "账户系统",
-      "description": "创建个人资料，追踪统计数据，个性化你的游戏体验。所有成就随时随地相伴"
-    },
-    "eventServers": {
-      "title": "赛事服务器（即将推出）",
-      "description": "未来将支持为特殊活动和锦标赛部署专属服务器"
-    }
-  },
-  "raceMode": {
-    "title": "竞速模式",
-    "subtitle": "桌游风格的 DDNet 地图竞速",
-    "description": "沿路径前进，完成每张地图以推进到下一个节点。第一个到达终点的玩家获胜！每个节点都是通往胜利之路上的新挑战。"
+    "description": "Compete in Bingo & Race modes on DDNet and KoG maps. Track progress, challenge friends, climb leaderboards.",
+    "getStarted": "Get Started",
+    "login": "Log in"
   },
   "features": {
-    "title": "平台功能",
-    "subtitle": "一站式满足你的所有需求",
-    "bingo": {
-      "title": "宾果",
-      "description": "在棋盘上完成地图挑战。连成一线、十字或全板即可获胜！"
+    "title": "What's Inside",
+    "forum": {
+      "title": "Forum & Chat",
+      "desc": "Discuss, share replays, chat in real-time."
     },
-    "race": {
-      "title": "竞速",
-      "description": "桌游风格的 DDNet 地图竞速。第一个到达终点线的人获胜！"
+    "leaderboards": {
+      "title": "Leaderboards",
+      "desc": "Global & per-category rankings."
+    },
+    "profiles": {
+      "title": "Player Profiles",
+      "desc": "DDNet & KoG stats, history, achievements."
+    },
+    "stats": {
+      "title": "DDNet & KoG Stats",
+      "desc": "Points, ranks, maps — all in one place."
     },
     "friends": {
-      "title": "好友监控",
-      "description": "追踪好友的在线状态，实时查看他们正在哪个服务器上游戏。"
+      "title": "Friends System",
+      "desc": "Add friends, see online, challenge to games."
     }
   },
-  "cta": {
-    "badge": "立即加入",
-    "title": "准备好迎接挑战了吗？",
-    "description": "加入 DDashBoard 社区，展示你的实力",
-    "createAccount": "创建账户"
+  "ddnet": {
+    "badge": "DDNet Maps",
+    "title": "DDNet Bingo & Race",
+    "description": "13 categories — Novice to Insane. Difficulty filtering, solo & team modes, real-time progress tracking via DDNet API. Users with special roles can create custom categories.",
+    "categories": "Categories",
+    "gameModes": "Game Modes",
+    "gridSizes": "Grid Sizes",
+    "raceSteps": "Race Steps"
+  },
+  "kog": {
+    "badge": "King of Gores",
+    "title": "KoG Bingo & Race",
+    "description": "Same gameplay on KoG maps. 7 categories — Easy to Extreme. 1000+ gores maps with difficulty stars.",
+    "detection": "Finish detection via kog.tw profile parsing. Snapshot-based — no API needed."
+  },
+  "bingo": {
+    "title": "Bingo Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "cells": "cells"
+  },
+  "race": {
+    "title": "Race Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "maps": "maps",
+    "wins": "{name} wins!"
+  },
+  "download": {
+    "title": "Download Client",
+    "description": "Modified DDNet client with built-in Bingo & Race UI. Create and play games without leaving the client.",
+    "features": {
+      "createGames": "Create games from client",
+      "overlay": "Real-time game overlay",
+      "autoJoin": "Auto-join game servers",
+      "detection": "Instant finish detection"
+    },
+    "comingSoon": "Coming soon"
+  },
+  "community": {
+    "title": "Community",
+    "description": "Join the DDashBoard community. Chat, share replays, find teammates, and stay up to date.",
+    "discordTitle": "Discord Server",
+    "discordDesc": "Chat, voice channels, game announcements, find teammates",
+    "joinDiscord": "Join Discord",
+    "powered": "Powered by the DDNet & KoG community"
+  },
+  "team": {
+    "title": "The Team",
+    "meetFull": "Meet the full team",
+    "more": "+{count} more"
   },
   "footer": {
-    "about": "关于",
-    "rules": "规则",
-    "terms": "服务条款",
-    "privacy": "隐私政策",
-    "support": "支持",
-    "copyright": "© 2026 DDashBoard"
+    "freeTitle": "Free & Open Source",
+    "freeDesc": "DDashBoard is a free community platform for DDNet and KoG players. No ads, no paywalls, no tracking — just play.",
+    "learnMore": "Learn more",
+    "about": "About",
+    "rules": "Rules",
+    "support": "Support",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "copyright": "© 2024-2026 DDashBoard",
+    "powered": "Powered by DDNet community"
   }
 }

@@ -1,8 +1,10 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/AppSidebar'
+import { MapBackground } from '@/components/landing/MapBackground'
+import { RenderModeToggle } from '@/components/landing/RenderModeToggle'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { AnnouncementBanner } from '@/components/notifications/AnnouncementBanner'
-import { ThemeToggleButton } from '@/components/theme/theme-toggle'
+import { ConditionalThemeToggle } from '@/components/theme/ConditionalThemeToggle'
 import { LocaleSwitcher } from '@/components/locale-switcher'
 import { AdminDebugMenu } from '@/components/admin/AdminDebugMenu'
 import { SwipeToOpenSidebar } from '@/components/layout/SwipeToOpenSidebar'
@@ -92,6 +94,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
+      <MapBackground hideSwitch />
       <AppSidebar
         user={{
           ingameNick: session.user.ingameNick ?? undefined,
@@ -114,9 +117,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <header className="flex items-center justify-between  p-4 border-b sticky top-0 bg-background/95 backdrop-blur z-999909999999">
           <SidebarTrigger />
           <div className="flex items-center gap-3">
+            <RenderModeToggle />
             <LocaleSwitcher currentLocale={locale} />
             <NotificationBell />
-            <ThemeToggleButton start="top-right" variant="circle-blur" />
+            <ConditionalThemeToggle start="top-right" variant="circle-blur" />
           </div>
         </header>
         <div className="flex-1 p-6 pt-2 overflow-hidden justify-center">

@@ -68,6 +68,47 @@ const availableLocales = [
 
 type VerificationStep = 'idle' | 'starting' | 'pending' | 'success' | 'failed' | 'expired'
 
+function RenderModeThemeHint() {
+  const t = useTranslations('settings')
+  const [mapActive, setMapActive] = useState(false)
+
+  useEffect(() => {
+    const check = () => {
+      const mode = localStorage.getItem('landing-render-mode') || 'quality'
+      setMapActive(mode !== 'performance')
+    }
+    check()
+    window.addEventListener('render-mode-change', check)
+    window.addEventListener('storage', check)
+    return () => {
+      window.removeEventListener('render-mode-change', check)
+      window.removeEventListener('storage', check)
+    }
+  }, [])
+
+  if (mapActive) {
+    return (
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
+        <div>
+          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+            {t('theme.lockedTitle')}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('theme.lockedDescription')}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <p className="text-sm text-muted-foreground mb-4">
+      {t('theme.description')}
+    </p>
+  )
+}
+
 export default function SettingsPage() {
   const t = useTranslations('settings')
   const currentLocale = useLocale()
@@ -405,6 +446,7 @@ export default function SettingsPage() {
           <CardTitle>{t('theme.title')}</CardTitle>
         </CardHeader>
         <CardContent>
+          <RenderModeThemeHint />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {themes.map((themeItem) => {
               const isSelected = themeMounted && currentTheme === themeItem.id

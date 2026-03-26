@@ -1,107 +1,101 @@
 {
-  "navigation": {
-    "title": "DDashBoard",
-    "login": "Giriş Yap",
-    "goToApp": "Uygulamaya Git"
+  "nav": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "dashboard": "Dashboard"
   },
   "hero": {
-    "badge": "Yeni Oyun Modu",
+    "badge": "DDNet Community Platform",
     "title": "DDashBoard",
-    "subtitle": "DDraceNetwork harita tamamlama yarışması",
-    "description": "Rakiplerinizden daha hızlı sıra, çapraz veya tam ev tamamlayın. Her hücre bir meydan okumadır!",
-    "learnMore": "Bingo Hakkında Bilgi Al",
-    "startPlaying": "Oynamaya Başla"
-  },
-  "preview": {
-    "caption": "Örnek 5x5 oyun tahtası"
-  },
-  "howItWorks": {
-    "title": "Bingo Nasıl Çalışır?",
-    "subtitle": "Basit kurallar, sonsuz olasılıklar",
-    "steps": {
-      "chooseMode": {
-        "title": "Mod Seç",
-        "description": "Tek başına oyna veya diğer oyuncularla gerçek zamanlı yarış"
-      },
-      "completeMaps": {
-        "title": "Haritaları Tamamla",
-        "description": "Tahtadaki her hücre bir DDNet haritasıdır. Hücreyi işaretlemek için haritayı tamamla"
-      },
-      "getCombination": {
-        "title": "Kombinasyonu Elde Et",
-        "description": "Rakiplerinizden daha hızlı bir sıra, çapraz veya tam ev tamamlayın!"
-      }
-    }
-  },
-  "modes": {
-    "solo": {
-      "title": "Solo Mod",
-      "description": "Kişisel rekorlar kır",
-      "features": {
-        "ownPace": "Haritaları kendi hızında tamamla",
-        "trackStats": "İstatistiklerini takip et",
-        "improveAchievements": "Kişisel başarılarını geliştir"
-      }
-    },
-    "competitive": {
-      "title": "Rekabetçi Mod",
-      "description": "Gerçek zamanlı kazan",
-      "features": {
-        "competeWithPlayers": "Diğer oyuncularla yarış",
-        "onlineProgress": "Çevrimiçi ilerleme senkronizasyonu",
-        "ratingSystem": "Derecelendirme sistemi"
-      }
-    }
-  },
-  "additionalFeatures": {
-    "title": "Ek Özellikler",
-    "subtitle": "Bir oyundan fazlası",
-    "onlineFriends": {
-      "title": "Çevrimiçi Arkadaşlar",
-      "description": "Arkadaş ekle ve aktivitelerini gerçek zamanlı takip et. Oyunlarına katıl ve birlikte koşular organize et"
-    },
-    "accountSystem": {
-      "title": "Hesap Sistemi",
-      "description": "Profil oluştur, istatistikleri takip et ve oyun deneyimini kişiselleştir. Tüm başarılar her zaman seninle"
-    },
-    "eventServers": {
-      "title": "Etkinlik Sunucuları (Yakında)",
-      "description": "Gelecekte özel etkinlikler ve turnuvalar için sunucu kurma seçeneği olacak"
-    }
-  },
-  "raceMode": {
-    "title": "Yarış Modu",
-    "subtitle": "DDNet haritalarında masa oyunu tarzı yarış",
-    "description": "Haritalardan oluşan bir yolda ilerle, her birini tamamlayarak bir sonraki düğüme geç. Bitiş çizgisine ilk ulaşan kazanır! Her düğüm zafere giden yolda yeni bir meydan okumadır."
+    "description": "Compete in Bingo & Race modes on DDNet and KoG maps. Track progress, challenge friends, climb leaderboards.",
+    "getStarted": "Get Started",
+    "login": "Log in"
   },
   "features": {
-    "title": "Platform Özellikleri",
-    "subtitle": "İhtiyacın olan her şey tek bir yerde",
-    "bingo": {
-      "title": "Bingo",
-      "description": "Tahtada harita görevlerini tamamla. Bir sıra, çapraz veya tam ev yap ve kazan!"
+    "title": "What's Inside",
+    "forum": {
+      "title": "Forum & Chat",
+      "desc": "Discuss, share replays, chat in real-time."
     },
-    "race": {
-      "title": "Yarış",
-      "description": "DDNet haritalarında masa oyunu tarzı yarış. Bitiş çizgisine ilk ulaşan kazanır!"
+    "leaderboards": {
+      "title": "Leaderboards",
+      "desc": "Global & per-category rankings."
+    },
+    "profiles": {
+      "title": "Player Profiles",
+      "desc": "DDNet & KoG stats, history, achievements."
+    },
+    "stats": {
+      "title": "DDNet & KoG Stats",
+      "desc": "Points, ranks, maps — all in one place."
     },
     "friends": {
-      "title": "Arkadaş Takibi",
-      "description": "Arkadaşlarının çevrimiçi durumunu takip et ve hangi sunucuda oynadıklarını gerçek zamanlı gör."
+      "title": "Friends System",
+      "desc": "Add friends, see online, challenge to games."
     }
   },
-  "cta": {
-    "badge": "Hemen Katıl",
-    "title": "Meydan Okumaya Hazır mısın?",
-    "description": "DDashBoard topluluğunun bir parçası ol ve yeteneklerini kanıtla",
-    "createAccount": "Hesap Oluştur"
+  "ddnet": {
+    "badge": "DDNet Maps",
+    "title": "DDNet Bingo & Race",
+    "description": "13 categories — Novice to Insane. Difficulty filtering, solo & team modes, real-time progress tracking via DDNet API. Users with special roles can create custom categories.",
+    "categories": "Categories",
+    "gameModes": "Game Modes",
+    "gridSizes": "Grid Sizes",
+    "raceSteps": "Race Steps"
+  },
+  "kog": {
+    "badge": "King of Gores",
+    "title": "KoG Bingo & Race",
+    "description": "Same gameplay on KoG maps. 7 categories — Easy to Extreme. 1000+ gores maps with difficulty stars.",
+    "detection": "Finish detection via kog.tw profile parsing. Snapshot-based — no API needed."
+  },
+  "bingo": {
+    "title": "Bingo Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "cells": "cells"
+  },
+  "race": {
+    "title": "Race Preview",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "maps": "maps",
+    "wins": "{name} wins!"
+  },
+  "download": {
+    "title": "Download Client",
+    "description": "Modified DDNet client with built-in Bingo & Race UI. Create and play games without leaving the client.",
+    "features": {
+      "createGames": "Create games from client",
+      "overlay": "Real-time game overlay",
+      "autoJoin": "Auto-join game servers",
+      "detection": "Instant finish detection"
+    },
+    "comingSoon": "Coming soon"
+  },
+  "community": {
+    "title": "Community",
+    "description": "Join the DDashBoard community. Chat, share replays, find teammates, and stay up to date.",
+    "discordTitle": "Discord Server",
+    "discordDesc": "Chat, voice channels, game announcements, find teammates",
+    "joinDiscord": "Join Discord",
+    "powered": "Powered by the DDNet & KoG community"
+  },
+  "team": {
+    "title": "The Team",
+    "meetFull": "Meet the full team",
+    "more": "+{count} more"
   },
   "footer": {
-    "about": "Hakkında",
-    "rules": "Kurallar",
-    "terms": "Kullanım Koşulları",
-    "privacy": "Gizlilik Politikası",
-    "support": "Destek",
-    "copyright": "© 2026 DDashBoard"
+    "freeTitle": "Free & Open Source",
+    "freeDesc": "DDashBoard is a free community platform for DDNet and KoG players. No ads, no paywalls, no tracking — just play.",
+    "learnMore": "Learn more",
+    "about": "About",
+    "rules": "Rules",
+    "support": "Support",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "copyright": "© 2024-2026 DDashBoard",
+    "powered": "Powered by DDNet community"
   }
 }

@@ -10,7 +10,10 @@
     "description": "选择你偏好的语言"
   },
   "theme": {
-    "title": "主题"
+    "title": "主题",
+    "description": "Choose a theme for the interface. Themes are available in Performance render mode.",
+    "lockedTitle": "Theme locked",
+    "lockedDescription": "When Quality or Medium render mode is active, the theme is locked to Forest (dark green) to match the map background. Switch to Performance mode to use custom themes."
   },
   "verification": {
     "title": "账户验证",

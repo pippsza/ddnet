@@ -15,6 +15,10 @@ interface MapScrollerProps {
   path: CameraPoint[]
   scrollMultiplier?: number
   children?: ReactNode
+  /** No background — transparent, just scroll-driven sections */
+  noBackground?: boolean
+  /** Skip scroll spacer div — use when rendering as background */
+  noSpacer?: boolean
 }
 
 function interpolatePath(path: CameraPoint[], progress: number): { x: number; y: number } {
@@ -35,7 +39,7 @@ const VIEW_WIDTH = 1920
 
 export function MapScroller({
   mapWidth, mapHeight, tileSize, tilesX, tilesY,
-  tileUrl, placeholderUrl, path, scrollMultiplier = 5, children,
+  tileUrl, placeholderUrl, path, scrollMultiplier = 5, children, noBackground, noSpacer,
 }: MapScrollerProps) {
   const mapLayerRef = useRef<HTMLDivElement>(null)
   const uiLayerRef = useRef<HTMLDivElement>(null)
@@ -43,7 +47,14 @@ export function MapScroller({
   const mouseRef = useRef({ x: 0, y: 0 })
   const viewportRef = useRef({ w: 1920, h: 1080 })
   const [visibleTileKeys, setVisibleTileKeys] = useState<string[]>([])
+  const [ready, setReady] = useState(false)
   const { scrollYProgress } = useScroll()
+
+  // Fade in after a short delay to let first visible tiles load
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 600)
+    return () => clearTimeout(t)
+  }, [])
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 80, damping: 25 })
 
   useEffect(() => {
@@ -104,36 +115,54 @@ export function MapScroller({
 
   useEffect(() => { setVisibleTileKeys(computeVisibleTiles()) }, [computeVisibleTiles])
 
-  // Compute initial transform so first section is visible without scrolling
-  const startPos = path[0] || { x: 0, y: 0 }
-  const initialScale = typeof window !== 'undefined' ? window.innerWidth / VIEW_WIDTH : 1
-  const initialTx = -startPos.x * initialScale + (typeof window !== 'undefined' ? window.innerWidth / 2 : 960)
-  const initialTy = -startPos.y * initialScale + (typeof window !== 'undefined' ? window.innerHeight / 2 : 540)
-  const initialTransform = `translate3d(${initialTx}px, ${initialTy}px, 0) scale(${initialScale})`
+  // Apply initial camera position on mount so first section is visible
+  useEffect(() => {
+    const pos = path[0] || { x: 0, y: 0 }
+    cameraRef.current = pos
+    const vp = viewportRef.current
+    const scale = vp.w / VIEW_WIDTH
+    const tx = -pos.x * scale + vp.w / 2
+    const ty = -pos.y * scale + vp.h / 2
+    const transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
+    if (mapLayerRef.current) mapLayerRef.current.style.transform = transform
+    if (uiLayerRef.current) uiLayerRef.current.style.transform = transform
+    setVisibleTileKeys(computeVisibleTiles())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
-      <div style={{ height: `${scrollMultiplier * 100}vh` }} />
+      {!noSpacer && <div style={{ height: `${scrollMultiplier * 100}vh` }} />}
       <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <div className="absolute inset-0 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]" />
-        {placeholderUrl && (
-          <div className="absolute inset-0 bg-cover bg-center blur-lg scale-110 opacity-30"
-            style={{ backgroundImage: `url(${placeholderUrl})` }} />
+        {!noBackground && (
+          <>
+            {/* Gradient placeholder — fades out when tiles ready */}
+            <div
+              className="absolute inset-0 z-1 transition-opacity duration-1000"
+              style={{ opacity: ready ? 0 : 1, pointerEvents: 'none' }}
+            >
+              <div className="absolute inset-0 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]" />
+              {placeholderUrl && (
+                <div className="absolute inset-0 bg-cover bg-center blur-lg scale-110 opacity-40"
+                  style={{ backgroundImage: `url(${placeholderUrl})` }} />
+              )}
+            </div>
+            <div ref={mapLayerRef} className="absolute will-change-transform transition-opacity duration-1000"
+              style={{ width: mapWidth, height: mapHeight, transformOrigin: '0 0', opacity: ready ? 1 : 0 }}>
+              {visibleTileKeys.map((key) => {
+                const [row, col] = key.split('-').map(Number)
+                return (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={key} src={tileUrl(row, col)} alt="" loading="lazy" decoding="async"
+                    className="absolute block"
+                    style={{ left: col * tileSize, top: row * tileSize, width: tileSize, height: tileSize }} />
+                )
+              })}
+            </div>
+          </>
         )}
-        <div ref={mapLayerRef} className="absolute will-change-transform"
-          style={{ width: mapWidth, height: mapHeight, transformOrigin: '0 0', transform: initialTransform }}>
-          {visibleTileKeys.map((key) => {
-            const [row, col] = key.split('-').map(Number)
-            return (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={key} src={tileUrl(row, col)} alt="" loading="lazy" decoding="async"
-                className="absolute block"
-                style={{ left: col * tileSize, top: row * tileSize, width: tileSize, height: tileSize }} />
-            )
-          })}
-        </div>
         <div ref={uiLayerRef} className="absolute will-change-transform pointer-events-none"
-          style={{ width: mapWidth, height: mapHeight, transformOrigin: '0 0', zIndex: 10, transform: initialTransform }}>
+          style={{ width: mapWidth, height: mapHeight, transformOrigin: '0 0', zIndex: 10 }}>
           {children}
         </div>
       </div>

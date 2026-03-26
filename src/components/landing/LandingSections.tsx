@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { AnimatedCounter } from '@/components/ui/animations'
 import Link from 'next/link'
 import useSWR from 'swr'
+import { useTranslations } from 'next-intl'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
 import { Badge } from '@/components/ui/badge'
 
@@ -81,7 +82,7 @@ const SectionShell = forwardRef(function SectionShell(
   ref: Ref<HTMLDivElement>,
 ) {
   return (
-    <div ref={ref} className={`rounded-2xl bg-black/35 backdrop-blur-md border border-white/5 p-5 ${className ?? ''}`}>
+    <div ref={ref} className={`rounded-2xl p-5 landing-shell ${className ?? ''}`}>
       {children}
     </div>
   )
@@ -90,12 +91,13 @@ const SectionShell = forwardRef(function SectionShell(
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
 export function HeroSection({ locale }: { locale: string }) {
+  const t = useTranslations('home')
   return (
     <SectionShell className="text-center max-w-[500px] mx-auto">
       {/* Mascot tee with floating particles */}
       <div className="mb-4 flex justify-center">
         <div className="relative">
-          <div className="absolute -inset-4 rounded-full bg-primary/15 blur-2xl" />
+          <div className="absolute -inset-4 rounded-full bg-[#10b981]/15 blur-2xl" />
           {/* Particles */}
           {[
             { x: -40, y: -20, size: 4, dur: 3, del: 0 },
@@ -107,7 +109,7 @@ export function HeroSection({ locale }: { locale: string }) {
           ].map((p, i) => (
             <motion.div
               key={i}
-              className="absolute rounded-full bg-primary/40"
+              className="absolute rounded-full bg-[#10b981]/40"
               style={{ width: p.size, height: p.size, left: '50%', top: '50%', marginLeft: p.x, marginTop: p.y }}
               animate={{ y: [0, -12, 0], opacity: [0.2, 0.7, 0.2] }}
               transition={{ duration: p.dur, delay: p.del, repeat: Infinity, ease: 'easeInOut' }}
@@ -121,30 +123,30 @@ export function HeroSection({ locale }: { locale: string }) {
         </div>
       </div>
 
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-white text-sm font-medium mb-5">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#10b981]/20 border border-[#10b981]/30 text-white text-sm font-medium mb-5">
         <Grid3x3 className="size-4" />
-        DDNet Community Platform
+        {t('hero.badge')}
       </div>
 
-      <h1 className="text-5xl sm:text-6xl font-bold mb-4 text-white leading-tight">
-        <span className="bg-[length:200%_200%] bg-gradient-to-r from-primary via-emerald-400 to-sky-400 bg-clip-text text-transparent animate-[gradient-shift_4s_ease_infinite]">
-          DDashBoard
+      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 text-white leading-tight">
+        <span className="bg-size-[200%_200%] bg-linear-to-r from-[#10b981] via-emerald-400 to-sky-400 bg-clip-text text-transparent animate-[gradient-shift_4s_ease_infinite]">
+          {t('hero.title')}
         </span>
       </h1>
 
       <p className="text-lg text-white/70 mb-6 leading-relaxed">
-        Compete in Bingo &amp; Race modes on DDNet and KoG maps. Track progress, challenge friends, climb leaderboards.
+        {t('hero.description')}
       </p>
 
       <div className="flex gap-3 justify-center">
-        <Button size="lg" asChild className="group">
+        <Button size="lg" asChild className="group bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
           <Link href="/register">
-            Get Started
+            {t('hero.getStarted')}
             <ChevronRight className="ml-1 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
-        <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
-          <Link href="/login">Log in</Link>
+        <Button size="lg" variant="outline" asChild>
+          <Link href="/login">{t('hero.login')}</Link>
         </Button>
       </div>
 
@@ -162,11 +164,11 @@ export function HeroSection({ locale }: { locale: string }) {
 // ─── Features (Radial "Sun" Layout) ─────────────────────────────────────────
 
 const FEATURES = [
-  { icon: MessageCircle, title: 'Forum & Chat', desc: 'Discuss, share replays, chat in real-time.', color: '#a855f7' },
-  { icon: Trophy, title: 'Leaderboards', desc: 'Global & per-category rankings.', color: '#f59e0b' },
-  { icon: Users, title: 'Player Profiles', desc: 'DDNet & KoG stats, history, achievements.', color: '#3b82f6' },
-  { icon: BarChart3, title: 'DDNet & KoG Stats', desc: 'Points, ranks, maps — all in one place.', color: '#10b981' },
-  { icon: UserPlus, title: 'Friends System', desc: 'Add friends, see online, challenge to games.', color: '#ec4899' },
+  { icon: MessageCircle, titleKey: 'features.forum.title', descKey: 'features.forum.desc', color: '#a855f7' },
+  { icon: Trophy, titleKey: 'features.leaderboards.title', descKey: 'features.leaderboards.desc', color: '#f59e0b' },
+  { icon: Users, titleKey: 'features.profiles.title', descKey: 'features.profiles.desc', color: '#3b82f6' },
+  { icon: BarChart3, titleKey: 'features.stats.title', descKey: 'features.stats.desc', color: '#10b981' },
+  { icon: UserPlus, titleKey: 'features.friends.title', descKey: 'features.friends.desc', color: '#ec4899' },
 ]
 
 const SUN_RADIUS = 280
@@ -183,6 +185,7 @@ function getSunPosition(index: number, total: number) {
 }
 
 export function FeaturesSection() {
+  const t = useTranslations('home')
   const containerRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(containerRef, { once: true, amount: 0.3 })
   const [isMobile, setIsMobile] = useState(false)
@@ -198,18 +201,18 @@ export function FeaturesSection() {
   if (isMobile) {
     return (
       <SectionShell className="max-w-[500px]">
-        <h2 className="text-3xl font-bold text-white mb-5">What&apos;s Inside</h2>
+        <h2 className="text-3xl font-bold text-white mb-5">{t('features.title')}</h2>
         <motion.div className="space-y-3" variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
           {FEATURES.map((f) => (
-            <motion.div key={f.title} variants={fadeUp}>
+            <motion.div key={t(f.titleKey)} variants={fadeUp}>
               <GlassCard accent={f.color} hover>
                 <div className="flex items-start gap-3">
                   <div className="size-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${f.color}20` }}>
                     <f.icon className="size-4" style={{ color: f.color }} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-sm">{f.title}</h3>
-                    <p className="text-white/60 text-xs leading-relaxed">{f.desc}</p>
+                    <h3 className="text-white font-semibold text-sm">{t(f.titleKey)}</h3>
+                    <p className="text-white/60 text-xs leading-relaxed">{t(f.descKey)}</p>
                   </div>
                 </div>
               </GlassCard>
@@ -253,8 +256,8 @@ export function FeaturesSection() {
         animate={isInView ? { scale: 1, opacity: 1 } : {}}
         transition={{ duration: 0.5 }}
       >
-        <div className="absolute -inset-8 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
-        <Grid3x3 className="size-10 text-primary mb-2 relative" />
+        <div className="absolute -inset-8 rounded-full bg-[#10b981]/10 blur-2xl pointer-events-none" />
+        <Grid3x3 className="size-10 text-[#10b981] mb-2 relative" />
         <h2 className="text-2xl font-bold text-white relative leading-tight">What&apos;s<br />Inside</h2>
       </motion.div>
 
@@ -264,7 +267,7 @@ export function FeaturesSection() {
         const cardW = 190
         return (
           <motion.div
-            key={f.title}
+            key={t(f.titleKey)}
             className="absolute"
             style={{ left: pos.x - cardW / 2, top: pos.y - 50, width: cardW }}
             initial={{ opacity: 0, scale: 0.7 }}
@@ -283,8 +286,8 @@ export function FeaturesSection() {
               >
                 <f.icon className="size-5" style={{ color: f.color }} />
               </div>
-              <h3 className="text-white font-semibold text-sm mb-1">{f.title}</h3>
-              <p className="text-white/50 text-xs leading-snug">{f.desc}</p>
+              <h3 className="text-white font-semibold text-sm mb-1">{t(f.titleKey)}</h3>
+              <p className="text-white/50 text-xs leading-snug">{t(f.descKey)}</p>
             </motion.div>
           </motion.div>
         )
@@ -296,14 +299,15 @@ export function FeaturesSection() {
 // ─── DDNet Modes ─────────────────────────────────────────────────────────────
 
 export function DDNetModesSection() {
+  const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[500px]">
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-white text-xs font-medium mb-3">
-        DDNet Maps
+        {t('ddnet.badge')}
       </div>
-      <h2 className="text-3xl font-bold text-white mb-2">DDNet Bingo &amp; Race</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">{t('ddnet.title')}</h2>
       <p className="text-white/60 text-sm mb-4">
-        13 categories — Novice to Insane. Difficulty filtering, solo &amp; team modes, real-time progress tracking via DDNet API. Users with special roles can create custom categories.
+        {t('ddnet.description')}
       </p>
       <GlassCard accent="#3b82f6">
         <motion.div
@@ -314,8 +318,8 @@ export function DDNetModesSection() {
           viewport={{ once: true, amount: 0.5 }}
         >
           {[
-            { value: 13, label: 'Categories' },
-            { value: 2, label: 'Game Modes' },
+            { value: 13, label: t('ddnet.categories') },
+            { value: 2, label: t('ddnet.gameModes') },
           ].map((s) => (
             <motion.div key={s.label} variants={fadeUp}>
               <div className="text-3xl font-bold text-blue-400">
@@ -326,11 +330,11 @@ export function DDNetModesSection() {
           ))}
           <motion.div variants={fadeUp}>
             <div className="text-2xl font-bold text-white">3×3 – 7×7</div>
-            <div className="text-xs text-white/50 mt-1">Grid Sizes</div>
+            <div className="text-xs text-white/50 mt-1">{t('ddnet.gridSizes')}</div>
           </motion.div>
           <motion.div variants={fadeUp}>
             <div className="text-2xl font-bold text-white">3 – 20</div>
-            <div className="text-xs text-white/50 mt-1">Race Steps</div>
+            <div className="text-xs text-white/50 mt-1">{t('ddnet.raceSteps')}</div>
           </motion.div>
         </motion.div>
       </GlassCard>
@@ -351,14 +355,15 @@ const KOG_CATEGORIES = [
 ]
 
 export function KoGModesSection() {
+  const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[520px]">
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-white text-xs font-medium mb-3">
-        King of Gores
+        {t('kog.badge')}
       </div>
-      <h2 className="text-3xl font-bold text-white mb-2">KoG Bingo &amp; Race</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">{t('kog.title')}</h2>
       <p className="text-white/60 text-sm mb-4">
-        Same gameplay on KoG maps. 7 categories — Easy to Extreme. 1000+ gores maps with difficulty stars.
+        {t('kog.description')}
       </p>
       <GlassCard accent="#10b981">
         {/* Difficulty gradient line */}
@@ -387,7 +392,7 @@ export function KoGModesSection() {
           ))}
         </motion.div>
         <p className="text-white/50 text-xs mt-4 text-center">
-          Finish detection via kog.tw profile parsing. Snapshot-based — no API needed.
+          {t('kog.detection')}
         </p>
       </GlassCard>
     </SectionShell>
@@ -432,6 +437,7 @@ const BINGO_SEQUENCE: { cell: number; player: 'blue' | 'red' }[] = [
 type BingoPhase = 'playing' | 'celebrating' | 'resetting'
 
 export function BingoPreviewSection() {
+  const t = useTranslations('home')
   const [skins] = useState(() => pickRandomSkins(2, 42))
   const containerRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(containerRef, { amount: 0.3 })
@@ -511,26 +517,26 @@ export function BingoPreviewSection() {
 
   return (
     <SectionShell className="max-w-[620px]" ref={containerRef}>
-      <h2 className="text-3xl font-bold text-white mb-4 text-center">Bingo Preview</h2>
+      <h2 className="text-3xl font-bold text-white mb-4 text-center">{t('bingo.title')}</h2>
 
       {/* Two opponents */}
-      <div className="flex items-center justify-between mb-4 px-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4 px-2">
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'blue' ? 'bg-blue-500/20 ring-1 ring-blue-500/40' : 'opacity-60')}>
           <TeeAvatarWithFallback skinUrl={getDDNetSkinUrl(skins[0])} size="sm" lookAtCursor />
           <div>
-            <div className="text-white text-xs font-semibold">Player 1</div>
+            <div className="text-white text-xs font-semibold">{t('bingo.player1')}</div>
             <div className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-blue-500" />
-              <span className="text-blue-400 text-[10px]">{[...cells.values()].filter((v) => v === 'blue').length} cells</span>
+              <span className="text-blue-400 text-[10px]">{[...cells.values()].filter((v) => v === 'blue').length} {t('bingo.cells')}</span>
             </div>
           </div>
         </div>
-        <span className="text-white/30 text-xs font-bold">VS</span>
+        <span className="text-white/30 text-xs font-bold text-center">VS</span>
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'red' ? 'bg-red-500/20 ring-1 ring-red-500/40' : 'opacity-60')}>
           <div>
-            <div className="text-white text-xs font-semibold text-right">Player 2</div>
+            <div className="text-white text-xs font-semibold text-right">{t('bingo.player2')}</div>
             <div className="flex items-center gap-1 justify-end">
-              <span className="text-red-400 text-[10px]">{[...cells.values()].filter((v) => v === 'red').length} cells</span>
+              <span className="text-red-400 text-[10px]">{[...cells.values()].filter((v) => v === 'red').length} {t('bingo.cells')}</span>
               <span className="size-2 rounded-full bg-red-500" />
             </div>
           </div>
@@ -661,6 +667,7 @@ const RACE_SEQUENCE: { map: number; player: 'emerald' | 'orange' }[] = [
 type RacePhase = 'playing' | 'celebrating' | 'resetting'
 
 export function RacePreviewSection() {
+  const t = useTranslations('home')
   const containerRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(containerRef, { amount: 0.3 })
   const [cells, setCells] = useState<Map<number, 'emerald' | 'orange'>>(new Map())
@@ -699,7 +706,7 @@ export function RacePreviewSection() {
     confettiFiredRef.current = true
     import('canvas-confetti').then((mod) => {
       const confetti = mod.default
-      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#6ee7b7'] })
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#10b981', '#6ee7b7'] })
     })
     const timer = setTimeout(() => setPhase('resetting'), 3000)
     timersRef.current.push(timer)
@@ -717,31 +724,31 @@ export function RacePreviewSection() {
 
   return (
     <SectionShell className="max-w-[520px]" ref={containerRef}>
-      <h2 className="text-3xl font-bold text-white mb-4 text-center">Race Preview</h2>
+      <h2 className="text-3xl font-bold text-white mb-4 text-center">{t('race.title')}</h2>
 
       {/* Two opponents */}
-      <div className="flex items-center justify-between mb-4 px-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4 px-2">
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'emerald' ? 'bg-emerald-500/20 ring-1 ring-emerald-500/40' : 'opacity-60')}>
           <TeeAvatarWithFallback skinUrl={getDDNetSkinUrl('limekitty')} size="sm" lookAtCursor />
           <div>
-            <div className="text-white text-xs font-semibold">Player 1</div>
+            <div className="text-white text-xs font-semibold">{t('race.player1')}</div>
             <div className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-emerald-500" />
-              <span className="text-emerald-400 text-[10px]">{emeraldCount} maps</span>
+              <span className="text-emerald-400 text-[10px]">{emeraldCount} {t('race.maps')}</span>
             </div>
           </div>
         </div>
         <div className="text-center">
           {done
-            ? <span className="text-emerald-400 text-xs font-bold">Player 1 wins!</span>
+            ? <span className="text-emerald-400 text-xs font-bold">{t('race.wins', { name: t('race.player1') })}</span>
             : <span className="text-white/30 text-xs font-bold">VS</span>
           }
         </div>
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'orange' ? 'bg-orange-500/20 ring-1 ring-orange-500/40' : 'opacity-60')}>
           <div>
-            <div className="text-white text-xs font-semibold text-right">Player 2</div>
+            <div className="text-white text-xs font-semibold text-right">{t('race.player2')}</div>
             <div className="flex items-center gap-1 justify-end">
-              <span className="text-orange-400 text-[10px]">{orangeCount} maps</span>
+              <span className="text-orange-400 text-[10px]">{orangeCount} {t('race.maps')}</span>
               <span className="size-2 rounded-full bg-orange-500" />
             </div>
           </div>
@@ -812,19 +819,20 @@ export function RacePreviewSection() {
 
 // ─── Download ────────────────────────────────────────────────────────────────
 
-const DOWNLOAD_FEATURES = [
-  'Create games from client',
-  'Real-time game overlay',
-  'Auto-join game servers',
-  'Instant finish detection',
-]
+const DOWNLOAD_FEATURE_KEYS = [
+  'download.features.createGames',
+  'download.features.overlay',
+  'download.features.autoJoin',
+  'download.features.detection',
+] as const
 
 export function DownloadSection() {
+  const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[560px]">
-      <h2 className="text-3xl font-bold text-white mb-2">Download Client</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">{t('download.title')}</h2>
       <p className="text-white/60 text-sm mb-4">
-        Modified DDNet client with built-in Bingo &amp; Race UI. Create and play games without leaving the client.
+        {t('download.description')}
       </p>
 
       {/* Mini client window mockup */}
@@ -864,14 +872,14 @@ export function DownloadSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.3 }}
         >
-          {DOWNLOAD_FEATURES.map((feature) => (
-            <motion.div key={feature} variants={slideLeft} className="flex items-center gap-2 text-sm text-white/80">
+          {DOWNLOAD_FEATURE_KEYS.map((key) => (
+            <motion.div key={key} variants={slideLeft} className="flex items-center gap-2 text-sm text-white/80">
               <ChevronRight className="size-4 text-orange-400 shrink-0" />
-              {feature}
+              {t(key)}
             </motion.div>
           ))}
         </motion.div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {[
             { icon: Monitor, label: 'Windows' },
             { icon: Terminal, label: 'Linux' },
@@ -885,7 +893,7 @@ export function DownloadSection() {
             </motion.div>
           ))}
         </div>
-        <p className="text-white/30 text-xs mt-3 text-center animate-[pulse_3s_ease_infinite]">Coming soon</p>
+        <p className="text-white/30 text-xs mt-3 text-center animate-[pulse_3s_ease_infinite]">{t('download.comingSoon')}</p>
       </GlassCard>
     </SectionShell>
   )
@@ -896,6 +904,7 @@ export function DownloadSection() {
 const DISCORD_FALLBACK = 'https://discord.gg/DghtpdvySM'
 
 export function CommunitySection() {
+  const t = useTranslations('home')
   const { data } = useSWR('/api/globals/about-page?depth=0', aboutFetcher)
 
   // Get discord URL from CMS contact links, fallback to hardcoded
@@ -908,9 +917,9 @@ export function CommunitySection() {
 
   return (
     <SectionShell className="max-w-[520px]">
-      <h2 className="text-3xl font-bold text-white mb-2">Community</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">{t('community.title')}</h2>
       <p className="text-white/60 text-sm mb-5">
-        Join the DDashBoard community. Chat, share replays, find teammates, and stay up to date.
+        {t('community.description')}
       </p>
       <GlassCard accent="#5865F2" hover>
         <div className="flex items-center gap-4">
@@ -919,24 +928,24 @@ export function CommunitySection() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-white font-semibold text-lg">Discord Server</h3>
+              <h3 className="text-white font-semibold text-lg">{t('community.discordTitle')}</h3>
               <span className="relative flex size-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex rounded-full size-2 bg-green-500" />
               </span>
             </div>
-            <p className="text-white/50 text-sm">Chat, voice channels, game announcements, find teammates</p>
+            <p className="text-white/50 text-sm">{t('community.discordDesc')}</p>
           </div>
         </div>
         <Button size="sm" className="w-full mt-4 bg-[#5865F2] hover:bg-[#4752C4] text-white" asChild>
           <a href={discordUrl} target="_blank" rel="noopener noreferrer">
-            Join Discord
+            {t('community.joinDiscord')}
             <ExternalLink className="size-3 ml-1.5" />
           </a>
         </Button>
       </GlassCard>
       <p className="text-white/30 text-xs mt-4 text-center">
-        Powered by the DDNet &amp; KoG community
+        {t('community.powered')}
       </p>
     </SectionShell>
   )
@@ -946,16 +955,8 @@ export function CommunitySection() {
 
 const aboutFetcher = (url: string) => fetch(url).then((r) => r.json())
 
-// Fallback member shown even without CMS data
-const MONIKFOX_FALLBACK = {
-  name: 'MonikFox',
-  skinName: 'Silver_paw',
-  title: 'Artist',
-  titleColor: '#ec4899',
-  description: 'Client art & icons',
-}
-
 export function TeamSection({ locale }: { locale: string }) {
+  const t = useTranslations('home')
   const { data } = useSWR(`/api/globals/about-page?depth=0&locale=${locale}`, aboutFetcher)
 
   const members: any[] = []
@@ -964,10 +965,6 @@ export function TeamSection({ locale }: { locale: string }) {
       if (section.members) members.push(...section.members)
     }
   }
-  // Ensure MonikFox is always present
-  if (!members.some((m) => m.name === 'MonikFox')) {
-    members.push(MONIKFOX_FALLBACK)
-  }
 
   const lead = members[0]
   const rest = members.slice(1, 7)
@@ -975,7 +972,7 @@ export function TeamSection({ locale }: { locale: string }) {
 
   return (
     <SectionShell className="max-w-[500px]">
-      <h2 className="text-3xl font-bold text-white mb-4">The Team</h2>
+      <h2 className="text-3xl font-bold text-white mb-4">{t('team.title')}</h2>
 
       {lead ? (
         <motion.div
@@ -1025,11 +1022,11 @@ export function TeamSection({ locale }: { locale: string }) {
           {rest.length > 0 && (
             <motion.div variants={fadeUp}>
               <GlassCard>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2">
                   {rest.map((m: any, i: number) => (
                     <motion.div
                       key={i}
-                      className="flex flex-col items-center gap-1.5"
+                      className="flex items-center gap-3 px-2 py-1.5"
                       initial={{ opacity: 0, scale: 0.8 }}
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
@@ -1043,20 +1040,20 @@ export function TeamSection({ locale }: { locale: string }) {
                         size="md"
                         lookAtCursor
                       />
-                      <span className="text-white/80 text-[10px] font-medium text-center leading-tight truncate w-full">
-                        {m.name}
-                      </span>
-                      {m.title && (
-                        <span
-                          className="text-[8px] px-1.5 py-0.5 rounded-full border"
-                          style={{
-                            borderColor: `${m.titleColor || '#6b7280'}40`,
-                            color: m.titleColor || '#6b7280',
-                          }}
-                        >
-                          {m.title}
-                        </span>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-white/80 text-sm font-medium truncate block">{m.name}</span>
+                        {m.title && (
+                          <span
+                            className="text-[10px] px-1.5 py-0.5 rounded-full border inline-block mt-0.5"
+                            style={{
+                              borderColor: `${m.titleColor || '#6b7280'}40`,
+                              color: m.titleColor || '#6b7280',
+                            }}
+                          >
+                            {m.title}
+                          </span>
+                        )}
+                      </div>
                     </motion.div>
                   ))}
                 </div>
@@ -1070,7 +1067,7 @@ export function TeamSection({ locale }: { locale: string }) {
           <motion.div variants={fadeUp}>
             <Button size="sm" variant="outline" className="w-full border-white/15 text-white/70 hover:bg-white/10" asChild>
               <Link href={`/${locale}/about`}>
-                Meet the full team
+                {t('team.meetFull')}
                 <ExternalLink className="size-3 ml-1.5" />
               </Link>
             </Button>
@@ -1090,12 +1087,13 @@ export function TeamSection({ locale }: { locale: string }) {
 // ─── Footer (merged About + Footer) ─────────────────────────────────────────
 
 export function FooterSection({ locale }: { locale: string }) {
+  const t = useTranslations('home')
   const navLinks = [
-    { href: `/${locale}/about`, label: 'About' },
-    { href: `/${locale}/rules`, label: 'Rules' },
-    { href: '/support', label: 'Support' },
-    { href: `/${locale}/terms`, label: 'Terms' },
-    { href: `/${locale}/privacy`, label: 'Privacy' },
+    { href: `/${locale}/about`, label: t('footer.about') },
+    { href: `/${locale}/rules`, label: t('footer.rules') },
+    { href: '/support', label: t('footer.support') },
+    { href: `/${locale}/terms`, label: t('footer.terms') },
+    { href: `/${locale}/privacy`, label: t('footer.privacy') },
   ]
 
   return (
@@ -1113,21 +1111,20 @@ export function FooterSection({ locale }: { locale: string }) {
             </motion.div>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-1">Free &amp; Open Source</h3>
+            <h3 className="text-white font-semibold mb-1">{t('footer.freeTitle')}</h3>
             <p className="text-white/60 text-sm leading-relaxed">
-              DDashBoard is a free community platform for DDNet and KoG players.
-              No ads, no paywalls, no tracking — just play.
+              {t('footer.freeDesc')}
             </p>
           </div>
         </div>
-        <div className="relative flex flex-wrap gap-2">
-          <Button size="sm" asChild>
-            <Link href={`/${locale}/about`}>Learn more</Link>
+        <div className="relative flex flex-col gap-2">
+          <Button size="sm" asChild className="w-full bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
+            <Link href={`/${locale}/about`}>{t('footer.learnMore')}</Link>
           </Button>
-          <Button size="sm" variant="outline" className="border-white/15 text-white/80 hover:bg-white/10" asChild>
+          <Button size="sm" variant="outline" className="w-full border-white/15 text-white/80 hover:bg-white/10" asChild>
             <a href="https://ddnet.org" target="_blank" rel="noopener noreferrer">DDNet.org</a>
           </Button>
-          <Button size="sm" variant="outline" className="border-white/15 text-white/80 hover:bg-white/10" asChild>
+          <Button size="sm" variant="outline" className="w-full border-white/15 text-white/80 hover:bg-white/10" asChild>
             <a href="https://github.com/DDashBoard" target="_blank" rel="noopener noreferrer">
               <Github className="size-3.5 mr-1" />
               GitHub
@@ -1143,12 +1140,12 @@ export function FooterSection({ locale }: { locale: string }) {
             animate={{ opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Grid3x3 className="size-5 text-primary" />
+            <Grid3x3 className="size-5 text-[#10b981]" />
           </motion.div>
           <span className="font-bold text-white text-lg">DDashBoard</span>
         </div>
         <motion.div
-          className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-white/50 mb-4"
+          className="flex flex-col gap-1.5 text-sm text-white/50 mb-4"
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -1161,8 +1158,8 @@ export function FooterSection({ locale }: { locale: string }) {
           ))}
         </motion.div>
         <div className="flex items-center justify-between text-[10px] text-white/20 border-t border-white/5 pt-3">
-          <span>&copy; 2024-2026 DDashBoard</span>
-          <span>Powered by DDNet community</span>
+          <span>{t('footer.copyright')}</span>
+          <span>{t('footer.powered')}</span>
         </div>
       </GlassCard>
     </SectionShell>

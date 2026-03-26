@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme/theme-provider'
 import { themeIds, themeClassMap } from '@/lib/themes'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { FloatingBackground } from '@/components/ui/floating-background'
+import { RenderModeThemeProvider } from '@/components/landing/RenderModeThemeProvider'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants'
 import { getUserLocale } from '@/services/locale'
@@ -79,6 +80,7 @@ export default async function RootLayout({
           )}
 
           <FloatingBackground />
+          <RenderModeThemeProvider />
           <NextIntlClientProvider>
             <AuthProvider>
               <Toaster />

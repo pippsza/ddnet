@@ -473,13 +473,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/app/settings" onClick={handleNavClick}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t('userMenu.settings')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   {t('userMenu.logout')}

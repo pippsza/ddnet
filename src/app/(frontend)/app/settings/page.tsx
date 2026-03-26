@@ -30,7 +30,7 @@ import {
 } from 'lucide-react'
 import { useBotSettings } from '@/hooks/use-bot-settings'
 import { useTheme } from 'next-themes'
-import { themes, savePreferredTheme } from '@/lib/themes'
+import { userThemes, savePreferredTheme } from '@/lib/themes'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setUserLocale } from '@/services/locale'
@@ -43,6 +43,7 @@ import {
   type VerificationServer,
 } from '@/components/auth/VerificationShared'
 import { PageTransition, ScaleIn, FadeIn } from '@/components/ui/animations'
+import { useRenderMode } from '@/hooks/useRenderMode'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -70,21 +71,7 @@ type VerificationStep = 'idle' | 'starting' | 'pending' | 'success' | 'failed' |
 
 function RenderModeThemeHint() {
   const t = useTranslations('settings')
-  const [mapActive, setMapActive] = useState(false)
-
-  useEffect(() => {
-    const check = () => {
-      const mode = localStorage.getItem('landing-render-mode') || 'quality'
-      setMapActive(mode !== 'performance')
-    }
-    check()
-    window.addEventListener('render-mode-change', check)
-    window.addEventListener('storage', check)
-    return () => {
-      window.removeEventListener('render-mode-change', check)
-      window.removeEventListener('storage', check)
-    }
-  }, [])
+  const { mapActive } = useRenderMode()
 
   if (mapActive) {
     return (
@@ -448,7 +435,7 @@ export default function SettingsPage() {
         <CardContent>
           <RenderModeThemeHint />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {themes.map((themeItem) => {
+            {userThemes.map((themeItem) => {
               const isSelected = themeMounted && currentTheme === themeItem.id
               const isDark = themeItem.mode === 'dark'
               return (

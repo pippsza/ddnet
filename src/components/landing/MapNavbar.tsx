@@ -11,6 +11,8 @@ import { locales as allLocales, type Locale } from '@/i18n/config'
 import { setUserLocale } from '@/services/locale'
 import { useRouter, usePathname } from 'next/navigation'
 import { ConditionalThemeToggle } from '@/components/theme/ConditionalThemeToggle'
+import { RenderModeToggle } from '@/components/landing/RenderModeToggle'
+import { useRenderMode } from '@/hooks/useRenderMode'
 
 interface NavItem {
   label: string
@@ -39,21 +41,7 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
   const [scrolled, setScrolled] = useState(false)
   const [localeOpen, setLocaleOpen] = useState(false)
   const [localeTransition, setLocaleTransition] = useState(false)
-  const [mapActive, setMapActive] = useState(true)
-
-  useEffect(() => {
-    const check = () => {
-      const mode = localStorage.getItem('landing-render-mode') || 'quality'
-      setMapActive(mode !== 'performance')
-    }
-    check()
-    window.addEventListener('render-mode-change', check)
-    window.addEventListener('storage', check)
-    return () => {
-      window.removeEventListener('render-mode-change', check)
-      window.removeEventListener('storage', check)
-    }
-  }, [])
+  const { mapActive } = useRenderMode()
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -113,7 +101,7 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
         {/* Brand */}
         <button onClick={() => scrollTo(0)} className="flex items-center gap-2 group">
-          <Grid3x3 className={cn('size-6 group-hover:scale-110 transition-transform', mapActive ? 'text-[#10b981]' : 'text-primary')} />
+          <Grid3x3 className={cn('size-6 group-hover:scale-110 transition-transform', mapActive ? 'text-accent' : 'text-primary')} />
           <span className={cn('text-lg font-bold', mapActive ? 'text-white' : 'text-foreground')}>{brandName}</span>
         </button>
 
@@ -144,14 +132,19 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
               {LOCALE_LABELS[locale] || locale.toUpperCase()}
             </button>
             {localeOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-black/80 backdrop-blur-xl border border-white/10 rounded-lg py-1 min-w-[100px] z-50">
+              <div className={cn(
+                'absolute right-0 top-full mt-1 backdrop-blur-xl rounded-lg py-1 min-w-[100px] z-50',
+                mapActive ? 'bg-black/80 border border-white/10' : 'bg-popover border border-border',
+              )}>
                 {allLocales.map((l) => (
                   <button
                     key={l}
                     onClick={() => handleLocaleChange(l)}
                     className={cn(
                       'block w-full text-left px-3 py-1.5 text-xs transition-colors',
-                      l === locale ? 'text-white bg-white/10' : 'text-white/60 hover:text-white hover:bg-white/5',
+                      l === locale
+                        ? mapActive ? 'text-white bg-white/10' : 'text-foreground bg-accent'
+                        : mapActive ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                     )}
                   >
                     {LOCALE_LABELS[l] || l.toUpperCase()}
@@ -170,12 +163,19 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
           </Link>
 
           <ConditionalThemeToggle start="top-right" variant="circle-blur" />
+          <RenderModeToggle />
 
           <div className="ml-2 flex gap-2">
             {isLoggedIn ? (
-              <Button size="sm" asChild className="bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
-                <Link href="/app">Open App</Link>
-              </Button>
+              mapActive ? (
+                <Button size="sm" asChild className="bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
+                  <Link href="/app">Open App</Link>
+                </Button>
+              ) : (
+                <Button size="sm" asChild>
+                  <Link href="/app">Open App</Link>
+                </Button>
+              )
             ) : (
               <>
                 <Button size="sm" variant="ghost" className={mapActive ? 'text-white/80 hover:text-white' : ''} asChild>
@@ -238,19 +238,21 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
           <Link
             href={`/${locale}/about`}
             onClick={() => setMobileOpen(false)}
-            className="block w-full text-left px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg text-sm"
+            className={cn('block w-full text-left px-4 py-2.5 rounded-lg text-sm', mapActive ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-foreground hover:bg-muted')}
           >
             About
           </Link>
           {/* Mobile locale switcher */}
-          <div className="pt-3 border-t border-white/10 flex flex-wrap gap-1.5 mb-3">
+          <div className={cn('pt-3 border-t flex flex-wrap gap-1.5 mb-3', mapActive ? 'border-white/10' : 'border-border')}>
             {allLocales.map((l) => (
               <button
                 key={l}
                 onClick={() => handleLocaleChange(l)}
                 className={cn(
                   'px-2.5 py-1 rounded-full text-xs transition-colors',
-                  l === locale ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white/70',
+                  l === locale
+                    ? mapActive ? 'bg-white/15 text-white' : 'bg-muted text-foreground'
+                    : mapActive ? 'text-white/40 hover:text-white/70' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {LOCALE_LABELS[l]}
@@ -259,17 +261,29 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
           </div>
           <div className="flex gap-2">
             {isLoggedIn ? (
-              <Button size="sm" className="w-full bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!" asChild>
-                <Link href="/app">Open App</Link>
-              </Button>
+              mapActive ? (
+                <Button size="sm" className="w-full bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!" asChild>
+                  <Link href="/app">Open App</Link>
+                </Button>
+              ) : (
+                <Button size="sm" className="w-full" asChild>
+                  <Link href="/app">Open App</Link>
+                </Button>
+              )
             ) : (
               <>
-                <Button size="sm" variant="ghost" className="flex-1 text-white/80" asChild>
+                <Button size="sm" variant="ghost" className={cn('flex-1', mapActive ? 'text-white/80' : '')} asChild>
                   <Link href="/login">{t('nav.login')}</Link>
                 </Button>
-                <Button size="sm" className="flex-1 bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!" asChild>
-                  <Link href="/register">{t('nav.signup')}</Link>
-                </Button>
+                {mapActive ? (
+                  <Button size="sm" className="flex-1 bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!" asChild>
+                    <Link href="/register">{t('nav.signup')}</Link>
+                  </Button>
+                ) : (
+                  <Button size="sm" className="flex-1" asChild>
+                    <Link href="/register">{t('nav.signup')}</Link>
+                  </Button>
+                )}
               </>
             )}
           </div>

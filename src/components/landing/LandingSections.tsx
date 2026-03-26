@@ -123,23 +123,23 @@ export function HeroSection({ locale }: { locale: string }) {
         </div>
       </div>
 
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#10b981]/20 border border-[#10b981]/30 text-white text-sm font-medium mb-5">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#10b981]/20 border border-[#10b981]/30 text-foreground text-sm font-medium mb-5">
         <Grid3x3 className="size-4" />
         {t('hero.badge')}
       </div>
 
-      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 text-white leading-tight">
+      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 text-foreground leading-tight">
         <span className="bg-size-[200%_200%] bg-linear-to-r from-[#10b981] via-emerald-400 to-sky-400 bg-clip-text text-transparent animate-[gradient-shift_4s_ease_infinite]">
           {t('hero.title')}
         </span>
       </h1>
 
-      <p className="text-lg text-white/70 mb-6 leading-relaxed">
+      <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
         {t('hero.description')}
       </p>
 
       <div className="flex gap-3 justify-center">
-        <Button size="lg" asChild className="group bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
+        <Button size="lg" asChild className="group">
           <Link href="/register">
             {t('hero.getStarted')}
             <ChevronRight className="ml-1 transition-transform group-hover:translate-x-1" />
@@ -151,7 +151,7 @@ export function HeroSection({ locale }: { locale: string }) {
       </div>
 
       <motion.div
-        className="mt-4 text-white/40"
+        className="mt-4 text-muted-foreground"
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -201,7 +201,7 @@ export function FeaturesSection() {
   if (isMobile) {
     return (
       <SectionShell className="max-w-[500px]">
-        <h2 className="text-3xl font-bold text-white mb-5">{t('features.title')}</h2>
+        <h2 className="text-3xl font-bold text-foreground mb-5">{t('features.title')}</h2>
         <motion.div className="space-y-3" variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
           {FEATURES.map((f) => (
             <motion.div key={t(f.titleKey)} variants={fadeUp}>
@@ -211,8 +211,8 @@ export function FeaturesSection() {
                     <f.icon className="size-4" style={{ color: f.color }} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-sm">{t(f.titleKey)}</h3>
-                    <p className="text-white/60 text-xs leading-relaxed">{t(f.descKey)}</p>
+                    <h3 className="text-foreground font-semibold text-sm">{t(f.titleKey)}</h3>
+                    <p className="text-muted-foreground text-xs leading-relaxed">{t(f.descKey)}</p>
                   </div>
                 </div>
               </GlassCard>
@@ -250,15 +250,15 @@ export function FeaturesSection() {
 
       {/* Center hub */}
       <motion.div
-        className="absolute flex flex-col items-center justify-center text-center rounded-2xl bg-black/40 backdrop-blur-md border border-white/10"
+        className="absolute flex flex-col items-center justify-center text-center rounded-2xl landing-shell"
         style={{ left: SUN_CENTER - 90, top: SUN_CENTER_Y - 70, width: 180, height: 140 }}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={isInView ? { scale: 1, opacity: 1 } : {}}
         transition={{ duration: 0.5 }}
       >
         <div className="absolute -inset-8 rounded-full bg-[#10b981]/10 blur-2xl pointer-events-none" />
-        <Grid3x3 className="size-10 text-[#10b981] mb-2 relative" />
-        <h2 className="text-2xl font-bold text-white relative leading-tight">What&apos;s<br />Inside</h2>
+        <Grid3x3 className="size-10 text-accent mb-2 relative" />
+        <h2 className="text-2xl font-bold text-foreground relative leading-tight">What&apos;s<br />Inside</h2>
       </motion.div>
 
       {/* Feature cards around the circle */}
@@ -275,7 +275,7 @@ export function FeaturesSection() {
             transition={{ duration: 0.4, delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
-              className="rounded-xl bg-black/50 backdrop-blur-md border border-white/10 p-4 text-center cursor-default"
+              className="rounded-xl landing-shell p-4 text-center cursor-default"
               style={{ boxShadow: `0 0 20px ${f.color}15` }}
               whileHover={{ scale: 1.08, boxShadow: `0 0 30px ${f.color}30` }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
@@ -286,8 +286,8 @@ export function FeaturesSection() {
               >
                 <f.icon className="size-5" style={{ color: f.color }} />
               </div>
-              <h3 className="text-white font-semibold text-sm mb-1">{t(f.titleKey)}</h3>
-              <p className="text-white/50 text-xs leading-snug">{t(f.descKey)}</p>
+              <h3 className="text-foreground font-semibold text-sm mb-1">{t(f.titleKey)}</h3>
+              <p className="text-muted-foreground text-xs leading-snug">{t(f.descKey)}</p>
             </motion.div>
           </motion.div>
         )
@@ -302,11 +302,11 @@ export function DDNetModesSection() {
   const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[500px]">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-white text-xs font-medium mb-3">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-foreground text-xs font-medium mb-3">
         {t('ddnet.badge')}
       </div>
-      <h2 className="text-3xl font-bold text-white mb-2">{t('ddnet.title')}</h2>
-      <p className="text-white/60 text-sm mb-4">
+      <h2 className="text-3xl font-bold text-foreground mb-2">{t('ddnet.title')}</h2>
+      <p className="text-muted-foreground text-sm mb-4">
         {t('ddnet.description')}
       </p>
       <GlassCard accent="#3b82f6">
@@ -325,16 +325,16 @@ export function DDNetModesSection() {
               <div className="text-3xl font-bold text-blue-400">
                 <AnimatedCounter value={s.value} />
               </div>
-              <div className="text-xs text-white/50 mt-1">{s.label}</div>
+              <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
             </motion.div>
           ))}
           <motion.div variants={fadeUp}>
-            <div className="text-2xl font-bold text-white">3×3 – 7×7</div>
-            <div className="text-xs text-white/50 mt-1">{t('ddnet.gridSizes')}</div>
+            <div className="text-2xl font-bold text-foreground">3×3 – 7×7</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('ddnet.gridSizes')}</div>
           </motion.div>
           <motion.div variants={fadeUp}>
-            <div className="text-2xl font-bold text-white">3 – 20</div>
-            <div className="text-xs text-white/50 mt-1">{t('ddnet.raceSteps')}</div>
+            <div className="text-2xl font-bold text-foreground">3 – 20</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('ddnet.raceSteps')}</div>
           </motion.div>
         </motion.div>
       </GlassCard>
@@ -358,11 +358,11 @@ export function KoGModesSection() {
   const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[520px]">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-white text-xs font-medium mb-3">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-foreground text-xs font-medium mb-3">
         {t('kog.badge')}
       </div>
-      <h2 className="text-3xl font-bold text-white mb-2">{t('kog.title')}</h2>
-      <p className="text-white/60 text-sm mb-4">
+      <h2 className="text-3xl font-bold text-foreground mb-2">{t('kog.title')}</h2>
+      <p className="text-muted-foreground text-sm mb-4">
         {t('kog.description')}
       </p>
       <GlassCard accent="#10b981">
@@ -391,7 +391,7 @@ export function KoGModesSection() {
             </motion.span>
           ))}
         </motion.div>
-        <p className="text-white/50 text-xs mt-4 text-center">
+        <p className="text-muted-foreground text-xs mt-4 text-center">
           {t('kog.detection')}
         </p>
       </GlassCard>
@@ -517,24 +517,24 @@ export function BingoPreviewSection() {
 
   return (
     <SectionShell className="max-w-[620px]" ref={containerRef}>
-      <h2 className="text-3xl font-bold text-white mb-4 text-center">{t('bingo.title')}</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-4 text-center">{t('bingo.title')}</h2>
 
       {/* Two opponents */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4 px-2">
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'blue' ? 'bg-blue-500/20 ring-1 ring-blue-500/40' : 'opacity-60')}>
           <TeeAvatarWithFallback skinUrl={getDDNetSkinUrl(skins[0])} size="sm" lookAtCursor />
           <div>
-            <div className="text-white text-xs font-semibold">{t('bingo.player1')}</div>
+            <div className="text-foreground text-xs font-semibold">{t('bingo.player1')}</div>
             <div className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-blue-500" />
               <span className="text-blue-400 text-[10px]">{[...cells.values()].filter((v) => v === 'blue').length} {t('bingo.cells')}</span>
             </div>
           </div>
         </div>
-        <span className="text-white/30 text-xs font-bold text-center">VS</span>
+        <span className="text-muted-foreground text-xs font-bold text-center">VS</span>
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'red' ? 'bg-red-500/20 ring-1 ring-red-500/40' : 'opacity-60')}>
           <div>
-            <div className="text-white text-xs font-semibold text-right">{t('bingo.player2')}</div>
+            <div className="text-foreground text-xs font-semibold text-right">{t('bingo.player2')}</div>
             <div className="flex items-center gap-1 justify-end">
               <span className="text-red-400 text-[10px]">{[...cells.values()].filter((v) => v === 'red').length} {t('bingo.cells')}</span>
               <span className="size-2 rounded-full bg-red-500" />
@@ -566,7 +566,7 @@ export function BingoPreviewSection() {
             ? 'bg-blue-500/25 border-blue-500'
             : player === 'red'
               ? 'bg-red-500/25 border-red-500'
-              : 'bg-white/5 border-white/10'
+              : 'bg-muted border-border'
 
           const overlayBg = player === 'blue'
             ? 'bg-blue-500/60'
@@ -612,7 +612,7 @@ export function BingoPreviewSection() {
                 {isDone ? (
                   <Trophy className={cn('size-3 sm:size-3.5', player === 'blue' ? 'text-blue-200' : 'text-red-200')} />
                 ) : (
-                  <span className="text-white/70 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] leading-tight line-clamp-2 text-center">
+                  <span className="text-muted-foreground font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] leading-tight line-clamp-2 text-center">
                     {mapName}
                   </span>
                 )}
@@ -624,9 +624,9 @@ export function BingoPreviewSection() {
 
       {/* Score comparison bar */}
       <div className="mt-4 px-2">
-        <div className="flex items-center gap-2 text-[10px] text-white/50 mb-1">
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1">
           <span className="text-blue-400">{[...cells.values()].filter((v) => v === 'blue').length}</span>
-          <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden flex">
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden flex">
             <motion.div
               className="h-full bg-blue-500 rounded-l-full"
               animate={{ width: `${([...cells.values()].filter((v) => v === 'blue').length / BINGO_TOTAL) * 100}%` }}
@@ -724,14 +724,14 @@ export function RacePreviewSection() {
 
   return (
     <SectionShell className="max-w-[520px]" ref={containerRef}>
-      <h2 className="text-3xl font-bold text-white mb-4 text-center">{t('race.title')}</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-4 text-center">{t('race.title')}</h2>
 
       {/* Two opponents */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4 px-2">
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'emerald' ? 'bg-emerald-500/20 ring-1 ring-emerald-500/40' : 'opacity-60')}>
           <TeeAvatarWithFallback skinUrl={getDDNetSkinUrl('limekitty')} size="sm" lookAtCursor />
           <div>
-            <div className="text-white text-xs font-semibold">{t('race.player1')}</div>
+            <div className="text-foreground text-xs font-semibold">{t('race.player1')}</div>
             <div className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-emerald-500" />
               <span className="text-emerald-400 text-[10px]">{emeraldCount} {t('race.maps')}</span>
@@ -741,12 +741,12 @@ export function RacePreviewSection() {
         <div className="text-center">
           {done
             ? <span className="text-emerald-400 text-xs font-bold">{t('race.wins', { name: t('race.player1') })}</span>
-            : <span className="text-white/30 text-xs font-bold">VS</span>
+            : <span className="text-muted-foreground text-xs font-bold">VS</span>
           }
         </div>
         <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all', activePlayer === 'orange' ? 'bg-orange-500/20 ring-1 ring-orange-500/40' : 'opacity-60')}>
           <div>
-            <div className="text-white text-xs font-semibold text-right">{t('race.player2')}</div>
+            <div className="text-foreground text-xs font-semibold text-right">{t('race.player2')}</div>
             <div className="flex items-center gap-1 justify-end">
               <span className="text-orange-400 text-[10px]">{orangeCount} {t('race.maps')}</span>
               <span className="size-2 rounded-full bg-orange-500" />
@@ -766,13 +766,13 @@ export function RacePreviewSection() {
             ? 'border-emerald-500'
             : owner === 'orange'
               ? 'border-orange-500'
-              : 'border-white/10'
+              : 'border-border'
 
           const bgColor = owner === 'emerald'
             ? 'bg-emerald-500/20'
             : owner === 'orange'
               ? 'bg-orange-500/20'
-              : 'bg-white/5'
+              : 'bg-muted'
 
           return (
             <motion.div
@@ -784,10 +784,10 @@ export function RacePreviewSection() {
               {owner && (
                 <Trophy className={cn('size-4', owner === 'emerald' ? 'text-emerald-400' : 'text-orange-400')} />
               )}
-              <span className="text-white/60 text-[9px] font-medium text-center leading-tight px-1 line-clamp-2">
+              <span className="text-muted-foreground text-[9px] font-medium text-center leading-tight px-1 line-clamp-2">
                 {mapName}
               </span>
-              <span className="absolute top-1 left-1.5 text-white/20 text-[8px] font-mono">{i + 1}</span>
+              <span className="absolute top-1 left-1.5 text-muted-foreground text-[8px] font-mono">{i + 1}</span>
             </motion.div>
           )
         })}
@@ -802,7 +802,7 @@ export function RacePreviewSection() {
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <div className={cn(
                   'w-full h-2 rounded-full transition-colors duration-300',
-                  owner === 'emerald' ? 'bg-emerald-500' : owner === 'orange' ? 'bg-orange-500' : 'bg-white/10',
+                  owner === 'emerald' ? 'bg-emerald-500' : owner === 'orange' ? 'bg-orange-500' : 'bg-muted',
                 )} />
               </div>
             )
@@ -830,8 +830,8 @@ export function DownloadSection() {
   const t = useTranslations('home')
   return (
     <SectionShell className="max-w-[560px]">
-      <h2 className="text-3xl font-bold text-white mb-2">{t('download.title')}</h2>
-      <p className="text-white/60 text-sm mb-4">
+      <h2 className="text-3xl font-bold text-foreground mb-2">{t('download.title')}</h2>
+      <p className="text-muted-foreground text-sm mb-4">
         {t('download.description')}
       </p>
 
@@ -842,7 +842,7 @@ export function DownloadSection() {
           <span className="size-2.5 rounded-full bg-red-500/70" />
           <span className="size-2.5 rounded-full bg-yellow-500/70" />
           <span className="size-2.5 rounded-full bg-green-500/70" />
-          <span className="text-white/30 text-[10px] ml-2 font-mono">DDashBoard Client v1.0</span>
+          <span className="text-muted-foreground text-[10px] ml-2 font-mono">DDashBoard Client v1.0</span>
         </div>
         {/* Fake client UI — mini bingo grid */}
         <div className="p-3">
@@ -860,7 +860,7 @@ export function DownloadSection() {
               )
             })}
           </div>
-          <p className="text-white/20 text-[9px] text-center mt-2 font-mono">Bingo 5×5 — Novice</p>
+          <p className="text-muted-foreground text-[9px] text-center mt-2 font-mono">Bingo 5×5 — Novice</p>
         </div>
       </div>
 
@@ -873,7 +873,7 @@ export function DownloadSection() {
           viewport={{ once: true, amount: 0.3 }}
         >
           {DOWNLOAD_FEATURE_KEYS.map((key) => (
-            <motion.div key={key} variants={slideLeft} className="flex items-center gap-2 text-sm text-white/80">
+            <motion.div key={key} variants={slideLeft} className="flex items-center gap-2 text-sm text-foreground">
               <ChevronRight className="size-4 text-orange-400 shrink-0" />
               {t(key)}
             </motion.div>
@@ -893,7 +893,7 @@ export function DownloadSection() {
             </motion.div>
           ))}
         </div>
-        <p className="text-white/30 text-xs mt-3 text-center animate-[pulse_3s_ease_infinite]">{t('download.comingSoon')}</p>
+        <p className="text-muted-foreground text-xs mt-3 text-center animate-[pulse_3s_ease_infinite]">{t('download.comingSoon')}</p>
       </GlassCard>
     </SectionShell>
   )
@@ -917,8 +917,8 @@ export function CommunitySection() {
 
   return (
     <SectionShell className="max-w-[520px]">
-      <h2 className="text-3xl font-bold text-white mb-2">{t('community.title')}</h2>
-      <p className="text-white/60 text-sm mb-5">
+      <h2 className="text-3xl font-bold text-foreground mb-2">{t('community.title')}</h2>
+      <p className="text-muted-foreground text-sm mb-5">
         {t('community.description')}
       </p>
       <GlassCard accent="#5865F2" hover>
@@ -928,13 +928,13 @@ export function CommunitySection() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-white font-semibold text-lg">{t('community.discordTitle')}</h3>
+              <h3 className="text-foreground font-semibold text-lg">{t('community.discordTitle')}</h3>
               <span className="relative flex size-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex rounded-full size-2 bg-green-500" />
               </span>
             </div>
-            <p className="text-white/50 text-sm">{t('community.discordDesc')}</p>
+            <p className="text-muted-foreground text-sm">{t('community.discordDesc')}</p>
           </div>
         </div>
         <Button size="sm" className="w-full mt-4 bg-[#5865F2] hover:bg-[#4752C4] text-white" asChild>
@@ -944,7 +944,7 @@ export function CommunitySection() {
           </a>
         </Button>
       </GlassCard>
-      <p className="text-white/30 text-xs mt-4 text-center">
+      <p className="text-muted-foreground text-xs mt-4 text-center">
         {t('community.powered')}
       </p>
     </SectionShell>
@@ -972,7 +972,7 @@ export function TeamSection({ locale }: { locale: string }) {
 
   return (
     <SectionShell className="max-w-[500px]">
-      <h2 className="text-3xl font-bold text-white mb-4">{t('team.title')}</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-4">{t('team.title')}</h2>
 
       {lead ? (
         <motion.div
@@ -998,7 +998,7 @@ export function TeamSection({ locale }: { locale: string }) {
                   />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{lead.name}</h3>
+                  <h3 className="text-lg font-bold text-foreground">{lead.name}</h3>
                   {lead.title && (
                     <Badge
                       className="mt-1 text-xs"
@@ -1012,7 +1012,7 @@ export function TeamSection({ locale }: { locale: string }) {
                   )}
                 </div>
                 {lead.description && (
-                  <p className="text-white/60 text-sm leading-relaxed max-w-xs">{lead.description}</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">{lead.description}</p>
                 )}
               </div>
             </GlassCard>
@@ -1041,7 +1041,7 @@ export function TeamSection({ locale }: { locale: string }) {
                         lookAtCursor
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-white/80 text-sm font-medium truncate block">{m.name}</span>
+                        <span className="text-foreground text-sm font-medium truncate block">{m.name}</span>
                         {m.title && (
                           <span
                             className="text-[10px] px-1.5 py-0.5 rounded-full border inline-block mt-0.5"
@@ -1058,14 +1058,14 @@ export function TeamSection({ locale }: { locale: string }) {
                   ))}
                 </div>
                 {remaining > 0 && (
-                  <p className="text-white/40 text-xs text-center mt-3">+{remaining} more</p>
+                  <p className="text-muted-foreground text-xs text-center mt-3">+{remaining} more</p>
                 )}
               </GlassCard>
             </motion.div>
           )}
 
           <motion.div variants={fadeUp}>
-            <Button size="sm" variant="outline" className="w-full border-white/15 text-white/70 hover:bg-white/10" asChild>
+            <Button size="sm" variant="outline" className="w-full" asChild>
               <Link href={`/${locale}/about`}>
                 {t('team.meetFull')}
                 <ExternalLink className="size-3 ml-1.5" />
@@ -1111,20 +1111,20 @@ export function FooterSection({ locale }: { locale: string }) {
             </motion.div>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-1">{t('footer.freeTitle')}</h3>
-            <p className="text-white/60 text-sm leading-relaxed">
+            <h3 className="text-foreground font-semibold mb-1">{t('footer.freeTitle')}</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {t('footer.freeDesc')}
             </p>
           </div>
         </div>
         <div className="relative flex flex-col gap-2">
-          <Button size="sm" asChild className="w-full bg-[#1a6b3c]! text-[#d4f4e0]! hover:bg-[#15803d]!">
+          <Button size="sm" asChild className="w-full">
             <Link href={`/${locale}/about`}>{t('footer.learnMore')}</Link>
           </Button>
-          <Button size="sm" variant="outline" className="w-full border-white/15 text-white/80 hover:bg-white/10" asChild>
+          <Button size="sm" variant="outline" className="w-full" asChild>
             <a href="https://ddnet.org" target="_blank" rel="noopener noreferrer">DDNet.org</a>
           </Button>
-          <Button size="sm" variant="outline" className="w-full border-white/15 text-white/80 hover:bg-white/10" asChild>
+          <Button size="sm" variant="outline" className="w-full" asChild>
             <a href="https://github.com/DDashBoard" target="_blank" rel="noopener noreferrer">
               <Github className="size-3.5 mr-1" />
               GitHub
@@ -1134,18 +1134,18 @@ export function FooterSection({ locale }: { locale: string }) {
       </GlassCard>
 
       {/* Footer */}
-      <GlassCard className="!bg-black/30 !border-white/5">
+      <GlassCard>
         <div className="flex items-center gap-2 mb-3">
           <motion.div
             animate={{ opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Grid3x3 className="size-5 text-[#10b981]" />
+            <Grid3x3 className="size-5 text-accent" />
           </motion.div>
-          <span className="font-bold text-white text-lg">DDashBoard</span>
+          <span className="font-bold text-foreground text-lg">DDashBoard</span>
         </div>
         <motion.div
-          className="flex flex-col gap-1.5 text-sm text-white/50 mb-4"
+          className="flex flex-col gap-1.5 text-sm text-muted-foreground mb-4"
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -1153,11 +1153,11 @@ export function FooterSection({ locale }: { locale: string }) {
         >
           {navLinks.map((link) => (
             <motion.div key={link.label} variants={fadePill}>
-              <Link href={link.href} className="hover:text-white hover:underline transition-colors">{link.label}</Link>
+              <Link href={link.href} className="hover:text-foreground hover:underline transition-colors">{link.label}</Link>
             </motion.div>
           ))}
         </motion.div>
-        <div className="flex items-center justify-between text-[10px] text-white/20 border-t border-white/5 pt-3">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border pt-3">
           <span>{t('footer.copyright')}</span>
           <span>{t('footer.powered')}</span>
         </div>

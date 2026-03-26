@@ -2,6 +2,8 @@ export interface ThemeDefinition {
   id: string
   name: string
   mode: 'light' | 'dark'
+  /** Hidden themes don't appear in the settings theme selector */
+  hidden?: boolean
   /** Hex preview colors for theme cards in settings */
   preview: {
     background: string
@@ -159,6 +161,21 @@ export const themes: ThemeDefinition[] = [
       border: '#243828',
     },
   },
+  // ── Internal themes (not shown in settings) ──
+  {
+    id: 'map-active',
+    name: 'Map Active',
+    mode: 'dark',
+    hidden: true,
+    preview: {
+      background: '#0a0a0a',
+      foreground: '#d8ecd8',
+      card: '#000000',
+      primary: '#1a6b3c',
+      muted: '#111111',
+      border: '#1a1a1a',
+    },
+  },
 ]
 
 /** Map theme id → CSS class applied to <html> (must be single class, no spaces) */
@@ -174,9 +191,16 @@ export const themeClassMap: Record<string, string> = {
   midnight: 'theme-midnight',
   ocean: 'theme-ocean',
   forest: 'theme-forest',
+  'map-active': 'theme-map-active',
 }
 
 export const themeIds = themes.map((t) => t.id)
+
+/** User-facing themes (excludes hidden/internal themes like map-active) */
+export const userThemes = themes.filter((t) => !t.hidden)
+
+/** Theme ID for the forced map background theme */
+export const MAP_ACTIVE_THEME = 'map-active'
 
 export function getThemeById(id: string) {
   return themes.find((t) => t.id === id)
@@ -198,7 +222,7 @@ const DEFAULT_DARK = 'default-dark'
 /** Save the user's preferred theme for its mode (light or dark) */
 export function savePreferredTheme(themeId: string) {
   const theme = getThemeById(themeId)
-  if (!theme) return
+  if (!theme || theme.hidden) return
   const key = theme.mode === 'light' ? PREFERRED_LIGHT_KEY : PREFERRED_DARK_KEY
   localStorage.setItem(key, themeId)
 }

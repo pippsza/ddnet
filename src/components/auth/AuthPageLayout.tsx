@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { AuthMascot } from '@/components/auth/AuthMascot'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { ConditionalThemeToggle } from '@/components/theme/ConditionalThemeToggle'
+import { RenderModeToggle } from '@/components/landing/RenderModeToggle'
 
 interface AuthPageLayoutProps {
   title: string
@@ -24,7 +26,13 @@ export function AuthPageLayout({
   footer,
 }: AuthPageLayoutProps) {
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative overflow-x-hidden">
+      {/* Top-right controls */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <ConditionalThemeToggle start="top-right" variant="circle-blur" />
+        <RenderModeToggle />
+      </div>
+
       {/* Left panel — desktop only */}
       <motion.div
         className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center border-r border-border/40 bg-muted/5 p-8 gap-6"

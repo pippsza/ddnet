@@ -94,7 +94,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
-      <MapBackground hideSwitch />
+      <MapBackground />
       <AppSidebar
         user={{
           ingameNick: session.user.ingameNick ?? undefined,
@@ -114,13 +114,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         }}
       />
       <main className="flex-1 flex min-w-0 flex-col min-h-screen">
-        <header className="flex items-center justify-between  p-4 border-b sticky top-0 bg-background/95 backdrop-blur z-999909999999">
+        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-card/80 backdrop-blur-xl z-[9999]">
           <SidebarTrigger />
           <div className="flex items-center gap-3">
-            <RenderModeToggle />
+            <ConditionalThemeToggle start="top-right" variant="circle-blur" />
             <LocaleSwitcher currentLocale={locale} />
             <NotificationBell />
-            <ConditionalThemeToggle start="top-right" variant="circle-blur" />
+            <RenderModeToggle />
           </div>
         </header>
         <div className="flex-1 p-6 pt-2 overflow-hidden justify-center">

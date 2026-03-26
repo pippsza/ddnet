@@ -107,17 +107,29 @@ export function MapCanvas({
   const cameraX = useSpring(rawCameraX, SPRING_CONFIG)
   const cameraY = useSpring(rawCameraY, SPRING_CONFIG)
 
-  // Mouse parallax
+  // Mouse parallax — always apply on mousemove so it works even when scroll is idle
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth < 768) return
     const handle = (e: MouseEvent) => {
       const cx = window.innerWidth / 2
       const cy = window.innerHeight / 2
       mouseRef.current = { x: (e.clientX - cx) / 40, y: (e.clientY - cy) / 40 }
+      const tw = twRef.current
+      if (tw && !freePanRef.current) {
+        const camX = cameraX.get(), camY = cameraY.get()
+        tw.cameraPos[0] = camX + mouseRef.current.x
+        tw.cameraPos[1] = camY + mouseRef.current.y
+      }
+      if (uiLayerRef.current) {
+        const camX = cameraX.get(), camY = cameraY.get()
+        const vw = window.innerWidth, vh = window.innerHeight
+        const scale = vw / VIEW_WIDTH
+        uiLayerRef.current.style.transform = `translate3d(${-camX * scale + vw / 2 - mouseRef.current.x * scale}px, ${-camY * scale + vh / 2 - mouseRef.current.y * scale}px, 0) scale(${scale})`
+      }
     }
     window.addEventListener('mousemove', handle, { passive: true })
     return () => window.removeEventListener('mousemove', handle)
-  }, [])
+  }, [cameraX, cameraY])
 
   // Initialize WebGL renderer
   const initRenderer = useCallback(() => {

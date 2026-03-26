@@ -10,7 +10,8 @@ import { ThemeProvider } from '@/components/theme/theme-provider'
 import { themeIds, themeClassMap } from '@/lib/themes'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { FloatingBackground } from '@/components/ui/floating-background'
-import { RenderModeThemeProvider } from '@/components/landing/RenderModeThemeProvider'
+import { RenderModeProvider } from '@/context/RenderModeContext'
+import { ThemeDebugPanel } from '@/components/theme/ThemeDebugPanel'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants'
 import { getUserLocale } from '@/services/locale'
@@ -80,7 +81,7 @@ export default async function RootLayout({
           )}
 
           <FloatingBackground />
-          <RenderModeThemeProvider />
+          <RenderModeProvider>
           <NextIntlClientProvider>
             <AuthProvider>
               <Toaster />
@@ -88,8 +89,10 @@ export default async function RootLayout({
               <div className="fixed bottom-0 right-0 text-primary bg-secondary p-2 rounded-tl-2xl text-xs">
                 v{process.env.APP_VERSION}
               </div>
+              {process.env.NODE_ENV === 'development' && <ThemeDebugPanel />}
             </AuthProvider>
           </NextIntlClientProvider>
+          </RenderModeProvider>
         </ThemeProvider>
         <ServiceWorkerRegister />
       </body>

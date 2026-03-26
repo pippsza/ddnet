@@ -64,6 +64,7 @@ export function MapScroller({
     return () => window.removeEventListener('resize', update)
   }, [])
 
+  // Mouse parallax — track mouse position, RAF loop applies it continuously
   useEffect(() => {
     if (window.innerWidth < 768) return
     const handle = (e: MouseEvent) => {
@@ -93,11 +94,26 @@ export function MapScroller({
     return keys
   }, [tileSize, tilesX, tilesY])
 
+  // Update cameraRef from scroll progress
   useEffect(() => {
-    let prevTileKey = ''
     const unsubscribe = smoothProgress.on('change', (v) => {
-      const pos = interpolatePath(path, v)
-      cameraRef.current = pos
+      cameraRef.current = interpolatePath(path, v)
+    })
+    return unsubscribe
+  }, [smoothProgress, path])
+
+  // Set initial camera position
+  useEffect(() => {
+    cameraRef.current = path[0] || { x: 0, y: 0 }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Single RAF loop: applies camera + mouse parallax every frame
+  useEffect(() => {
+    let raf = 0
+    let prevTileKey = ''
+    const tick = () => {
+      const pos = cameraRef.current
       const vp = viewportRef.current
       const scale = vp.w / VIEW_WIDTH
       const mx = mouseRef.current.x, my = mouseRef.current.y
@@ -109,26 +125,11 @@ export function MapScroller({
       const newKeys = computeVisibleTiles()
       const newKeyStr = newKeys.join(',')
       if (newKeyStr !== prevTileKey) { prevTileKey = newKeyStr; setVisibleTileKeys(newKeys) }
-    })
-    return unsubscribe
-  }, [smoothProgress, path, computeVisibleTiles])
-
-  useEffect(() => { setVisibleTileKeys(computeVisibleTiles()) }, [computeVisibleTiles])
-
-  // Apply initial camera position on mount so first section is visible
-  useEffect(() => {
-    const pos = path[0] || { x: 0, y: 0 }
-    cameraRef.current = pos
-    const vp = viewportRef.current
-    const scale = vp.w / VIEW_WIDTH
-    const tx = -pos.x * scale + vp.w / 2
-    const ty = -pos.y * scale + vp.h / 2
-    const transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
-    if (mapLayerRef.current) mapLayerRef.current.style.transform = transform
-    if (uiLayerRef.current) uiLayerRef.current.style.transform = transform
-    setVisibleTileKeys(computeVisibleTiles())
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [computeVisibleTiles])
 
   return (
     <>

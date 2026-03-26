@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Zap, Image } from 'lucide-react'
+import { useState, useEffect, type ReactNode } from 'react'
+import { useRenderMode } from '@/hooks/useRenderMode'
 import { MapCanvas } from './MapCanvas'
 import { MapScroller } from './MapScroller'
 import { MapSection } from './MapSection'
@@ -30,8 +29,6 @@ import {
   DEFAULT_PRESET,
 } from './map-presets'
 
-type RenderMode = 'quality' | 'medium' | 'performance'
-
 interface DesktopLandingProps {
   isLoggedIn: boolean
   locale: string
@@ -47,56 +44,7 @@ const PRELOAD_SCRIPTS = [
 
 export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
   const [presetId, setPresetId] = useState(DEFAULT_PRESET)
-  const [renderMode, setRenderMode] = useState<RenderMode>(() => {
-    if (typeof window === 'undefined') return 'quality'
-    return (localStorage.getItem('landing-render-mode') as RenderMode) || 'quality'
-  })
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  // Track if Quality was ever used — lazy-mount WebGL, keep alive once loaded
-  const [qualityEverUsed, setQualityEverUsed] = useState(renderMode === 'quality')
-  const handleRenderModeChange = useCallback(
-    (mode: RenderMode, e?: React.MouseEvent) => {
-      if (mode === renderMode) return
-
-      const applyMode = () => {
-        setRenderMode(mode)
-        localStorage.setItem('landing-render-mode', mode)
-        if (mode === 'quality') setQualityEverUsed(true)
-        window.dispatchEvent(new Event('render-mode-change'))
-      }
-
-      // Use View Transitions API if available (circle-blur from click point)
-      if ('startViewTransition' in document) {
-        const cx = e ? ((e.clientX / window.innerWidth) * 100).toFixed(0) : '90'
-        const cy = e ? ((e.clientY / window.innerHeight) * 100).toFixed(0) : '90'
-        const styleId = `mode-transition-${Date.now()}`
-        const style = document.createElement('style')
-        style.id = styleId
-        style.textContent = `
-        ::view-transition-old(root) { animation: none; }
-        ::view-transition-new(root) {
-          animation: mode-circle-expand 0.5s ease-out;
-        }
-        @keyframes mode-circle-expand {
-                    from { clip-path: circle(0% at ${cx}% ${cy}%); filter: blur(4px); }
-          to { clip-path: circle(150% at ${cx}% ${cy}%); filter: blur(0); }
-        }
-      `
-
-        document.head.appendChild(style)
-        setTimeout(() => document.getElementById(styleId)?.remove(), 2000)
-        ;(document as any).startViewTransition(applyMode)
-      } else {
-        // Fallback: gradient overlay
-        setIsTransitioning(true)
-        setTimeout(() => {
-          applyMode()
-          setTimeout(() => setIsTransitioning(false), 100)
-        }, 400)
-      }
-    },
-    [renderMode],
-  )
+  const { renderMode, qualityEverUsed } = useRenderMode()
 
   // Inject preload hints only in quality mode
   useEffect(() => {
@@ -184,26 +132,7 @@ export function DesktopLanding({ isLoggedIn, locale }: DesktopLandingProps) {
         locale={locale}
       />
 
-      <BottomPanel
-        presetId={presetId}
-        onPresetChange={setPresetId}
-        renderMode={renderMode}
-        onRenderModeChange={handleRenderModeChange}
-      />
-
-      {/* Gradient overlay for mode transitions */}
-      <AnimatePresence>
-        {isTransitioning && (
-          <motion.div
-            key="mode-transition"
-            className="fixed inset-0 z-30 bg-linear-to-b from-[#2a1f4e] via-[#1a1040] to-[#0a0f14]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          />
-        )}
-      </AnimatePresence>
+      <PresetPanel presetId={presetId} onPresetChange={setPresetId} />
 
       {/*
         Quality (WebGL): lazy-mount, keep alive once loaded.
@@ -288,68 +217,39 @@ function PerformanceFallback({
   )
 }
 
-// ─── Bottom Panel (render mode + preset switcher) ────────────────────────────
+// ─── Preset Panel (map preset switcher, only when multiple presets) ──────────
 
-function BottomPanel({
+function PresetPanel({
   presetId,
   onPresetChange,
-  renderMode,
-  onRenderModeChange,
 }: {
   presetId: string
   onPresetChange: (id: string) => void
-  renderMode: RenderMode
-  onRenderModeChange: (mode: RenderMode, e?: React.MouseEvent) => void
 }) {
   const ids = getAllPresetIds()
-  const showPresets = ids.length > 1
+  if (ids.length <= 1) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      {/* Render mode toggle */}
-      <div className="flex gap-1 bg-black/60 backdrop-blur-md rounded-full p-1 border border-white/10">
-        {[
-          { mode: 'quality' as const, icon: Sparkles, label: 'Quality' },
-          { mode: 'medium' as const, icon: Image, label: 'Medium' },
-          { mode: 'performance' as const, icon: Zap, label: 'Performance' },
-        ].map(({ mode, icon: Icon, label }) => (
-          <button
-            key={mode}
-            onClick={(e) => onRenderModeChange(mode, e)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              renderMode === mode
-                ? 'bg-[#1a6b3c]! text-[#d4f4e0]!'
-                : 'text-white/60 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <Icon className="size-3" />
-            {label}
-          </button>
-        ))}
+    <div className="fixed bottom-4 right-4 z-50">
+      <div className="flex gap-1.5 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10">
+        {ids.map((id) => {
+          const preset = getPreset(id)
+          const active = id === presetId
+          return (
+            <button
+              key={id}
+              onClick={() => onPresetChange(id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                active
+                  ? 'bg-[#1a6b3c]! text-[#d4f4e0]!'
+                  : 'text-white/60 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              {preset.label}
+            </button>
+          )
+        })}
       </div>
-
-      {/* Preset switcher */}
-      {showPresets && (
-        <div className="flex gap-1.5 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10">
-          {ids.map((id) => {
-            const preset = getPreset(id)
-            const active = id === presetId
-            return (
-              <button
-                key={id}
-                onClick={() => onPresetChange(id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  active
-                    ? 'bg-[#1a6b3c]! text-[#d4f4e0]!'
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {preset.label}
-              </button>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }

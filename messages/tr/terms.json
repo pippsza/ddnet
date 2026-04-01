@@ -5,7 +5,7 @@
   "sections": {
     "acceptance": {
       "title": "1. Koşulların Kabulü",
-      "content": "DDashBoard'a erişerek ve kullanarak bu Kullanım Koşullarına bağlı kalmayı kabul etmiş olursunuz. Kabul etmiyorsanız lütfen platformu kullanmayın.\n\nDDashBoard, DDraceNetwork oyuncuları için ücretsiz bir topluluk platformudur. Bu koşullar, web sitesi ve ilgili tüm hizmetlerin kullanımını düzenler."
+      "content": "{appName}'a erişerek ve kullanarak bu Kullanım Koşullarına bağlı kalmayı kabul etmiş olursunuz. Kabul etmiyorsanız lütfen platformu kullanmayın.\n\n{appName}, DDraceNetwork oyuncuları için ücretsiz bir topluluk platformudur. Bu koşullar, web sitesi ve ilgili tüm hizmetlerin kullanımını düzenler."
     },
     "accounts": {
       "title": "2. Kullanıcı Hesapları",
@@ -17,11 +17,11 @@
     },
     "content": {
       "title": "4. Kullanıcı İçeriği",
-      "content": "Oluşturduğunuz içeriklerin (forum gönderileri, makaleler vb.) mülkiyeti size aittir. İçerik yayınlayarak DDashBoard'a platformda gösterme ve dağıtma konusunda münhasır olmayan bir lisans vermiş olursunuz.\n\nBu koşulları veya topluluk kurallarımızı ihlal eden içerikleri kaldırma hakkımız saklıdır."
+      "content": "Oluşturduğunuz içeriklerin (forum gönderileri, makaleler vb.) mülkiyeti size aittir. İçerik yayınlayarak {appName}'a platformda gösterme ve dağıtma konusunda münhasır olmayan bir lisans vermiş olursunuz.\n\nBu koşulları veya topluluk kurallarımızı ihlal eden içerikleri kaldırma hakkımız saklıdır."
     },
     "thirdParty": {
       "title": "5. Üçüncü Taraf Hizmetler",
-      "content": "DDashBoard, oyuncu verileri, istatistikler ve görünüm oluşturma için DDraceNetwork hizmetleriyle (ddnet.org) entegre çalışır. DDNet ekibi tarafından desteklenmemekte veya onaylanmamaktayız.\n\nOyuncu istatistikleri ve görünüm verileri herkese açık DDNet API'lerinden alınmaktadır. Bu verilerin erişilebilirliğini veya doğruluğunu kontrol etmemiz mümkün değildir."
+      "content": "{appName}, oyuncu verileri, istatistikler ve görünüm oluşturma için DDraceNetwork hizmetleriyle (ddnet.org) entegre çalışır. DDNet ekibi tarafından desteklenmemekte veya onaylanmamaktayız.\n\nOyuncu istatistikleri ve görünüm verileri herkese açık DDNet API'lerinden alınmaktadır. Bu verilerin erişilebilirliğini veya doğruluğunu kontrol etmemiz mümkün değildir."
     },
     "termination": {
       "title": "6. Hesap Sonlandırma",
@@ -29,7 +29,7 @@
     },
     "disclaimers": {
       "title": "7. Sorumluluk Reddi",
-      "content": "DDashBoard herhangi bir garanti olmaksızın \"olduğu gibi\" sunulmaktadır. Kesintisiz hizmet, veri doğruluğu veya sürekli erişim garantisi vermiyoruz.\n\nBu ücretsiz bir topluluk projesidir. Platformu kullanımınızdan doğabilecek herhangi bir zarardan sorumlu değiliz."
+      "content": "{appName} herhangi bir garanti olmaksızın \"olduğu gibi\" sunulmaktadır. Kesintisiz hizmet, veri doğruluğu veya sürekli erişim garantisi vermiyoruz.\n\nBu ücretsiz bir topluluk projesidir. Platformu kullanımınızdan doğabilecek herhangi bir zarardan sorumlu değiliz."
     },
     "changes": {
       "title": "8. Koşul Değişiklikleri",

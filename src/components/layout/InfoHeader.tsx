@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Grid3x3, Globe, Menu, X } from 'lucide-react'
+import { Globe, Menu, X } from 'lucide-react'
+import Image from 'next/image'
 import { useLocale } from 'next-intl'
 import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { locales as allLocales, type Locale } from '@/i18n/config'
 import { setUserLocale } from '@/services/locale'
+import { APP_NAME } from '@/lib/constants'
 import { useRenderMode } from '@/hooks/useRenderMode'
 import { ConditionalThemeToggle } from '@/components/theme/ConditionalThemeToggle'
 import { RenderModeToggle } from '@/components/landing/RenderModeToggle'
@@ -70,8 +72,8 @@ export function InfoHeader({ isLoggedIn }: InfoHeaderProps) {
           href={`/${locale}`}
           className="flex items-center gap-1.5 hover:opacity-80 transition-opacity shrink-0"
         >
-          <Grid3x3 className={cn('size-5', mapActive ? 'text-accent' : 'text-primary')} />
-          <span className={cn('font-bold', mapActive ? 'text-white' : 'text-foreground')}>{`DDashBoard`}</span>
+          <Image src="/branding/gui_logo 3.png" alt="Logo" width={22} height={22} />
+          <span className={cn('font-bold', mapActive ? 'text-white' : 'text-foreground')}>{APP_NAME}</span>
         </Link>
 
         {/* Desktop nav */}

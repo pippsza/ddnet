@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://ddashboard.gg'
+import { BASE_URL } from '@/lib/constants'
 
 export default function robots(): MetadataRoute.Robots {
   return {

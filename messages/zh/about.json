@@ -1,15 +1,15 @@
 {
   "backToHome": "返回首页",
-  "title": "关于 DDashBoard",
-  "defaultDescription": "DDashBoard 是一个免费的 DDraceNetwork 玩家社区平台。在一个地方玩宾果、竞速、追踪数据并与朋友互动。",
+  "title": "关于 {appName}",
+  "defaultDescription": "{appName} 是一个免费的 DDraceNetwork 玩家社区平台。在一个地方玩宾果、竞速、追踪数据并与朋友互动。",
   "freeProject": {
     "title": "完全免费开放",
-    "description": "DDashBoard 完全免费使用，我们不收取任何费用，也永远不会。这个项目由社区建设，服务于社区。我们欢迎任何形式的贡献——无论是开发、测试、翻译还是资金支持。"
+    "description": "{appName} 完全免费使用，我们不收取任何费用，也永远不会。这个项目由社区建设，服务于社区。我们欢迎任何形式的贡献——无论是开发、测试、翻译还是资金支持。"
   },
   "specialThanks": "特别感谢",
   "support": {
     "title": "支持项目",
-    "description": "DDashBoard 是由志愿者维护的热情项目。如果你想帮忙，可以贡献代码、报告问题、帮助翻译或提供资金支持。",
+    "description": "{appName} 是由志愿者维护的热情项目。如果你想帮忙，可以贡献代码、报告问题、帮助翻译或提供资金支持。",
     "donate": "支持我们"
   },
   "contact": {

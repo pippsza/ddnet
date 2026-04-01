@@ -1,6 +1,5 @@
 import { locales } from '@/i18n/config'
-
-const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://ddashboard.gg'
+import { BASE_URL } from '@/lib/constants'
 
 export function getAlternates(locale: string, path: string = '') {
   return {

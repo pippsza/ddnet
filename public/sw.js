@@ -1,4 +1,4 @@
-// Service Worker for DDashBoard PWA
+// Service Worker for PWA
 // Handles: push notifications, asset caching, offline fallback
 
 const CACHE_VERSION = 'v1'
@@ -6,7 +6,7 @@ const STATIC_CACHE = `ddash-static-${CACHE_VERSION}`
 const PAGES_CACHE = `ddash-pages-${CACHE_VERSION}`
 const ALL_CACHES = [STATIC_CACHE, PAGES_CACHE]
 
-const PRECACHE_URLS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png', '/favicon.ico']
+const PRECACHE_URLS = ['/offline', '/icons/icon-192.png', '/icons/icon-512.png', '/favicon.ico']
 
 // ── Install: precache offline fallback + key assets ──
 self.addEventListener('install', (event) => {
@@ -103,7 +103,7 @@ async function networkFirstWithOfflineFallback(request) {
     const cached = await caches.match(request)
     if (cached) return cached
 
-    const offlinePage = await caches.match('/offline.html')
+    const offlinePage = await caches.match('/offline')
     return offlinePage || new Response('Offline', { status: 503, statusText: 'Service Unavailable' })
   }
 }

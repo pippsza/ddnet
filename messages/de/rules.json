@@ -1,7 +1,7 @@
 {
   "backToHome": "Zurück zur Startseite",
   "title": "Community-Regeln",
-  "subtitle": "Bitte halte dich an diese Regeln, damit DDashBoard ein spaßiger und einladender Ort für alle bleibt.",
+  "subtitle": "Bitte halte dich an diese Regeln, damit {appName} ein spaßiger und einladender Ort für alle bleibt.",
   "sections": {
     "accounts": {
       "title": "Kontoregeln",

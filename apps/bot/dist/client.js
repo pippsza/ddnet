@@ -1,4 +1,5 @@
 import { Client } from 'teeworlds';
+import { APP_NAME } from './constants.js';
 /**
  * Teeworlds client wrapper for bot functionality
  * Uses the teeworlds npm package (v2.5.x)
@@ -19,7 +20,7 @@ export class TeeworldsClient {
         this.serverIp = ip;
         this.serverPort = port;
         console.log(`[Client] Attempting connection to ${ip}:${port}`);
-        console.log(`[Client] Identity: name="${this.options.name}", clan="${this.options.clan || 'DDashBoard'}", skin="${this.options.skin || 'bot'}"`);
+        console.log(`[Client] Identity: name="${this.options.name}", clan="${this.options.clan || APP_NAME}", skin="${this.options.skin || 'bot'}"`);
         return new Promise((resolve, reject) => {
             const timeoutMs = this.options.timeout || 10000;
             console.log(`[Client] Connection timeout: ${timeoutMs}ms`);
@@ -31,7 +32,7 @@ export class TeeworldsClient {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const identity = {
                 name: this.options.name,
-                clan: this.options.clan || 'DDashBoard',
+                clan: this.options.clan || APP_NAME,
                 skin: this.options.skin || 'bot',
                 use_custom_color: this.options.useCustomColor ? 1 : 0,
                 color_body: this.options.colorBody ?? 0,

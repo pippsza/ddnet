@@ -19,7 +19,7 @@ import { getUserLocale } from '@/services/locale'
 export const metadata: Metadata = {
   title: APP_NAME,
   description: APP_DESCRIPTION,
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

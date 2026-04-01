@@ -1,7 +1,7 @@
 {
   "backToHome": "Ana Sayfaya Dön",
   "title": "Topluluk Kuralları",
-  "subtitle": "DDashBoard'u herkes için eğlenceli ve hoş bir yer tutmak için bu kurallara uyun.",
+  "subtitle": "{appName}'u herkes için eğlenceli ve hoş bir yer tutmak için bu kurallara uyun.",
   "sections": {
     "accounts": {
       "title": "Hesap Kuralları",

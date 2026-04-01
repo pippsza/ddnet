@@ -29,7 +29,7 @@
     },
     "children": {
       "title": "7. Datenschutz für Kinder",
-      "content": "DDashBoard richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern. Wenn Sie glauben, dass ein Kind uns persönliche Daten übermittelt hat, kontaktieren Sie uns bitte."
+      "content": "{appName} richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern. Wenn Sie glauben, dass ein Kind uns persönliche Daten übermittelt hat, kontaktieren Sie uns bitte."
     },
     "changes": {
       "title": "8. Änderungen dieser Richtlinie",

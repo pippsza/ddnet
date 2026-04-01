@@ -5,7 +5,7 @@
   "sections": {
     "acceptance": {
       "title": "1. Annahme der Bedingungen",
-      "content": "Durch den Zugriff auf und die Nutzung von DDashBoard erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie nicht einverstanden sind, nutzen Sie die Plattform bitte nicht.\n\nDDashBoard ist eine kostenlose Community-Plattform für DDraceNetwork-Spieler. Diese Bedingungen regeln Ihre Nutzung der Website und aller damit verbundenen Dienste."
+      "content": "Durch den Zugriff auf und die Nutzung von {appName} erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie nicht einverstanden sind, nutzen Sie die Plattform bitte nicht.\n\n{appName} ist eine kostenlose Community-Plattform für DDraceNetwork-Spieler. Diese Bedingungen regeln Ihre Nutzung der Website und aller damit verbundenen Dienste."
     },
     "accounts": {
       "title": "2. Benutzerkonten",
@@ -17,11 +17,11 @@
     },
     "content": {
       "title": "4. Nutzerinhalte",
-      "content": "Sie behalten das Eigentum an von Ihnen erstellten Inhalten (Forenbeiträge, Artikel usw.). Mit dem Veröffentlichen von Inhalten gewähren Sie DDashBoard eine nicht-exklusive Lizenz zur Anzeige und Verbreitung dieser Inhalte auf der Plattform.\n\nWir behalten uns das Recht vor, Inhalte zu entfernen, die gegen diese Bedingungen oder unsere Community-Regeln verstoßen."
+      "content": "Sie behalten das Eigentum an von Ihnen erstellten Inhalten (Forenbeiträge, Artikel usw.). Mit dem Veröffentlichen von Inhalten gewähren Sie {appName} eine nicht-exklusive Lizenz zur Anzeige und Verbreitung dieser Inhalte auf der Plattform.\n\nWir behalten uns das Recht vor, Inhalte zu entfernen, die gegen diese Bedingungen oder unsere Community-Regeln verstoßen."
     },
     "thirdParty": {
       "title": "5. Drittanbieterdienste",
-      "content": "DDashBoard ist mit DDraceNetwork-Diensten (ddnet.org) für Spielerdaten, Statistiken und Skin-Darstellung integriert. Wir sind weder mit dem DDNet-Team verbunden noch von diesem unterstützt.\n\nSpielerstatistiken und Skin-Daten werden von öffentlichen DDNet-APIs abgerufen. Wir haben keinen Einfluss auf die Verfügbarkeit oder Genauigkeit dieser Daten."
+      "content": "{appName} ist mit DDraceNetwork-Diensten (ddnet.org) für Spielerdaten, Statistiken und Skin-Darstellung integriert. Wir sind weder mit dem DDNet-Team verbunden noch von diesem unterstützt.\n\nSpielerstatistiken und Skin-Daten werden von öffentlichen DDNet-APIs abgerufen. Wir haben keinen Einfluss auf die Verfügbarkeit oder Genauigkeit dieser Daten."
     },
     "termination": {
       "title": "6. Kündigung",
@@ -29,7 +29,7 @@
     },
     "disclaimers": {
       "title": "7. Haftungsausschluss",
-      "content": "DDashBoard wird ohne jegliche Gewährleistung zur Verfügung gestellt. Wir garantieren weder Verfügbarkeit, Datengenauigkeit noch unterbrechungsfreien Betrieb.\n\nDies ist ein kostenloses Community-Projekt. Wir haften nicht für Schäden, die aus Ihrer Nutzung der Plattform entstehen."
+      "content": "{appName} wird ohne jegliche Gewährleistung zur Verfügung gestellt. Wir garantieren weder Verfügbarkeit, Datengenauigkeit noch unterbrechungsfreien Betrieb.\n\nDies ist ein kostenloses Community-Projekt. Wir haften nicht für Schäden, die aus Ihrer Nutzung der Plattform entstehen."
     },
     "changes": {
       "title": "8. Änderungen der Bedingungen",

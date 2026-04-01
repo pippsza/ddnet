@@ -26,11 +26,11 @@ import Link from 'next/link'
 import useSWR from 'swr'
 import { useTranslations } from 'next-intl'
 import { TeeAvatarWithFallback, getDDNetSkinUrl } from '@/components/tee/TeeAvatar'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
+import { APP_NAME } from '@/lib/constants'
 
 // ─── Skins ──────────────────────────────────────────────────────────────────
-
-const MASCOT_SKIN = 'ahl_chinesetwinbop'
 
 const RANDOM_SKINS = [
   'bluekitty', 'brownbear', 'cammo', 'cammostripes', 'coala',
@@ -94,45 +94,20 @@ export function HeroSection({ locale }: { locale: string }) {
   const t = useTranslations('home')
   return (
     <SectionShell className="text-center max-w-[500px] mx-auto">
-      {/* Mascot tee with floating particles */}
-      <div className="mb-4 flex justify-center">
+      {/* Banner logo */}
+      <div className="mb-6 flex justify-center">
         <div className="relative">
-          <div className="absolute -inset-4 rounded-full bg-[#10b981]/15 blur-2xl" />
-          {/* Particles */}
-          {[
-            { x: -40, y: -20, size: 4, dur: 3, del: 0 },
-            { x: 50, y: -30, size: 3, dur: 3.5, del: 0.5 },
-            { x: -55, y: 20, size: 5, dur: 4, del: 1 },
-            { x: 45, y: 35, size: 3, dur: 2.8, del: 0.3 },
-            { x: -20, y: -45, size: 4, dur: 3.2, del: 0.8 },
-            { x: 60, y: 5, size: 3, dur: 3.8, del: 1.2 },
-          ].map((p, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full bg-[#10b981]/40"
-              style={{ width: p.size, height: p.size, left: '50%', top: '50%', marginLeft: p.x, marginTop: p.y }}
-              animate={{ y: [0, -12, 0], opacity: [0.2, 0.7, 0.2] }}
-              transition={{ duration: p.dur, delay: p.del, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          ))}
-          <TeeAvatarWithFallback
-            skinUrl={getDDNetSkinUrl(MASCOT_SKIN)}
-            lookAtCursor
-            size="2xl"
+          <div className="absolute -inset-4 bg-[#10b981]/10 blur-3xl rounded-full" />
+          <Image
+            src="/branding/bingo_banner.png"
+            alt="DDNet Bingo"
+            width={400}
+            height={115}
+            className="relative drop-shadow-lg"
+            priority
           />
         </div>
       </div>
-
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#10b981]/20 border border-[#10b981]/30 text-foreground text-sm font-medium mb-5">
-        <Grid3x3 className="size-4" />
-        {t('hero.badge')}
-      </div>
-
-      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 text-foreground leading-tight">
-        <span className="bg-size-[200%_200%] bg-linear-to-r from-[#10b981] via-emerald-400 to-sky-400 bg-clip-text text-transparent animate-[gradient-shift_4s_ease_infinite]">
-          {t('hero.title')}
-        </span>
-      </h1>
 
       <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
         {t('hero.description')}
@@ -842,7 +817,7 @@ export function DownloadSection() {
           <span className="size-2.5 rounded-full bg-red-500/70" />
           <span className="size-2.5 rounded-full bg-yellow-500/70" />
           <span className="size-2.5 rounded-full bg-green-500/70" />
-          <span className="text-muted-foreground text-[10px] ml-2 font-mono">DDashBoard Client v1.0</span>
+          <span className="text-muted-foreground text-[10px] ml-2 font-mono">{APP_NAME} Client v1.0</span>
         </div>
         {/* Fake client UI — mini bingo grid */}
         <div className="p-3">
@@ -1142,7 +1117,7 @@ export function FooterSection({ locale }: { locale: string }) {
           >
             <Grid3x3 className="size-5 text-accent" />
           </motion.div>
-          <span className="font-bold text-foreground text-lg">DDashBoard</span>
+          <span className="font-bold text-foreground text-lg">{APP_NAME}</span>
         </div>
         <motion.div
           className="flex flex-col gap-1.5 text-sm text-muted-foreground mb-4"

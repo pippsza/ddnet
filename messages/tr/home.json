@@ -6,7 +6,7 @@
   },
   "hero": {
     "badge": "DDNet Community Platform",
-    "title": "DDashBoard",
+    "title": "{appName}",
     "description": "Compete in Bingo & Race modes on DDNet and KoG maps. Track progress, challenge friends, climb leaderboards.",
     "getStarted": "Get Started",
     "login": "Log in"
@@ -75,7 +75,7 @@
   },
   "community": {
     "title": "Community",
-    "description": "Join the DDashBoard community. Chat, share replays, find teammates, and stay up to date.",
+    "description": "Join the {appName} community. Chat, share replays, find teammates, and stay up to date.",
     "discordTitle": "Discord Server",
     "discordDesc": "Chat, voice channels, game announcements, find teammates",
     "joinDiscord": "Join Discord",
@@ -88,14 +88,14 @@
   },
   "footer": {
     "freeTitle": "Free & Open Source",
-    "freeDesc": "DDashBoard is a free community platform for DDNet and KoG players. No ads, no paywalls, no tracking — just play.",
+    "freeDesc": "{appName} is a free community platform for DDNet and KoG players. No ads, no paywalls, no tracking — just play.",
     "learnMore": "Learn more",
     "about": "About",
     "rules": "Rules",
     "support": "Support",
     "terms": "Terms",
     "privacy": "Privacy",
-    "copyright": "© 2024-2026 DDashBoard",
+    "copyright": "© 2024-2026 {appName}",
     "powered": "Powered by DDNet community"
   }
 }

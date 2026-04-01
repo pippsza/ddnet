@@ -1,7 +1,7 @@
 {
   "backToHome": "Back to Home",
   "title": "Community Rules",
-  "subtitle": "Please follow these rules to keep DDashBoard a fun and welcoming place for everyone.",
+  "subtitle": "Please follow these rules to keep {appName} a fun and welcoming place for everyone.",
   "sections": {
     "accounts": {
       "title": "Account Rules",

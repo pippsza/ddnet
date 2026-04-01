@@ -1,7 +1,7 @@
 {
   "backToHome": "返回首页",
   "title": "社区规则",
-  "subtitle": "请遵守以下规则，让 DDashBoard 成为一个有趣且友好的社区。",
+  "subtitle": "请遵守以下规则，让 {appName} 成为一个有趣且友好的社区。",
   "sections": {
     "accounts": {
       "title": "账户规则",

@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+import { APP_NAME } from '@/lib/constants'
+
+export async function GET() {
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Offline - DDashBoard</title>
+  <title>Offline - ${APP_NAME}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -67,4 +70,9 @@
     <button class="retry-btn" onclick="window.location.reload()">Try Again</button>
   </div>
 </body>
-</html>
+</html>`
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  })
+}

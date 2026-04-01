@@ -1,15 +1,15 @@
 {
   "backToHome": "Zurück zur Startseite",
-  "title": "Über DDashBoard",
-  "defaultDescription": "DDashBoard ist eine kostenlose Community-Plattform für DDraceNetwork-Spieler. Spiele Bingo, Rennen, verfolge Statistiken und verbinde dich mit Freunden — alles an einem Ort.",
+  "title": "Über {appName}",
+  "defaultDescription": "{appName} ist eine kostenlose Community-Plattform für DDraceNetwork-Spieler. Spiele Bingo, Rennen, verfolge Statistiken und verbinde dich mit Freunden — alles an einem Ort.",
   "freeProject": {
     "title": "Kostenlos & offen für alle",
-    "description": "DDashBoard ist komplett kostenlos. Wir berechnen nichts und werden es auch nie tun. Das Projekt wird von der Community für die Community gebaut. Wir freuen uns über jeden Beitrag — sei es Entwicklung, Testen, Übersetzungen oder finanzielle Unterstützung."
+    "description": "{appName} ist komplett kostenlos. Wir berechnen nichts und werden es auch nie tun. Das Projekt wird von der Community für die Community gebaut. Wir freuen uns über jeden Beitrag — sei es Entwicklung, Testen, Übersetzungen oder finanzielle Unterstützung."
   },
   "specialThanks": "Besonderer Dank",
   "support": {
     "title": "Projekt unterstützen",
-    "description": "DDashBoard ist ein Herzensprojekt, das von Freiwilligen gepflegt wird. Wenn du helfen möchtest, kannst du Code beitragen, Fehler melden, bei Übersetzungen helfen oder uns finanziell unterstützen.",
+    "description": "{appName} ist ein Herzensprojekt, das von Freiwilligen gepflegt wird. Wenn du helfen möchtest, kannst du Code beitragen, Fehler melden, bei Übersetzungen helfen oder uns finanziell unterstützen.",
     "donate": "Unterstützen"
   },
   "contact": {

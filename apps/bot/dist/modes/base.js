@@ -1,4 +1,5 @@
 import { TeeworldsClient } from '../client.js';
+import { APP_NAME } from '../constants.js';
 /**
  * Abstract base class for bot modes with common functionality
  */
@@ -18,7 +19,7 @@ export class BaseBotMode {
     createClient(name, password, skinOptions) {
         this.client = new TeeworldsClient({
             name,
-            clan: 'DDashBoard',
+            clan: APP_NAME,
             skin: skinOptions?.skin || 'bot',
             useCustomColor: skinOptions?.useCustomColor,
             colorBody: skinOptions?.colorBody,

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useScroll, motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Grid3x3, Menu, X, Globe } from 'lucide-react'
+import { Menu, X, Globe } from 'lucide-react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
@@ -12,6 +13,7 @@ import { setUserLocale } from '@/services/locale'
 import { useRouter, usePathname } from 'next/navigation'
 import { ConditionalThemeToggle } from '@/components/theme/ConditionalThemeToggle'
 import { RenderModeToggle } from '@/components/landing/RenderModeToggle'
+import { APP_NAME } from '@/lib/constants'
 import { useRenderMode } from '@/hooks/useRenderMode'
 
 interface NavItem {
@@ -31,7 +33,7 @@ const LOCALE_LABELS: Record<string, string> = {
   en: 'EN', ru: 'RU', uk: 'UA', de: 'DE', tr: 'TR', zh: '中文',
 }
 
-export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandName = 'DDashBoard' }: MapNavbarProps) {
+export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandName = APP_NAME }: MapNavbarProps) {
   const t = useTranslations('home')
   const router = useRouter()
   const pathname = usePathname()
@@ -101,7 +103,7 @@ export function MapNavbar({ items, scrollMultiplier, isLoggedIn, locale, brandNa
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
         {/* Brand */}
         <button onClick={() => scrollTo(0)} className="flex items-center gap-2 group">
-          <Grid3x3 className={cn('size-6 group-hover:scale-110 transition-transform', mapActive ? 'text-accent' : 'text-primary')} />
+          <Image src="/branding/gui_logo 3.png" alt="Logo" width={28} height={28} className="group-hover:scale-110 transition-transform" />
           <span className={cn('text-lg font-bold', mapActive ? 'text-white' : 'text-foreground')}>{brandName}</span>
         </button>
 

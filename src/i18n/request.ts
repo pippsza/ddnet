@@ -1,5 +1,6 @@
 import { getRequestConfig } from 'next-intl/server'
 import { headers } from 'next/headers'
+import { APP_NAME } from '../lib/constants'
 import { getUserLocale } from '../services/locale'
 import { locales, type Locale } from './config'
 
@@ -18,5 +19,8 @@ export default getRequestConfig(async () => {
   return {
     locale,
     messages: (await import(`../../messages/${locale}/index`)).default,
+    defaultTranslationValues: {
+      appName: APP_NAME,
+    },
   }
 })

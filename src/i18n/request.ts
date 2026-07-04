@@ -4,6 +4,12 @@ import { APP_NAME } from '../lib/constants'
 import { getUserLocale } from '../services/locale'
 import { locales, type Locale } from './config'
 
+/** Replace {appName} in all message strings at load time */
+function injectConstants(messages: Record<string, unknown>): Record<string, unknown> {
+  const json = JSON.stringify(messages)
+  return JSON.parse(json.replace(/\{appName\}/g, APP_NAME))
+}
+
 export default getRequestConfig(async () => {
   // Prefer URL-based locale (set by middleware for public pages)
   const headersList = await headers()
@@ -16,11 +22,10 @@ export default getRequestConfig(async () => {
     locale = await getUserLocale()
   }
 
+  const raw = (await import(`../../messages/${locale}/index`)).default
+
   return {
     locale,
-    messages: (await import(`../../messages/${locale}/index`)).default,
-    defaultTranslationValues: {
-      appName: APP_NAME,
-    },
+    messages: injectConstants(raw),
   }
 })
